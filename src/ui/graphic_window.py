@@ -62,9 +62,6 @@ class GraphicWindow(QWidget):
         self.timer.start(1000)
 
     def _build_simulation_scene(self):
-        SIDEWALK_WIDTH = 40
-        ROAD_WIDTH = 70
-
         matrix = self.environment.matrix
         height = len(matrix)
         width = len(matrix[0])
@@ -74,21 +71,19 @@ class GraphicWindow(QWidget):
         background.setBrush(QBrush(Qt.darkGreen))
         self.simulation_scene.addItem(background)
 
-        # Set horizontal roads
         for i in range(height):
-            for j in [0, width - 1]:
-                if isinstance(matrix[i][j], RoadBlock):
-                    self._add_road(j * self.scale_factor, i * self.scale_factor, width * self.scale_factor, ROAD_WIDTH, Qt.lightGray)
-                    break
-        
-        # Set vertical roads
-        for j in range(width):
-            for i in [0, height - 1]:   
-                if isinstance(matrix[i][j], RoadBlock):
-                    self._add_road(j * self.scale_factor, i * self.scale_factor, ROAD_WIDTH, height * self.scale_factor, Qt.lightGray)
-                    break
+            for j in range(width):
+                if isinstance(matrix[i][j], SidewalkBlock):
+                    color = Qt.yellow
+                elif isinstance(matrix[i][j], RoadBlock):
+                    color = Qt.lightGray
+                elif isinstance(matrix[i][j], SemaphoreBlock):
+                    color = Qt.red
+                else:
+                    continue
+                self._add_rectangle(j * self.scale_factor, i * self.scale_factor, self.scale_factor, self.scale_factor, color)
 
-    def _add_road(self, x : int, y : int, width : int, height : int, color : Qt.BrushStyle):
+    def _add_rectangle(self, x : int, y : int, width : int, height : int, color : Qt.BrushStyle):
         road = QGraphicsRectItem(x, y, width, height)
         road.setBrush(QBrush(color))
         self.simulation_scene.addItem(road)
@@ -132,7 +127,7 @@ class GraphicWindow(QWidget):
 
 app = QApplication(sys.argv)
 
-with open("matrix.pkl", 'rb') as file:
+with open("./matrices/matrix.pkl", 'rb') as file:
     matrix = pickle.load(file)
 environment = Environment(matrix)
         
