@@ -7,6 +7,7 @@ from PyQt5.QtCore import Qt, QTimer, QPointF
 from PyQt5.QtGui import QBrush, QPolygonF
 
 from environment import Environment, RoadBlock, SemaphoreBlock, SidewalkBlock
+from ui.globals import Directions, valid_coordinates
 
 class ZoomableGraphicsView(QGraphicsView):
     def __init__(self):
@@ -20,6 +21,10 @@ class ZoomableGraphicsView(QGraphicsView):
             self.scale(1 / self.zoom_factor, 1 / self.zoom_factor)
 
 
+class SemaphoreItem:
+    def __init__(self) -> None:
+        self.light_directions : dict[int, QGraphicsItem] = {}
+
 class GraphicWindow(QWidget):
     def __init__(self, environment : Environment):
         super().__init__()
@@ -27,6 +32,7 @@ class GraphicWindow(QWidget):
         self.scale_factor = 60
         self.environment = environment
         self.car_items : dict[UUID, QGraphicsItem] = {}
+        self.semaphore_items : dict[tuple[int, int], SemaphoreItem] = {}
 
         # Set up the main layout (vertical layout for buttons and view)
         main_layout = QVBoxLayout()
@@ -58,13 +64,20 @@ class GraphicWindow(QWidget):
         self.setLayout(main_layout)
 
         self.timer = QTimer()
-        self.timer.timeout.connect(self._move_cars)
+        self.timer.timeout.connect(self._update_scene)
         self.timer.start(1000)
 
     def _build_simulation_scene(self):
         matrix = self.environment.matrix
         height = len(matrix)
         width = len(matrix[0])
+
+        direction_offsets = {
+            Directions.NORTH: (-1, 0),
+            Directions.SOUTH: (1, 0),
+            Directions.EAST: (0, -1),
+            Directions.WEST: (0, 1)
+        }
 
         # Set background
         background = QGraphicsRectItem(0, 0, width * self.scale_factor, height * self.scale_factor)
@@ -73,20 +86,34 @@ class GraphicWindow(QWidget):
 
         for i in range(height):
             for j in range(width):
-                if isinstance(matrix[i][j], SidewalkBlock):
+                block = matrix[i][j]
+                if isinstance(block, SidewalkBlock):
                     color = Qt.yellow
-                elif isinstance(matrix[i][j], RoadBlock):
+                elif isinstance(block, RoadBlock):
                     color = Qt.lightGray
-                elif isinstance(matrix[i][j], SemaphoreBlock):
-                    color = Qt.red
+                elif isinstance(block, SemaphoreBlock):
+                    color = Qt.darkGray
                 else:
                     continue
-                self._add_rectangle(j * self.scale_factor, i * self.scale_factor, self.scale_factor, self.scale_factor, color)
 
-    def _add_rectangle(self, x : int, y : int, width : int, height : int, color : Qt.BrushStyle):
-        road = QGraphicsRectItem(x, y, width, height)
-        road.setBrush(QBrush(color))
-        self.simulation_scene.addItem(road)
+                rectangle = self._add_rectangle(j * self.scale_factor, i * self.scale_factor, self.scale_factor, self.scale_factor, color)
+
+                if isinstance(block, RoadBlock):
+                    p, q = direction_offsets[block.direction]
+                    if not valid_coordinates(i + p, j + q, height, width):
+                        continue
+                    neighbor = matrix[i + p][j + q]
+                    if isinstance(neighbor, SemaphoreBlock):
+                        representative = neighbor.representative
+                        if representative not in self.semaphore_items:
+                            self.semaphore_items[representative] = SemaphoreItem()
+                        self.semaphore_items[representative].light_directions[block.direction] = rectangle
+
+    def _add_rectangle(self, x : int, y : int, width : int, height : int, color : Qt.BrushStyle) -> QGraphicsRectItem:
+        rectangle = QGraphicsRectItem(x, y, width, height)
+        rectangle.setBrush(QBrush(color))
+        self.simulation_scene.addItem(rectangle)
+        return rectangle
     
     def _add_car(self, x : int, y : int, width : int, height : int, color : Qt.BrushStyle):
         # Define the triangle's vertices
@@ -101,29 +128,46 @@ class GraphicWindow(QWidget):
         car.setBrush(QBrush(color))
         self.simulation_scene.addItem(car)
         return car
+    
+    def _update_scene(self):
+        with self.environment.lock:
+            self._change_lights()
+            self._move_cars()
 
     def _move_cars(self):
         CAR_SIZE = 30
         # Add new cars and update existing ones
-        with self.environment.lock:
-            for car_id in self.environment.cars:
-                i, j = self.environment.cars[car_id]
-                if car_id not in self.car_items:
-                    car_item = self._add_car(j * self.scale_factor, i * self.scale_factor, CAR_SIZE, CAR_SIZE, Qt.blue)
-                    self.car_items[car_id] = car_item
-                else:
-                    car_item = self.car_items[car_id]
-                    car_item.setPos(QPointF(j * self.scale_factor, i * self.scale_factor))
+        for car_id in self.environment.cars:
+            i, j = self.environment.cars[car_id]
+            if car_id not in self.car_items:
+                car_item = self._add_car(j * self.scale_factor, i * self.scale_factor, CAR_SIZE, CAR_SIZE, Qt.blue)
+                self.car_items[car_id] = car_item
+            else:
+                car_item = self.car_items[car_id]
+                car_item.setPos(QPointF(j * self.scale_factor, i * self.scale_factor))
 
-            # Remove unused cars
-            cars_to_drop = []
-            for car_id in self.car_items:
-                if car_id not in self.environment.cars:
-                    cars_to_drop.append(car_id)
+        # Remove unused cars
+        cars_to_drop = []
+        for car_id in self.car_items:
+            if car_id not in self.environment.cars:
+                cars_to_drop.append(car_id)
+        
+        for car_id in cars_to_drop:
+            self.simulation_scene.removeItem(self.car_items[car_id])
+            self.car_items.pop(car_id)
+        
+
+    def _change_lights(self):
+        for semaphore_id in self.environment.semaphores:
+            light_direction = self.environment.semaphores[semaphore_id]
             
-            for car_id in cars_to_drop:
-                self.simulation_scene.removeItem(self.car_items[car_id])
-                self.car_items.pop(car_id)
+            semaphore_item = self.semaphore_items[semaphore_id]
+            for direction in semaphore_item.light_directions:
+                if direction == light_direction:
+                    semaphore_item.light_directions[direction].setBrush(QBrush(Qt.green))
+                else:
+                    semaphore_item.light_directions[direction].setBrush(QBrush(Qt.red))
+
 
 app = QApplication(sys.argv)
 
