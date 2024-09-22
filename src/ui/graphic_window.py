@@ -145,7 +145,7 @@ class GraphicWindow(QWidget):
         CAR_SIZE = 30
         # Add new cars and update existing ones
         for car_id in self.environment.cars:
-            i, j = self.environment.cars[car_id]
+            i, j = self.environment.cars[car_id].current_pos
             if car_id not in self.car_items:
                 car_item = self._add_car(i, j, CAR_SIZE, CAR_SIZE, Qt.blue)
                 self.car_items[car_id] = car_item
