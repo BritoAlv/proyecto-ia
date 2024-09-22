@@ -119,6 +119,7 @@ class RandomCar(Car):
     def __init__(self, start_pos : tuple[int, int]):
         super().__init__(start_pos)
 
+
     def move(self, environment: Environment):
         i, j = self.current_pos
         offsets = [(1, 0), (-1, 0), (0, 1), (0, -1)]
@@ -127,7 +128,21 @@ class RandomCar(Car):
         for m, n in offsets:
             x = i + m
             y = j + n
-            if valid_coordinates(x, y, len(environment.matrix), len(environment.matrix[0])) and isinstance(environment.matrix[x][y], RoadBlock):
-                self.current_pos = (x, y)
-                return
-               
+            if valid_coordinates(x, y, len(environment.matrix), len(environment.matrix[0])): 
+                if isinstance(environment.matrix[x][y], RoadBlock):
+                    if environment.matrix[i][j].direction == environment.matrix[x][y].direction:
+                        self.current_pos = (x, y)
+                        return
+                if isinstance(environment.matrix[x][y], SemaphoreBlock):
+                    representative = environment.matrix[x][y].representative
+                    direction = environment.matrix[i][j].direction
+                    print(representative, direction)
+                    if direction == environment.semaphores[representative]:
+                        if direction == Directions.NORTH:
+                            self.current_pos = (i, j+2)
+                        if direction == Directions.SOUTH:
+                            self.current_pos = (i, j-2)
+                        if direction == Directions.EAST:
+                            self.current_pos = (i-2, j)
+                        if direction == Directions.WEST:
+                            self.current_pos = (i+2, j)
