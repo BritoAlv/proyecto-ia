@@ -7,7 +7,6 @@ from PyQt5.QtCore import Qt, QTimer, QPointF
 from PyQt5.QtGui import QBrush, QPolygonF
 
 from environment import Environment, RoadBlock, SemaphoreBlock, SidewalkBlock
-from globals import Directions
 
 class ZoomableGraphicsView(QGraphicsView):
     def __init__(self):

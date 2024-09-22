@@ -1,10 +1,10 @@
 import sys
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow, QHBoxLayout, QLabel, QScrollArea, QGridLayout, QVBoxLayout, QPushButton
+from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow, QHBoxLayout, QScrollArea, QGridLayout, QVBoxLayout, QPushButton
 import pickle
 
-from globals import DIRECTION_COLOR, Colors, Directions
-from tile import Tile
+from ui.globals import DIRECTION_COLOR, Colors, Directions
+from ui.tile import Tile
 
 class GridWindow(QMainWindow):
     def __init__(self, height : int, width : int):

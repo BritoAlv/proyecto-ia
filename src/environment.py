@@ -4,7 +4,7 @@ import random
 from threading import Lock, Thread
 import time
 from uuid import UUID, uuid4
-from globals import Directions
+from ui.globals import Directions
 
 class Block():
     def __init__(self, coordinates : tuple[int, int]) -> None:

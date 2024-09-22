@@ -3,7 +3,7 @@ from PyQt5.QtCore import QEvent, Qt, pyqtSignal, QSize
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QColor, QMouseEvent, QPalette, QEnterEvent
 
-from globals import Colors
+from ui.globals import Colors
 
 class Tile(QWidget):
     hovered = pyqtSignal(bool)
