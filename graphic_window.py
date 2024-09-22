@@ -9,16 +9,25 @@ from PyQt5.QtGui import QBrush, QPolygonF
 from environment import Environment, RoadBlock, SemaphoreBlock, SidewalkBlock
 from globals import Directions
 
-
-class GraphicWindow(QWidget):
+class ZoomableGraphicsView(QGraphicsView):
     def __init__(self):
         super().__init__()
+        self.zoom_factor = 1.15
 
-        with open("blocks.pkl", 'rb') as file:
-            matrix = pickle.load(file)
-        self.environment = Environment(matrix)
-        self.car_items : dict[UUID, QGraphicsItem] = {}
+    def wheelEvent(self, event):
+        if event.angleDelta().y() > 0:  # Scroll up (zoom in)
+            self.scale(self.zoom_factor, self.zoom_factor)
+        else:  # Scroll down (zoom out)
+            self.scale(1 / self.zoom_factor, 1 / self.zoom_factor)
+
+
+class GraphicWindow(QWidget):
+    def __init__(self, environment : Environment):
+        super().__init__()
+
         self.scale_factor = 60
+        self.environment = environment
+        self.car_items : dict[UUID, QGraphicsItem] = {}
 
         # Set up the main layout (vertical layout for buttons and view)
         main_layout = QVBoxLayout()
@@ -57,37 +66,27 @@ class GraphicWindow(QWidget):
         SIDEWALK_WIDTH = 40
         ROAD_WIDTH = 70
 
-        with open("matrix.pkl", 'rb') as file:
-            matrix = pickle.load(file)
+        matrix = self.environment.matrix
         height = len(matrix)
         width = len(matrix[0])
 
+        # Set background
         background = QGraphicsRectItem(0, 0, width * self.scale_factor, height * self.scale_factor)
         background.setBrush(QBrush(Qt.darkGreen))
         self.simulation_scene.addItem(background)
-        
+
+        # Set horizontal roads
         for i in range(height):
             for j in [0, width - 1]:
-                if matrix[i][j] == Directions.EOR:
+                if isinstance(matrix[i][j], RoadBlock):
                     self._add_road(j * self.scale_factor, i * self.scale_factor, width * self.scale_factor, ROAD_WIDTH, Qt.lightGray)
-
-                    if matrix[i + 1][j] != -2:
-                        self._add_road(j * self.scale_factor, (i * self.scale_factor + ROAD_WIDTH), width * self.scale_factor, SIDEWALK_WIDTH, Qt.yellow)
-
-                    if matrix[i - 1][j] != -2:
-                        self._add_road(j * self.scale_factor, (i * self.scale_factor - SIDEWALK_WIDTH), width * self.scale_factor, SIDEWALK_WIDTH, Qt.yellow)
                     break
         
+        # Set vertical roads
         for j in range(width):
             for i in [0, height - 1]:   
-                if matrix[i][j] == Directions.EOR:
+                if isinstance(matrix[i][j], RoadBlock):
                     self._add_road(j * self.scale_factor, i * self.scale_factor, ROAD_WIDTH, height * self.scale_factor, Qt.lightGray)
-
-                    if matrix[i][j + 1] != -2:
-                        self._add_road((j * self.scale_factor + ROAD_WIDTH), i * self.scale_factor, SIDEWALK_WIDTH, height * self.scale_factor, Qt.yellow)
-
-                    if matrix[i][j - 1] != -2:
-                        self._add_road((j * self.scale_factor - SIDEWALK_WIDTH), i * self.scale_factor, SIDEWALK_WIDTH, height * self.scale_factor, Qt.yellow)
                     break
 
     def _add_road(self, x : int, y : int, width : int, height : int, color : Qt.BrushStyle):
@@ -131,24 +130,13 @@ class GraphicWindow(QWidget):
             for car_id in cars_to_drop:
                 self.simulation_scene.removeItem(self.car_items[car_id])
                 self.car_items.pop(car_id)
-                
-                           
-
-# Custom QGraphicsView to handle zoom functionality
-class ZoomableGraphicsView(QGraphicsView):
-    def __init__(self):
-        super().__init__()
-        self.zoom_factor = 1.15  # Zoom self.scale_factor (you can adjust it)
-
-    def wheelEvent(self, event):
-        """Override the wheelEvent to implement zoom in/out."""
-        if event.angleDelta().y() > 0:  # Scroll up (zoom in)
-            self.scale(self.zoom_factor, self.zoom_factor)
-        else:  # Scroll down (zoom out)
-            self.scale(1 / self.zoom_factor, 1 / self.zoom_factor)
-
 
 app = QApplication(sys.argv)
-window = GraphicWindow()
+
+with open("matrix.pkl", 'rb') as file:
+    matrix = pickle.load(file)
+environment = Environment(matrix)
+        
+window = GraphicWindow(environment)
 window.show()
 app.exec_()
