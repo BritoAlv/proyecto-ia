@@ -115,26 +115,27 @@ class GraphicWindow(QWidget):
 
         rectangle = QGraphicsRectItem(x, y, width, height)
         rectangle.setBrush(QBrush(color))
+        rectangle.__setattr__('absolute_position', (x, y)) # This is not good practice
         self.simulation_scene.addItem(rectangle)
         return rectangle
     
-    def _add_car(self, i : int, j : int, width : int, height : int, color : Qt.BrushStyle):
-        x = j * self.scale_factor
-        y = i * self.scale_factor
+    # def _add_car(self, i : int, j : int, width : int, height : int, color : Qt.BrushStyle):
+    #     x = j * self.scale_factor
+    #     y = i * self.scale_factor
 
-        # Define the triangle's vertices
-        points = QPolygonF([
-            QPointF(x, y),                   # Top vertex
-            QPointF(x - width / 2, y + height),  # Bottom left vertex
-            QPointF(x + width / 2, y + height)   # Bottom right vertex
-        ])
+    #     # Define the triangle's vertices
+    #     points = QPolygonF([
+    #         QPointF(x, y),                   # Top vertex
+    #         QPointF(x - width / 2, y + height),  # Bottom left vertex
+    #         QPointF(x + width / 2, y + height)   # Bottom right vertex
+    #     ])
         
-        # Create the polygon item and set its brush color
-        car = QGraphicsPolygonItem(points)
-        car.setBrush(QBrush(color))
-        car.__setattr__('absolute_position', (x, y)) # This is not good practice
-        self.simulation_scene.addItem(car)
-        return car
+    #     # Create the polygon item and set its brush color
+    #     car = QGraphicsPolygonItem(points)
+    #     car.setBrush(QBrush(color))
+    #     car.__setattr__('absolute_position', (x, y)) # This is not good practice
+    #     self.simulation_scene.addItem(car)
+    #     return car
     
     def _update_scene(self):
         with self.environment.lock:
@@ -145,17 +146,17 @@ class GraphicWindow(QWidget):
         CAR_SIZE = 30
         # Add new cars and update existing ones
         for car_id in self.environment.cars:
-            i, j = self.environment.cars[car_id]
+            i, j = self.environment.cars[car_id].current_pos
             if car_id not in self.car_items:
-                car_item = self._add_car(i, j, CAR_SIZE, CAR_SIZE, Qt.blue)
+                car_item = self._add_rectangle(i, j, CAR_SIZE, CAR_SIZE, Qt.blue)
                 self.car_items[car_id] = car_item
             else:
                 car_item = self.car_items[car_id]
                 x_previous, y_previous = car_item.absolute_position
                 x, y = j * self.scale_factor, i * self.scale_factor
 
-                car_item.setX(x - x_previous)
-                car_item.setY(y - y_previous)
+                car_item.setX(x - x_previous + self.scale_factor / 3.5)
+                car_item.setY(y - y_previous + self.scale_factor / 3.5)
 
         # Remove unused cars
         cars_to_drop = []
