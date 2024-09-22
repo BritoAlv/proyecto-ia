@@ -94,12 +94,23 @@ class GridWindow(QMainWindow):
         
         for i in range(self._grid_height):
             block_matrix.append([])
+            
             for j in range(self._grid_width):
                 direction = self._matrix[i][j]
+
                 if direction == -1:
-                    block_matrix[i].append(SemaphoreBlock((i, j)))
+                    block_matrix[i].append(SemaphoreBlock((i, j), (i, j)))
+
+                    offsets = [(-1, 0), (0, -1)]
+                    for p, q in offsets:
+                        neighbor_block = block_matrix[i + p][j + q]
+                        if isinstance(neighbor_block, SemaphoreBlock):
+                            block_matrix[i][j] = (SemaphoreBlock((i, j), neighbor_block.representative))
+                            break
+
                 elif direction != 0:
                     block_matrix[i].append(RoadBlock((i, j), direction))
+
                 else:
                     block_matrix[i].append(None)
 
@@ -113,7 +124,7 @@ class GridWindow(QMainWindow):
             os.mkdir('matrices')
         
         with open("./matrices/matrix.pkl", 'wb') as file:
-            file.write(pickle.dumps(block_matrix))
+            pickle.dump(block_matrix, file)
         
     def _handle_stop(self):
         self._add_road = False
