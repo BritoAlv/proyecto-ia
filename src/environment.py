@@ -121,13 +121,13 @@ class RandomCar(Car):
 
     def move(self, environment: Environment):
         i, j = self.current_pos
-        dx = [-1, 0, 0, 1]
-        dy = [ 0, 1, -1, 0]
+        offsets = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+        random.shuffle(offsets)
 
-        for m in dx:
-            for n in dy:
-                x = i + m
-                y = j + n
-                if valid_coordinates(x, y, len(environment.matrix), len(environment.matrix[0])) and isinstance(environment.matrix[x][y], RoadBlock):
-                    self.current_pos = (x, y)
-                    return
+        for m, n in offsets:
+            x = i + m
+            y = j + n
+            if valid_coordinates(x, y, len(environment.matrix), len(environment.matrix[0])) and isinstance(environment.matrix[x][y], RoadBlock):
+                self.current_pos = (x, y)
+                return
+               
