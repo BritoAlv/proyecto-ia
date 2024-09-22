@@ -2,9 +2,9 @@ from math import ceil
 import pickle
 import sys
 from uuid import UUID
-from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsRectItem, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QGraphicsPolygonItem, QGraphicsItem
+from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsRectItem, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QGraphicsPolygonItem, QGraphicsItem, QGraphicsTextItem
 from PyQt5.QtCore import Qt, QTimer, QPointF
-from PyQt5.QtGui import QBrush, QPolygonF
+from PyQt5.QtGui import QBrush, QPolygonF, QFont
 
 from environment import Environment, RoadBlock, SemaphoreBlock, SidewalkBlock
 from ui.globals import Directions, valid_coordinates
@@ -99,6 +99,17 @@ class GraphicWindow(QWidget):
                 rectangle = self._add_rectangle(i, j, self.scale_factor, self.scale_factor, color)
 
                 if isinstance(block, RoadBlock):
+                    if block.direction == Directions.NORTH:
+                        self._add_text('N', i, j)
+                    elif block.direction == Directions.SOUTH:
+                        self._add_text('S', i, j)
+                    elif block.direction == Directions.EAST:
+                        self._add_text('E', i, j)
+                    elif block.direction == Directions.WEST:
+                        self._add_text('W', i, j)
+
+                # Create semaphore_items
+                if isinstance(block, RoadBlock):
                     p, q = direction_offsets[block.direction]
                     if not valid_coordinates(i + p, j + q, height, width):
                         continue
@@ -118,6 +129,13 @@ class GraphicWindow(QWidget):
         rectangle.__setattr__('absolute_position', (x, y)) # This is not good practice
         self.simulation_scene.addItem(rectangle)
         return rectangle
+    
+    def _add_text(self, text : str, i : int, j : int):
+        text_item = QGraphicsTextItem(text)
+        font = QFont("Arial", 8, QFont.Thin)
+        text_item.setFont(font)
+        text_item.setPos(j * self.scale_factor, i * self.scale_factor)
+        self.simulation_scene.addItem(text_item)
     
     # def _add_car(self, i : int, j : int, width : int, height : int, color : Qt.BrushStyle):
     #     x = j * self.scale_factor
