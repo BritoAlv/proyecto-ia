@@ -1,3 +1,4 @@
+import os
 import sys
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow, QHBoxLayout, QScrollArea, QGridLayout, QVBoxLayout, QPushButton
@@ -107,7 +108,10 @@ class GridWindow(QMainWindow):
                         if valid_coordinates(i + p, j + q, self._grid_height, self._grid_width) and self._matrix[i + p][j + q] != 0:
                             block_matrix[i][j] = SidewalkBlock((i, j), p == 0)
                             break
-
+        
+        if 'matrices' not in os.listdir('./'):
+            os.mkdir('matrices')
+        
         with open("./matrices/matrix.pkl", 'wb') as file:
             file.write(pickle.dumps(block_matrix))
         
