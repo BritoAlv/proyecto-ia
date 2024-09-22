@@ -3,11 +3,12 @@ from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow, QHBoxLayout, QScrollArea, QGridLayout, QVBoxLayout, QPushButton
 import pickle
 
-from ui.globals import DIRECTION_COLOR, Colors, Directions
+from environment import Block, RoadBlock, SemaphoreBlock, SidewalkBlock
+from ui.globals import DIRECTION_COLOR, Colors, Directions, valid_coordinates
 from ui.tile import Tile
 
 class GridWindow(QMainWindow):
-    def __init__(self, height : int, width : int):
+    def __init__(self, height : int = 40, width : int = 40):
         super().__init__()
         self._grid_height = height
         self._grid_width = width
@@ -88,8 +89,27 @@ class GridWindow(QMainWindow):
         self._hide_buttons()
 
     def _handle_save(self):
-        with open("matrix.pkl", 'wb') as file:
-            file.write(pickle.dumps(self._matrix))
+        block_matrix : list[list[Block]] = []
+        
+        for i in range(self._grid_height):
+            block_matrix.append([])
+            for j in range(self._grid_width):
+                direction = self._matrix[i][j]
+                if direction == -1:
+                    block_matrix[i].append(SemaphoreBlock((i, j)))
+                elif direction != 0:
+                    block_matrix[i].append(RoadBlock((i, j), direction))
+                else:
+                    block_matrix[i].append(None)
+
+                    offsets = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+                    for p, q in offsets:
+                        if valid_coordinates(i + p, j + q, self._grid_height, self._grid_width) and self._matrix[i + p][j + q] != 0:
+                            block_matrix[i][j] = SidewalkBlock((i, j), p == 0)
+                            break
+
+        with open("./matrices/matrix.pkl", 'wb') as file:
+            file.write(pickle.dumps(block_matrix))
         
     def _handle_stop(self):
         self._add_road = False
@@ -109,7 +129,6 @@ class GridWindow(QMainWindow):
     
     def _handle_tile_clicked(self, coordinates : tuple[int, int]):
         i, j = coordinates
-        tile = self._tiles[i][j]
         direction = self._matrix[i][j]
 
         if self._add_road and direction == 0 and (i == 0 or j == 0 or i == self._grid_width - 1 or j == self._grid_height -1) and i != j and coordinates != (0, self._grid_width - 1) and coordinates != (self._grid_height - 1, 0):
@@ -132,7 +151,7 @@ class GridWindow(QMainWindow):
                     self._tiles[p][q].set_color(DIRECTION_COLOR[Directions.INTERSECTION])
                 else:
                     self._tiles[p][q].set_color(color)
-                    self._matrix[p][q] = Directions.EOR if k == 0 or k == self._grid_height - 1 else direction
+                    self._matrix[p][q] = direction
         elif self.remove_road_button and direction not in [Directions.EMPTY, Directions.INTERSECTION]:
             vertical = direction in [Directions.NORTH, Directions.SOUTH]
             length = self._grid_height if vertical else self._grid_width
@@ -188,6 +207,6 @@ class GridWindow(QMainWindow):
                     self._tiles[i][j].set_color(color)
         
 app = QApplication(sys.argv)
-window = GridWindow(100, 100)
+window = GridWindow(20, 20)
 window.show()
 app.exec_()

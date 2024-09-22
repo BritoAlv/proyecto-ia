@@ -26,4 +26,7 @@ DIRECTION_COLOR = {
     Directions.WEST: Colors.ORANGE,
     Directions.EMPTY: Colors.GREY,
     Directions.INTERSECTION: Colors.VIOLET,
-} 
+}
+
+def valid_coordinates(i, j, height, width):
+    return 0 <= i < height and 0 <= j < width; 

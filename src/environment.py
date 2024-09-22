@@ -6,7 +6,7 @@ import time
 from uuid import UUID, uuid4
 from ui.globals import Directions
 
-class Block():
+class Block(ABC):
     def __init__(self, coordinates : tuple[int, int]) -> None:
         self.coordinates = coordinates
 
