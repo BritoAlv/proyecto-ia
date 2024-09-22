@@ -65,7 +65,7 @@ class GraphicWindow(QWidget):
 
         self.timer = QTimer()
         self.timer.timeout.connect(self._update_scene)
-        self.timer.start(1000)
+        self.timer.start(100)
 
     def _build_simulation_scene(self):
         matrix = self.environment.matrix
@@ -96,7 +96,7 @@ class GraphicWindow(QWidget):
                 else:
                     continue
 
-                rectangle = self._add_rectangle(j * self.scale_factor, i * self.scale_factor, self.scale_factor, self.scale_factor, color)
+                rectangle = self._add_rectangle(i, j, self.scale_factor, self.scale_factor, color)
 
                 if isinstance(block, RoadBlock):
                     p, q = direction_offsets[block.direction]
@@ -109,13 +109,19 @@ class GraphicWindow(QWidget):
                             self.semaphore_items[representative] = SemaphoreItem()
                         self.semaphore_items[representative].light_directions[block.direction] = rectangle
 
-    def _add_rectangle(self, x : int, y : int, width : int, height : int, color : Qt.BrushStyle) -> QGraphicsRectItem:
+    def _add_rectangle(self, i : int, j : int, width : int, height : int, color : Qt.BrushStyle) -> QGraphicsRectItem:
+        x = j * self.scale_factor
+        y = i * self.scale_factor
+
         rectangle = QGraphicsRectItem(x, y, width, height)
         rectangle.setBrush(QBrush(color))
         self.simulation_scene.addItem(rectangle)
         return rectangle
     
-    def _add_car(self, x : int, y : int, width : int, height : int, color : Qt.BrushStyle):
+    def _add_car(self, i : int, j : int, width : int, height : int, color : Qt.BrushStyle):
+        x = j * self.scale_factor
+        y = i * self.scale_factor
+
         # Define the triangle's vertices
         points = QPolygonF([
             QPointF(x, y),                   # Top vertex
@@ -126,6 +132,7 @@ class GraphicWindow(QWidget):
         # Create the polygon item and set its brush color
         car = QGraphicsPolygonItem(points)
         car.setBrush(QBrush(color))
+        car.__setattr__('absolute_position', (x, y)) # This is not good practice
         self.simulation_scene.addItem(car)
         return car
     
@@ -140,11 +147,15 @@ class GraphicWindow(QWidget):
         for car_id in self.environment.cars:
             i, j = self.environment.cars[car_id]
             if car_id not in self.car_items:
-                car_item = self._add_car(j * self.scale_factor, i * self.scale_factor, CAR_SIZE, CAR_SIZE, Qt.blue)
+                car_item = self._add_car(i, j, CAR_SIZE, CAR_SIZE, Qt.blue)
                 self.car_items[car_id] = car_item
             else:
                 car_item = self.car_items[car_id]
-                car_item.setPos(QPointF(j * self.scale_factor, i * self.scale_factor))
+                x_previous, y_previous = car_item.absolute_position
+                x, y = j * self.scale_factor, i * self.scale_factor
+
+                car_item.setX(x - x_previous)
+                car_item.setY(y - y_previous)
 
         # Remove unused cars
         cars_to_drop = []

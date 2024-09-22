@@ -84,7 +84,7 @@ class Environment:
         width = len(self.matrix[0])
 
         while(True):
-            time.sleep(1)
+            time.sleep(0.5)
             with self.lock:
                 for i in range(height):
                     for j in range(width):
@@ -104,7 +104,7 @@ class Environment:
     # Method for testing
     def random_semaphores(self):
         while(True):
-            time.sleep(1)
+            time.sleep(0.5)
             with self.lock:
                 for semaphore_id in self.semaphores:
                     self.semaphores[semaphore_id] = random.choice([Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST])
