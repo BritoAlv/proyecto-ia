@@ -24,21 +24,21 @@ class RoadBlock(Block):
     def __init__(self, coordinates: tuple[int, int], direction: int) -> None:
         super().__init__(coordinates)
         self.direction = direction
-        self.car_id: UUID = None
+        self.car: Car = None
 
 
 class SidewalkBlock(Block):
     def __init__(self, coordinates: tuple[int, int], vertical: bool) -> None:
         super().__init__(coordinates)
         self.vertical = vertical
-        self.walker_id: UUID = None
+        self.walker: Walker = None
 
 
 class Environment:
     def __init__(self, matrix: list[list[Block]]) -> None:
         self.matrix = matrix
         self.cars: dict[UUID, Car] = {}
-        self.walkers: dict[UUID, tuple[int, int]] = {}
+        self.walkers: dict[UUID, Walker] = {}
         self.semaphores: dict[tuple[int, int], int] = {}
         self._add_semaphores()
 
@@ -121,25 +121,28 @@ class Environment:
                         if isinstance(self.matrix[i][j], SidewalkBlock):
                             block = self.matrix[i][j]
                             if bool(random.randint(0, 1)):
-                                walker_id = uuid4()
-                                if block.walker_id != None:
-                                    self.walkers.pop(block.walker_id)
-                                block.walker_id = walker_id
-                                self.walkers[walker_id] = (i, j)
+                                if block.walker != None:
+                                    self.walkers.pop(block.walker.id)
+                                block.walker = Walker((i, j))
+                                self.walkers[block.walker.id] = block.walker
                             else:
-                                if block.walker_id != None:
-                                    self.walkers.pop(block.walker_id)
-                                    block.walker_id = None
+                                if block.walker != None:
+                                    self.walkers.pop(block.walker.id)
+                                    block.walker = None
 
 
-class Car(ABC):
+class Agent(ABC):
     def __init__(self, current_pos : tuple[int, int]):
         self.current_pos = current_pos
         self.id = uuid4()
 
+class Car(Agent, ABC):
     @abstractmethod
     def move(self, environment : Environment):
         pass
+
+class Walker(Agent):
+    pass
 
 class RandomCar(Car):
     def __init__(self, start_pos : tuple[int, int]):

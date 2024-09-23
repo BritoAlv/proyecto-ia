@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphi
 from PyQt5.QtCore import Qt, QTimer, QPointF
 from PyQt5.QtGui import QBrush, QPolygonF, QFont
 
-from environment import Environment, RoadBlock, SemaphoreBlock, SidewalkBlock
+from environment import Agent, Environment, RoadBlock, SemaphoreBlock, SidewalkBlock
 from ui.globals import Directions, valid_coordinates
 
 class ZoomableGraphicsView(QGraphicsView):
@@ -141,35 +141,10 @@ class GraphicWindow(QWidget):
     def _update_scene(self):
         with self.environment.lock:
             self._change_lights()
-            self._move_cars()
-            self._move_walkers()
-
-    def _move_cars(self):
-        CAR_SIZE = 30
-        # Add new cars and update existing ones
-        for car_id in self.environment.cars:
-            i, j = self.environment.cars[car_id].current_pos
-            if car_id not in self.car_items:
-                car_item = self._add_rectangle(i, j, CAR_SIZE, CAR_SIZE, Qt.blue)
-                self.car_items[car_id] = car_item
-            else:
-                car_item = self.car_items[car_id]
-                x_previous, y_previous = car_item.absolute_position
-                x, y = j * self.scale_factor, i * self.scale_factor
-
-                car_item.setX(x - x_previous + self.scale_factor / 3.5)
-                car_item.setY(y - y_previous + self.scale_factor / 3.5)
-
-        # Remove unused cars
-        cars_to_drop = []
-        for car_id in self.car_items:
-            if car_id not in self.environment.cars:
-                cars_to_drop.append(car_id)
-        
-        for car_id in cars_to_drop:
-            self.simulation_scene.removeItem(self.car_items[car_id])
-            self.car_items.pop(car_id)
-        
+            # self._move_cars()
+            # self._move_walkers()
+            self._move_agent(self.environment.cars, self.car_items)
+            self._move_agent(self.environment.walkers, self.walker_items, Qt.cyan, 15)
 
     def _change_lights(self):
         for semaphore_id in self.environment.semaphores:
@@ -182,33 +157,32 @@ class GraphicWindow(QWidget):
                 else:
                     semaphore_item.light_directions[direction].setBrush(QBrush(Qt.red))
 
-    def _move_walkers(self):
-        WALKER_SIZE = 15
-        # Add new walker and update existing ones
-        for walker_id in self.environment.walkers:
-            i, j = self.environment.walkers[walker_id]
-            if walker_id not in self.walker_items:
-                walker_item = self._add_rectangle(i, j, WALKER_SIZE, WALKER_SIZE, Qt.cyan)
-                self.walker_items[walker_id] = walker_item
+    def _move_agent(self, environment_agents : dict[UUID, Agent], scene_items : dict[UUID, QGraphicsItem], color : Qt.BrushStyle = Qt.blue, agent_size : int = 30):
+        # Add new agent and update existing ones
+        for agent_id in environment_agents:
+            i, j = environment_agents[agent_id].current_pos
+            if agent_id not in scene_items:
+                agent_item = self._add_rectangle(i, j, agent_size, agent_size, color)
+                scene_items[agent_id] = agent_item
             else:
-                walker_item = self.walker_items[walker_id]
-                x_previous, y_previous = walker_item.absolute_position
+                agent_item = scene_items[agent_id]
+                x_previous, y_previous = agent_item.absolute_position
                 x, y = j * self.scale_factor, i * self.scale_factor
 
-                walker_item.setX(x - x_previous)
-                walker_item.setY(y - y_previous)
+                scaled_offset = self.scale_factor / 3.5
+                agent_item.setX(x - x_previous + scaled_offset)
+                agent_item.setY(y - y_previous + scaled_offset)
 
-        # Remove unused walkers
-        walkers_to_drop = []
-        for walker_id in self.walker_items:
-            if walker_id not in self.environment.walkers:
-                walkers_to_drop.append(walker_id)
+        # Remove unused agents
+        items_to_drop = []
+        for item_id in scene_items:
+            if item_id not in environment_agents:
+                items_to_drop.append(item_id)
         
-        for walker_id in walkers_to_drop:
-            self.simulation_scene.removeItem(self.walker_items[walker_id])
-            self.walker_items.pop(walker_id)
+        for item_id in items_to_drop:
+            self.simulation_scene.removeItem(scene_items[item_id])
+            scene_items.pop(item_id)
         
-
 app = QApplication(sys.argv)
 
 with open("./matrices/matrix.pkl", 'rb') as file:
