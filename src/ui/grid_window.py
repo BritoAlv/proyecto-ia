@@ -120,10 +120,10 @@ class GridWindow(QMainWindow):
                             block_matrix[i][j] = SidewalkBlock((i, j), p == 0)
                             break
         
-        if 'matrices' not in os.listdir('./'):
-            os.mkdir('matrices')
+        if 'matrices' not in os.listdir('./src/ui/'):
+            os.mkdir('./src/ui/matrices')
         
-        with open("./matrices/matrix.pkl", 'wb') as file:
+        with open("./src/ui/matrices/matrix.pkl", 'wb') as file:
             pickle.dump(block_matrix, file)
         
     def _handle_stop(self):

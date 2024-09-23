@@ -178,7 +178,7 @@ class GraphicWindow(QWidget):
         
 app = QApplication(sys.argv)
 
-with open("./matrices/matrix.pkl", 'rb') as file:
+with open("./src/ui/matrices/matrix.pkl", 'rb') as file:
     matrix = pickle.load(file)
 environment = Environment(matrix)
         
