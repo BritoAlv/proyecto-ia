@@ -1,10 +1,9 @@
-from math import ceil
 import pickle
 import sys
 from uuid import UUID
-from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsRectItem, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QGraphicsPolygonItem, QGraphicsItem, QGraphicsTextItem
-from PyQt5.QtCore import Qt, QTimer, QPointF
-from PyQt5.QtGui import QBrush, QPolygonF, QFont
+from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsRectItem, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QGraphicsItem, QGraphicsTextItem
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QBrush, QFont
 
 from environment import Environment, RoadBlock, SemaphoreBlock, SidewalkBlock
 from globals import DIRECTION_OFFSETS, Directions, valid_coordinates
@@ -44,6 +43,7 @@ class GraphicWindow(QWidget):
         self.label = QLabel("Traffic Simulation Control", self)
         main_layout.addWidget(self.label) 
         self.cars = {}
+        self.agent_labels = {}
 
         # Create buttons for start, stop, etc.
         button_layout = QHBoxLayout()
@@ -127,12 +127,18 @@ class GraphicWindow(QWidget):
         self.simulation_scene.addItem(rectangle)
         return rectangle
     
-    def _add_text(self, text : str, i : int, j : int):
+    def __add_text(self, text : str, x : float, y : float):
         text_item = QGraphicsTextItem(text)
         font = QFont("Arial", 8, QFont.Thin)
         text_item.setFont(font)
-        text_item.setPos(j * self.scale_factor, i * self.scale_factor)
+        text_item.setPos(x, y)
         self.simulation_scene.addItem(text_item)
+        return text_item
+
+
+    def _add_text(self, text : str, i : int, j : int):
+        return self.__add_text(text, j * self.scale_factor, i * self.scale_factor)
+        
     
     def _update_scene(self):
         with self.environment.lock:
@@ -157,6 +163,7 @@ class GraphicWindow(QWidget):
             i, j = environment_agents[agent_id]
             if agent_id not in scene_items:
                 agent_item = self._add_rectangle(i, j, agent_size, agent_size, color)
+                self.agent_labels[agent_id] = self.__add_text(str(len(self.agent_labels)), agent_item.x(), agent_item.y())
                 scene_items[agent_id] = agent_item
             else:
                 agent_item = scene_items[agent_id]
@@ -166,6 +173,9 @@ class GraphicWindow(QWidget):
                 scaled_offset = self.scale_factor / 3.5
                 agent_item.setX(x - x_previous + scaled_offset)
                 agent_item.setY(y - y_previous + scaled_offset)
+
+                self.agent_labels[agent_id].setPos(x + scaled_offset, y + scaled_offset)
+                
 
         # Remove unused agents
         items_to_drop = []
