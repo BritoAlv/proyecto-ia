@@ -51,21 +51,39 @@ class Car(MovingAgent):
                                     set_car_pos(i, j, new_pos[0], new_pos[1], self.id)
                                     break
 
+
     def pos_cross_semaphor(self, i, j, direction) -> tuple[int, int]:
         r = i
         c = j
 
+        def check_option(offset):
+            dx = offset[0]
+            dy = offset[1]
+            rr = r + dx
+            cc = c + dy
+            if valid_coordinates( rr, cc, len(self.environment.matrix), len(self.environment.matrix[0])) and isinstance(self.environment.matrix[rr][cc], RoadBlock):
+                if DIRECTION_OFFSETS[self.environment.matrix[rr][cc].direction] == offset:
+                    options.append((rr, cc))
+
+        options = [(i, j)]
         while(valid_coordinates(r, c, len(self.environment.matrix), len(self.environment.matrix[0])) and isinstance(self.environment.matrix[r][c], SemaphoreBlock)):
             if direction == Directions.NORTH:
+                check_option( DIRECTION_OFFSETS[Directions.EAST])
+                check_option( DIRECTION_OFFSETS[Directions.WEST])
                 r -= 1
             if direction == Directions.SOUTH:
+                check_option( DIRECTION_OFFSETS[Directions.EAST])
+                check_option( DIRECTION_OFFSETS[Directions.WEST])
                 r += 1
             if direction == Directions.EAST:
+                check_option( DIRECTION_OFFSETS[Directions.NORTH])
+                check_option( DIRECTION_OFFSETS[Directions.SOUTH])
                 c -= 1
             if direction == Directions.WEST:
+                check_option( DIRECTION_OFFSETS[Directions.NORTH])
+                check_option( DIRECTION_OFFSETS[Directions.SOUTH])
                 c += 1
 
         if(valid_coordinates(r, c, len(self.environment.matrix), len(self.environment.matrix[0])) and isinstance(self.environment.matrix[r][c], RoadBlock)):
-            return (r, c)
-
-        return (i, j)
+            options.append((r, c))
+        return options[random.randint(0, len(options)-1)]
