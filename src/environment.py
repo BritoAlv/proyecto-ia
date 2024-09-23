@@ -55,10 +55,22 @@ class Environment:
                 if isinstance(self.matrix[i][j], RoadBlock) and random.randint(0, 5) == 0:
                     cars.append(RandomCar((i, j)))
 
-            
-
         for car in cars:
             self.cars[car.id] = car
+
+
+        # Setup initial walkers
+        walkers = []
+        height = len(self.matrix)
+        width = len(self.matrix[0])
+
+        for i in range(height):
+            for j in range(width):
+                if isinstance(self.matrix[i][j], SidewalkBlock) and random.randint(0, 5) == 0:
+                    walkers.append(RandomWalker((i, j)))
+
+        for walker in walkers:
+            self.walkers[walker.id] = walker
         
         #######################################
 
@@ -110,25 +122,11 @@ class Environment:
 
     # Method for testing
     def random_walkers(self):
-        height = len(self.matrix)
-        width = len(self.matrix[0])
-
-        while(True):
+        while True:
             time.sleep(0.5)
             with self.lock:
-                for i in range(height):
-                    for j in range(width):
-                        if isinstance(self.matrix[i][j], SidewalkBlock):
-                            block = self.matrix[i][j]
-                            if bool(random.randint(0, 1)):
-                                if block.walker != None:
-                                    self.walkers.pop(block.walker.id)
-                                block.walker = Walker((i, j))
-                                self.walkers[block.walker.id] = block.walker
-                            else:
-                                if block.walker != None:
-                                    self.walkers.pop(block.walker.id)
-                                    block.walker = None
+                for walker_id in self.walkers:
+                    self.walkers[walker_id].move(self)
 
 
 class Agent(ABC):
@@ -141,8 +139,25 @@ class Car(Agent, ABC):
     def move(self, environment : Environment):
         pass
 
-class Walker(Agent):
-    pass
+class Walker(Agent, ABC):
+    @abstractmethod
+    def move(self, environment : Environment):
+        pass
+
+class RandomWalker(Walker):
+    def move(self, environment: Environment):
+        i, j = self.current_pos
+        offsets = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+        random.shuffle(offsets)
+
+        for m, n in offsets:
+            x = i + m
+            y = j + n
+            if valid_coordinates(x, y, len(environment.matrix), len(environment.matrix[0])): 
+                if isinstance(environment.matrix[x][y], SidewalkBlock):
+                    self.current_pos = (x, y)
+                    return
+                        
 
 class RandomCar(Car):
     def __init__(self, start_pos : tuple[int, int]):
