@@ -32,6 +32,7 @@ class GraphicWindow(QWidget):
         self.scale_factor = 60
         self.environment = environment
         self.car_items : dict[UUID, QGraphicsItem] = {}
+        self.walker_items : dict[UUID, QGraphicsItem] = {}
         self.semaphore_items : dict[tuple[int, int], SemaphoreItem] = {}
 
         # Set up the main layout (vertical layout for buttons and view)
@@ -137,28 +138,11 @@ class GraphicWindow(QWidget):
         text_item.setPos(j * self.scale_factor, i * self.scale_factor)
         self.simulation_scene.addItem(text_item)
     
-    # def _add_car(self, i : int, j : int, width : int, height : int, color : Qt.BrushStyle):
-    #     x = j * self.scale_factor
-    #     y = i * self.scale_factor
-
-    #     # Define the triangle's vertices
-    #     points = QPolygonF([
-    #         QPointF(x, y),                   # Top vertex
-    #         QPointF(x - width / 2, y + height),  # Bottom left vertex
-    #         QPointF(x + width / 2, y + height)   # Bottom right vertex
-    #     ])
-        
-    #     # Create the polygon item and set its brush color
-    #     car = QGraphicsPolygonItem(points)
-    #     car.setBrush(QBrush(color))
-    #     car.__setattr__('absolute_position', (x, y)) # This is not good practice
-    #     self.simulation_scene.addItem(car)
-    #     return car
-    
     def _update_scene(self):
         with self.environment.lock:
             self._change_lights()
             self._move_cars()
+            self._move_walkers()
 
     def _move_cars(self):
         CAR_SIZE = 30
@@ -198,6 +182,32 @@ class GraphicWindow(QWidget):
                 else:
                     semaphore_item.light_directions[direction].setBrush(QBrush(Qt.red))
 
+    def _move_walkers(self):
+        WALKER_SIZE = 15
+        # Add new walker and update existing ones
+        for walker_id in self.environment.walkers:
+            i, j = self.environment.walkers[walker_id]
+            if walker_id not in self.walker_items:
+                walker_item = self._add_rectangle(i, j, WALKER_SIZE, WALKER_SIZE, Qt.cyan)
+                self.walker_items[walker_id] = walker_item
+            else:
+                walker_item = self.walker_items[walker_id]
+                x_previous, y_previous = walker_item.absolute_position
+                x, y = j * self.scale_factor, i * self.scale_factor
+
+                walker_item.setX(x - x_previous)
+                walker_item.setY(y - y_previous)
+
+        # Remove unused walkers
+        walkers_to_drop = []
+        for walker_id in self.walker_items:
+            if walker_id not in self.environment.walkers:
+                walkers_to_drop.append(walker_id)
+        
+        for walker_id in walkers_to_drop:
+            self.simulation_scene.removeItem(self.walker_items[walker_id])
+            self.walker_items.pop(walker_id)
+        
 
 app = QApplication(sys.argv)
 

@@ -70,6 +70,9 @@ class Environment:
         thread = Thread(target=self.random_semaphores)
         thread.daemon = True
         thread.start()
+        thread = Thread(target=self.random_walkers)
+        thread.daemon = True
+        thread.start()
         #######################################
 
     def random_cars(self):
@@ -104,6 +107,29 @@ class Environment:
                             Directions.WEST,
                         ]
                     )
+
+    # Method for testing
+    def random_walkers(self):
+        height = len(self.matrix)
+        width = len(self.matrix[0])
+
+        while(True):
+            time.sleep(0.5)
+            with self.lock:
+                for i in range(height):
+                    for j in range(width):
+                        if isinstance(self.matrix[i][j], SidewalkBlock):
+                            block = self.matrix[i][j]
+                            if bool(random.randint(0, 1)):
+                                walker_id = uuid4()
+                                if block.walker_id != None:
+                                    self.walkers.pop(block.walker_id)
+                                block.walker_id = walker_id
+                                self.walkers[walker_id] = (i, j)
+                            else:
+                                if block.walker_id != None:
+                                    self.walkers.pop(block.walker_id)
+                                    block.walker_id = None
 
 
 class Car(ABC):
