@@ -7,7 +7,7 @@ from PyQt5.QtCore import Qt, QTimer, QPointF
 from PyQt5.QtGui import QBrush, QPolygonF, QFont
 
 from environment import Environment, RoadBlock, SemaphoreBlock, SidewalkBlock
-from globals import Directions, valid_coordinates
+from globals import DIRECTION_OFFSETS, Directions, valid_coordinates
 from sim.event_handler import EventHandler
 
 class ZoomableGraphicsView(QGraphicsView):
