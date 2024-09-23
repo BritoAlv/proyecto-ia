@@ -28,5 +28,12 @@ DIRECTION_COLOR = {
     Directions.INTERSECTION: Colors.VIOLET,
 }
 
+DIRECTION_OFFSETS = {
+            Directions.NORTH: (-1, 0),
+            Directions.SOUTH: (1, 0),
+            Directions.EAST: (0, -1),
+            Directions.WEST: (0, 1)
+        }
+
 def valid_coordinates(i, j, height, width):
     return 0 <= i < height and 0 <= j < width; 

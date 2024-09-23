@@ -4,7 +4,7 @@ import random
 from threading import Lock, Thread
 import time
 from uuid import UUID, uuid4
-from ui.globals import Directions, valid_coordinates
+from ui.globals import Directions, valid_coordinates, DIRECTION_OFFSETS
 
 
 class Block(ABC):
@@ -169,24 +169,31 @@ class RandomCar(Car):
         offsets = [(1, 0), (-1, 0), (0, 1), (0, -1)]
         random.shuffle(offsets)
 
-        for m, n in offsets:
+        for t in offsets:
+            m = t[0]
+            n = t[1]
             x = i + m
             y = j + n
             if valid_coordinates(x, y, len(environment.matrix), len(environment.matrix[0])): 
                 if isinstance(environment.matrix[x][y], RoadBlock):
-                    if environment.matrix[i][j].direction == environment.matrix[x][y].direction:
+                    new_direction_offset = DIRECTION_OFFSETS[environment.matrix[x][y].direction]
+                    print(new_direction_offset)
+                    if new_direction_offset == (m, n): 
                         self.current_pos = (x, y)
                         return
                 if isinstance(environment.matrix[x][y], SemaphoreBlock):
                     representative = environment.matrix[x][y].representative
                     direction = environment.matrix[i][j].direction
-                    print(representative, direction)
                     if direction == environment.semaphores[representative]:
                         if direction == Directions.NORTH:
-                            self.current_pos = (i, j+2)
-                        if direction == Directions.SOUTH:
-                            self.current_pos = (i, j-2)
-                        if direction == Directions.EAST:
-                            self.current_pos = (i-2, j)
-                        if direction == Directions.WEST:
+                            print(f"Modified_NORTH")
                             self.current_pos = (i+2, j)
+                        if direction == Directions.SOUTH:
+                            print(f"Modified_SOUTH")
+                            self.current_pos = (i-2, j)
+                        if direction == Directions.EAST:
+                            print(f"Modified_EAST")
+                            self.current_pos = (i, j-2)
+                        if direction == Directions.WEST:
+                            print(f"Modified_WEST")
+                            self.current_pos = (i, j+2)

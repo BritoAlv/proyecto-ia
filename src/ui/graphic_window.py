@@ -7,7 +7,7 @@ from PyQt5.QtCore import Qt, QTimer, QPointF
 from PyQt5.QtGui import QBrush, QPolygonF, QFont
 
 from environment import Agent, Environment, RoadBlock, SemaphoreBlock, SidewalkBlock
-from ui.globals import Directions, valid_coordinates
+from ui.globals import Directions, valid_coordinates, DIRECTION_OFFSETS
 
 class ZoomableGraphicsView(QGraphicsView):
     def __init__(self):
@@ -73,13 +73,6 @@ class GraphicWindow(QWidget):
         height = len(matrix)
         width = len(matrix[0])
 
-        direction_offsets = {
-            Directions.NORTH: (-1, 0),
-            Directions.SOUTH: (1, 0),
-            Directions.EAST: (0, -1),
-            Directions.WEST: (0, 1)
-        }
-
         # Set background
         background = QGraphicsRectItem(0, 0, width * self.scale_factor, height * self.scale_factor)
         background.setBrush(QBrush(Qt.darkGreen))
@@ -111,7 +104,7 @@ class GraphicWindow(QWidget):
 
                 # Create semaphore_items
                 if isinstance(block, RoadBlock):
-                    p, q = direction_offsets[block.direction]
+                    p, q = DIRECTION_OFFSETS[block.direction]
                     if not valid_coordinates(i + p, j + q, height, width):
                         continue
                     neighbor = matrix[i + p][j + q]
