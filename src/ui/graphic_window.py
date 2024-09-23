@@ -6,8 +6,9 @@ from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphi
 from PyQt5.QtCore import Qt, QTimer, QPointF
 from PyQt5.QtGui import QBrush, QPolygonF, QFont
 
-from environment import Agent, Environment, RoadBlock, SemaphoreBlock, SidewalkBlock
-from ui.globals import Directions, valid_coordinates, DIRECTION_OFFSETS
+from environment import Environment, RoadBlock, SemaphoreBlock, SidewalkBlock
+from globals import DIRECTION_OFFSETS, Directions, valid_coordinates
+from sim.event_handler import EventHandler
 
 class ZoomableGraphicsView(QGraphicsView):
     def __init__(self):
@@ -150,10 +151,10 @@ class GraphicWindow(QWidget):
                 else:
                     semaphore_item.light_directions[direction].setBrush(QBrush(Qt.red))
 
-    def _move_agent(self, environment_agents : dict[UUID, Agent], scene_items : dict[UUID, QGraphicsItem], color : Qt.BrushStyle = Qt.blue, agent_size : int = 30):
+    def _move_agent(self, environment_agents : dict[UUID, tuple[int, int]], scene_items : dict[UUID, QGraphicsItem], color : Qt.BrushStyle = Qt.blue, agent_size : int = 30):
         # Add new agent and update existing ones
         for agent_id in environment_agents:
-            i, j = environment_agents[agent_id].current_pos
+            i, j = environment_agents[agent_id]
             if agent_id not in scene_items:
                 agent_item = self._add_rectangle(i, j, agent_size, agent_size, color)
                 scene_items[agent_id] = agent_item
@@ -181,7 +182,10 @@ app = QApplication(sys.argv)
 with open("./src/ui/matrices/matrix.pkl", 'rb') as file:
     matrix = pickle.load(file)
 environment = Environment(matrix)
+event_handler = EventHandler(environment)
         
 window = GraphicWindow(environment)
 window.show()
+event_handler.start()
+
 app.exec_()

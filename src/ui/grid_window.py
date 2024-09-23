@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow, QHBoxLayout, QSc
 import pickle
 
 from environment import Block, RoadBlock, SemaphoreBlock, SidewalkBlock
-from ui.globals import DIRECTION_COLOR, Colors, Directions, valid_coordinates
+from globals import DIRECTION_COLOR, Colors, Directions, valid_coordinates
 from ui.tile import Tile
 
 class GridWindow(QMainWindow):
