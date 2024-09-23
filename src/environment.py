@@ -41,8 +41,6 @@ class Environment:
         self.walkers: dict[UUID, tuple[int, int]] = {}
         self.semaphores: dict[tuple[int, int], int] = {}
         self._add_semaphores()
-        self.sleep_time = 1
-
         self.lock = Lock()
 
     def _add_semaphores(self) -> None:

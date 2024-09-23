@@ -1,7 +1,9 @@
 import random
 from threading import Thread
 from environment import Environment, RoadBlock, SidewalkBlock
-from sim.agents import Car, Semaphore, Walker
+from sim.Car import Car
+from sim.Walker import Walker
+from sim.Semaphore import Semaphore
 
 class EventHandler:
     def __init__(self, environment : Environment) -> None:
@@ -27,8 +29,8 @@ class EventHandler:
         with self.environment.lock:
             free_blocks = self._get_free_blocks(RoadBlock)
             block = random.choice(free_blocks)
-
             car = Car(block.coordinates, self.environment)
+            block.car_id = car.id
             car_thread = Thread(target=car.act)
             car_thread.daemon = True
             car_thread.start()

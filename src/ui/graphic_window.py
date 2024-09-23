@@ -10,6 +10,7 @@ from environment import Environment, RoadBlock, SemaphoreBlock, SidewalkBlock
 from globals import DIRECTION_OFFSETS, Directions, valid_coordinates
 from sim.event_handler import EventHandler
 
+
 class ZoomableGraphicsView(QGraphicsView):
     def __init__(self):
         super().__init__()
@@ -41,7 +42,7 @@ class GraphicWindow(QWidget):
 
         # Create a label to display some information
         self.label = QLabel("Traffic Simulation Control", self)
-        main_layout.addWidget(self.label)
+        main_layout.addWidget(self.label) 
         self.cars = {}
 
         # Create buttons for start, stop, etc.
@@ -94,14 +95,15 @@ class GraphicWindow(QWidget):
                 rectangle = self._add_rectangle(i, j, self.scale_factor, self.scale_factor, color)
 
                 if isinstance(block, RoadBlock):
+                    pos = f" ({i}, {j})"
                     if block.direction == Directions.NORTH:
-                        self._add_text('N', i, j)
+                        self._add_text('N'+ pos, i, j)
                     elif block.direction == Directions.SOUTH:
-                        self._add_text('S', i, j)
+                        self._add_text('S'+ pos, i, j)
                     elif block.direction == Directions.EAST:
-                        self._add_text('E', i, j)
+                        self._add_text('E'+ pos, i, j)
                     elif block.direction == Directions.WEST:
-                        self._add_text('W', i, j)
+                        self._add_text('W' + pos, i, j)
 
                 # Create semaphore_items
                 if isinstance(block, RoadBlock):
@@ -135,8 +137,6 @@ class GraphicWindow(QWidget):
     def _update_scene(self):
         with self.environment.lock:
             self._change_lights()
-            # self._move_cars()
-            # self._move_walkers()
             self._move_agent(self.environment.cars, self.car_items)
             self._move_agent(self.environment.walkers, self.walker_items, Qt.cyan, 15)
 
