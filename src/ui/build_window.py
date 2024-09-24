@@ -8,7 +8,7 @@ from environment import Block, RoadBlock, SemaphoreBlock, SidewalkBlock
 from globals import DIRECTION_COLOR, Colors, Directions, valid_coordinates
 from ui.tile import Tile
 
-class GridWindow(QMainWindow):
+class BuildWindow(QMainWindow):
     def __init__(self, height : int = 40, width : int = 40):
         super().__init__()
         self._grid_height = height
@@ -18,7 +18,7 @@ class GridWindow(QMainWindow):
         self._add_road = False
         self._remove_road = False
 
-        self.setWindowTitle("Grid Window")
+        self.setWindowTitle("Build")
         self.setMinimumWidth(300)
         self.setMinimumHeight(300)
 
@@ -222,6 +222,6 @@ class GridWindow(QMainWindow):
                     self._tiles[i][j].set_color(color)
         
 app = QApplication(sys.argv)
-window = GridWindow(20, 20)
+window = BuildWindow(20, 20)
 window.show()
 app.exec_()

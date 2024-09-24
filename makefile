@@ -1,5 +1,5 @@
 run:
-	python3 ./src/ui/graphic_window.py
+	python3 ./src/ui/selection_window.py
 
 build:
-	python3 ./src/ui/grid_window.py
+	python3 ./src/ui/start_window.py

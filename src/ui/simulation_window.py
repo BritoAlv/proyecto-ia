@@ -8,6 +8,7 @@ from PyQt5.QtGui import QBrush, QFont
 from environment import Environment, RoadBlock, SemaphoreBlock, SidewalkBlock
 from globals import DIRECTION_OFFSETS, Directions, valid_coordinates
 from sim.event_handler import EventHandler
+from ui.start_window import StartWindow
 
 
 class ZoomableGraphicsView(QGraphicsView):
@@ -26,9 +27,19 @@ class SemaphoreItem:
     def __init__(self) -> None:
         self.light_directions : dict[int, QGraphicsItem] = {}
 
-class GraphicWindow(QWidget):
-    def __init__(self, environment : Environment):
+class SimulationWindow(QWidget):
+    def __init__(self, matrix_path : str):
         super().__init__()
+
+        self.setWindowTitle("Simulation")
+        self.setMinimumWidth(700)
+        self.setMinimumHeight(700)
+        self.home_window : StartWindow = None
+
+        with open(matrix_path, 'rb') as file:
+            matrix = pickle.load(file)
+        environment = Environment(matrix)
+        event_handler = EventHandler(environment)
 
         self.scale_factor = 60
         self.environment = environment
@@ -36,22 +47,22 @@ class GraphicWindow(QWidget):
         self.walker_items : dict[UUID, QGraphicsItem] = {}
         self.semaphore_items : dict[tuple[int, int], SemaphoreItem] = {}
 
-        # Set up the main layout (vertical layout for buttons and view)
-        main_layout = QVBoxLayout()
-
-        # Create a label to display some information
-        self.label = QLabel("Traffic Simulation Control", self)
-        main_layout.addWidget(self.label) 
         self.cars = {}
         self.agent_labels = {}
 
-        # Create buttons for start, stop, etc.
-        button_layout = QHBoxLayout()
-        self.start_button = QPushButton("Start")
-        self.stop_button = QPushButton("Stop")
-        button_layout.addWidget(self.start_button)
-        button_layout.addWidget(self.stop_button)
-        main_layout.addLayout(button_layout)
+        # Set up the main layout (vertical layout for buttons and view)
+        main_layout = QVBoxLayout()
+        main_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+
+        # # Create a label to display some information
+        # label = QLabel("Traffic Simulation", self)
+        # label.setFont(QFont("Arial", 30, 500, False))
+        # main_layout.addWidget(label) 
+        
+        stop_button = QPushButton("Stop")
+        stop_button.setFixedSize(200, 30)
+        stop_button.clicked.connect(self._back_home)
+        main_layout.addWidget(stop_button)
 
         self.view = ZoomableGraphicsView()
         self.simulation_scene = QGraphicsScene()
@@ -69,6 +80,12 @@ class GraphicWindow(QWidget):
         self.timer = QTimer()
         self.timer.timeout.connect(self._update_scene)
         self.timer.start(100)
+        event_handler.start()
+
+    def _back_home(self):
+        self.home_window = StartWindow()
+        self.home_window.showMaximized()
+        self.close()
 
     def _build_simulation_scene(self):
         matrix = self.environment.matrix
@@ -186,16 +203,8 @@ class GraphicWindow(QWidget):
             self.simulation_scene.removeItem(scene_items[item_id])
             scene_items.pop(item_id)
 
-        
-app = QApplication(sys.argv)
-
-with open("./src/ui/matrices/matrix.pkl", 'rb') as file:
-    matrix = pickle.load(file)
-environment = Environment(matrix)
-event_handler = EventHandler(environment)
-        
-window = GraphicWindow(environment)
-window.show()
-event_handler.start()
-
-app.exec_()
+if __name__ == '__main__':  
+    app = QApplication(sys.argv)
+    window = SimulationWindow("./src/ui/matrices/matrix.pkl")
+    window.showMaximized()
+    app.exec_()
