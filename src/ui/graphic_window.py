@@ -173,10 +173,9 @@ class GraphicWindow(QWidget):
                 scaled_offset = self.scale_factor / 3.5
                 agent_item.setX(x - x_previous + scaled_offset)
                 agent_item.setY(y - y_previous + scaled_offset)
-
                 self.agent_labels[agent_id].setPos(x + scaled_offset, y + scaled_offset)
+                agent_item.update()
                 
-
         # Remove unused agents
         items_to_drop = []
         for item_id in scene_items:
@@ -186,6 +185,7 @@ class GraphicWindow(QWidget):
         for item_id in items_to_drop:
             self.simulation_scene.removeItem(scene_items[item_id])
             scene_items.pop(item_id)
+
         
 app = QApplication(sys.argv)
 

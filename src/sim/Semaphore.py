@@ -1,3 +1,4 @@
+from environment import RoadBlock
 from globals import Directions
 from sim.Agent import Agent
 
@@ -20,3 +21,4 @@ class Semaphore(Agent):
                 ]
 
                 self.environment.semaphores[self.id] = random.choice(light_directions)
+        
