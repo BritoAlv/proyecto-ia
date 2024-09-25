@@ -54,16 +54,18 @@ class Car(MovingAgent):
 
                     car_moved = False
 
-                    if self.check_valid(x, y, RoadBlock):
-                        if self.check_free(x, y):
-                            self.set_car_pos(i, j, x, y, self.id)
-                            car_moved = True
-                    
-                    elif self.check_valid( i + offset[0], j + offset[1], SemaphoreBlock):
-                        representative = self.environment.matrix[x][y].representative
-                        if direction == self.environment.semaphores[representative]:
-                            if self.check_free(new_pos[0], new_pos[1]):
+                    # Check if cell is free and its valid.
+                    if self.check_valid(x, y, RoadBlock) and self.check_free(x, y):
+                        # Case 1 : there is a semaphore from (i, j) to (x, y)
+                        if self.check_valid(i + offset[0], j + offset[1], SemaphoreBlock):
+                            representative = self.environment.matrix[x][y].representative
+                            if direction == self.environment.semaphores[representative]:
                                 self.set_car_pos(i, j, new_pos[0], new_pos[1], self.id)
+                                car_moved = True
+                        # Case 2: (i, j) to (x, y)
+                        else:
+                            if x - i == offset[0] and y - j == offset[1]:
+                                self.set_car_pos(i, j, x, y, self.id)
                                 car_moved = True
 
                     if not car_moved:
