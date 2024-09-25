@@ -10,15 +10,15 @@ import time
 class Car(MovingAgent):
     def __init__(self, position, environment):
         super().__init__(position, environment)
-        self.next_positions : list[tuple[int, int]] = []
-        self.attempts : int = 0
+        self.next_positions: list[tuple[int, int]] = []
+        self.attempts: int = 0
 
     def check_free(self, i, j):
-            return (
-                isinstance(self.environment.matrix[i][j], RoadBlock)
-                and self.environment.matrix[i][j].car_id == None
-            )
-    
+        return (
+            isinstance(self.environment.matrix[i][j], RoadBlock)
+            and self.environment.matrix[i][j].car_id == None
+        )
+
     def set_car_pos(self, i, j, x, y, id):
         self.environment.matrix[i][j].car_id = None
         self.environment.matrix[x][y].car_id = id
@@ -31,12 +31,12 @@ class Car(MovingAgent):
         """
         if self.attempts >= 3:
             self.next_positions = []
-        
+
         """
         With probability 0.4 update the list to use a new one.
         """
-        if random.random() < 0.2 :
-            self.next_positions = [] # A* should fill this list
+        if random.random() < 0.2:
+            self.next_positions = []  # A* should fill this list
 
     def act(self) -> None:
         while True:
@@ -57,11 +57,19 @@ class Car(MovingAgent):
                     # Check if cell is free and its valid.
                     if self.check_valid(x, y, RoadBlock) and self.check_free(x, y):
                         # Case 1 : there is a semaphore from (i, j) to (x, y)
-                        if self.check_valid(i + offset[0], j + offset[1], SemaphoreBlock):
-                            representative = self.environment.matrix[x][y].representative
+                        if self.check_valid(
+                            i + offset[0], j + offset[1], SemaphoreBlock
+                        ):
+                            representative = self.environment.matrix[x][
+                                y
+                            ].representative
                             if direction == self.environment.semaphores[representative]:
-                                if new_pos in self.semaphore_options(i + offset[0], j + offset[1], direction):
-                                    self.set_car_pos(i, j, new_pos[0], new_pos[1], self.id)
+                                if new_pos in self.semaphore_options(
+                                    i + offset[0], j + offset[1], direction
+                                ):
+                                    self.set_car_pos(
+                                        i, j, new_pos[0], new_pos[1], self.id
+                                    )
                                     car_moved = True
                         # Case 2: (i, j) to (x, y)
                         else:
@@ -89,7 +97,6 @@ class Car(MovingAgent):
                             new_pos = self.pos_cross_semaphor(x, y, direction)
                             if self.check_free(new_pos[0], new_pos[1]):
                                 self.set_car_pos(i, j, new_pos[0], new_pos[1], self.id)
-                
 
     def pos_cross_semaphor(self, i, j, direction) -> tuple[int, int]:
         r = i
@@ -98,8 +105,10 @@ class Car(MovingAgent):
         return options[random.randint(0, len(options) - 1)]
 
     def check_valid(self, x, y, class_instance):
-        return valid_coordinates(x, y, len(self.environment.matrix), len(self.environment.matrix[0])) and isinstance(self.environment.matrix[x][y], class_instance)
-    
+        return valid_coordinates(
+            x, y, len(self.environment.matrix), len(self.environment.matrix[0])
+        ) and isinstance(self.environment.matrix[x][y], class_instance)
+
     def check_option(self, r, c, offset) -> list[tuple[int, int]]:
         options = []
         dx = offset[0]
@@ -112,11 +121,13 @@ class Car(MovingAgent):
             cc += dy
 
         if self.check_valid(rr, cc, RoadBlock):
-            if (DIRECTION_OFFSETS[self.environment.matrix[rr][cc].direction]== offset):
+            if DIRECTION_OFFSETS[self.environment.matrix[rr][cc].direction] == offset:
                 options.append((rr, cc))
         return options
 
-    def semaphor_options(self, r : int, c : int, direction : Directions) -> list[tuple[int, int]]:
+    def semaphor_options(
+        self, r: int, c: int, direction: Directions
+    ) -> list[tuple[int, int]]:
         options = []
         while self.check_valid(r, c, SemaphoreBlock):
             if direction == Directions.NORTH or direction == Directions.SOUTH:
@@ -136,5 +147,5 @@ class Car(MovingAgent):
 
         if self.check_valid(r, c, RoadBlock):
             options.append((r, c))
-        
+
         return options
