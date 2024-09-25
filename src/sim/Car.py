@@ -11,20 +11,19 @@ class Car(MovingAgent):
     def __init__(self, position, environment):
         super().__init__(position, environment)
 
-    def act(self) -> None:
-
-        def check_free(i, j):
+    def check_free(self, i, j):
             return (
                 isinstance(self.environment.matrix[i][j], RoadBlock)
                 and self.environment.matrix[i][j].car_id == None
             )
+    
+    def set_car_pos(self, i, j, x, y, id):
+        self.environment.matrix[i][j].car_id = None
+        self.environment.matrix[x][y].car_id = id
+        self.environment.cars[id] = (x, y)
+        self.position = (x, y)
 
-        def set_car_pos(i, j, x, y, id):
-            self.environment.matrix[i][j].car_id = None
-            self.environment.matrix[x][y].car_id = id
-            self.environment.cars[id] = (x, y)
-            self.position = (x, y)
-
+    def act(self) -> None:
         while True:
             time.sleep(self.sleep_time)
             i, j = self.position
@@ -35,15 +34,15 @@ class Car(MovingAgent):
                 x = i + m
                 y = j + n
                 if self.check_valid(x, y, RoadBlock):
-                        if check_free(x, y):
-                            set_car_pos(i, j, x, y, self.id)
+                        if self.check_free(x, y):
+                            self.set_car_pos(i, j, x, y, self.id)
                 elif self.check_valid(x, y, SemaphoreBlock):
                     representative = self.environment.matrix[x][y].representative
                     direction = self.environment.matrix[i][j].direction
                     if direction == self.environment.semaphores[representative]:
                         new_pos = self.pos_cross_semaphor(x, y, direction)
-                        if check_free(new_pos[0], new_pos[1]):
-                            set_car_pos(i, j, new_pos[0], new_pos[1], self.id)
+                        if self.check_free(new_pos[0], new_pos[1]):
+                            self.set_car_pos(i, j, new_pos[0], new_pos[1], self.id)
 
     def check_valid(self, x, y, class_instance):
         return valid_coordinates(x, y, len(self.environment.matrix), len(self.environment.matrix[0])) and isinstance(self.environment.matrix[x][y], class_instance)
