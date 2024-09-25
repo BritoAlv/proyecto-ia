@@ -1,18 +1,24 @@
+import heapq
 from environment import Environment, RoadBlock, SemaphoreBlock
 from globals import DIRECTION_OFFSETS, Directions, valid_coordinates
 from sim.MovingAgent import MovingAgent
-
 
 import random
 import time
 
 
 class Car(MovingAgent):
-    def __init__(self, position : tuple[int, int], goal : tuple[int, int], environment : Environment):
+    def __init__(
+        self, position: tuple[int, int], goal: tuple[int, int], environment: Environment
+    ):
         super().__init__(position, environment)
         self.next_positions: list[tuple[int, int]] = []
         self.attempts: int = 0
-        self.goal : tuple[int, int] = goal
+        self.goal: tuple[int, int] = goal
+
+    def dijkstra(self) -> list[tuple[int, int]]:
+        return []
+
 
     def check_free(self, i, j):
         return (
@@ -37,16 +43,20 @@ class Car(MovingAgent):
         With probability 0.4 update the list to use a new one.
         """
         if random.random() < 0.2:
-            self.next_positions = []
+            self.next_positions = self.dijkstra()
+
+    def remove_car(self):
+        i, j = self.position
+        self.environment.matrix[i][j].car_id = None
+        self.environment.cars.pop(self.id)
 
     def act(self) -> None:
         while True:
-            time.sleep(self.sleep_time) # clock race 
+            time.sleep(self.sleep_time)  # clock race
             i, j = self.position
             with self.environment.lock:
-                if self.position == self.goal: # car reached goal so done.
-                    self.environment.matrix[i][j].car_id = None
-                    self.environment.cars.pop(self.id)
+                if self.position == self.goal:  # car reached goal so done.
+                    self.remove_car()
                     return
                 offset = DIRECTION_OFFSETS[self.environment.matrix[i][j].direction]
                 direction = self.environment.matrix[i][j].direction

@@ -1,4 +1,4 @@
-from environment import RoadBlock
+from environment import Environment, RoadBlock
 from globals import Directions
 from sim.Agent import Agent
 
@@ -8,6 +8,10 @@ import time
 
 
 class Semaphore(Agent):
+    def __init__(self, id, environment: Environment):
+        super().__init__(id, environment)
+        self.overload = 1
+
     def act(self) -> None:
         while True:
             time.sleep(1)
@@ -20,4 +24,3 @@ class Semaphore(Agent):
                 ]
 
                 self.environment.semaphores[self.id] = random.choice(light_directions)
-        
