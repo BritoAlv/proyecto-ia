@@ -34,42 +34,41 @@ class Car(MovingAgent):
                 n = offset[1]
                 x = i + m
                 y = j + n
-                if valid_coordinates(x, y, len(self.environment.matrix), len(self.environment.matrix[0])):
-                    if isinstance(self.environment.matrix[x][y], RoadBlock):
+                if self.check_valid(x, y, RoadBlock):
                         if check_free(x, y):
                             set_car_pos(i, j, x, y, self.id)
-                    elif isinstance(self.environment.matrix[x][y], SemaphoreBlock):
-                        representative = self.environment.matrix[x][y].representative
-                        direction = self.environment.matrix[i][j].direction
-                        if direction == self.environment.semaphores[representative]:
-                            new_pos = self.pos_cross_semaphor(x, y, direction)
-                            if check_free(new_pos[0], new_pos[1]):
-                                set_car_pos(i, j, new_pos[0], new_pos[1], self.id)
+                elif self.check_valid(x, y, SemaphoreBlock):
+                    representative = self.environment.matrix[x][y].representative
+                    direction = self.environment.matrix[i][j].direction
+                    if direction == self.environment.semaphores[representative]:
+                        new_pos = self.pos_cross_semaphor(x, y, direction)
+                        if check_free(new_pos[0], new_pos[1]):
+                            set_car_pos(i, j, new_pos[0], new_pos[1], self.id)
 
+    def check_valid(self, x, y, class_instance):
+        return valid_coordinates(x, y, len(self.environment.matrix), len(self.environment.matrix[0])) and isinstance(self.environment.matrix[x][y], class_instance)
+    
     def pos_cross_semaphor(self, i, j, direction) -> tuple[int, int]:
         r = i
         c = j
         
-        def check_valid(x, y, class_instance):
-            return valid_coordinates(x, y, len(self.environment.matrix), len(self.environment.matrix[0])) and isinstance(self.environment.matrix[x][y], class_instance)
-
         def check_option(offset):
             dx = offset[0]
             dy = offset[1]
             rr = r + dx
             cc = c + dy
 
-            while check_valid(rr, cc, SemaphoreBlock):
+            while self.check_valid(rr, cc, SemaphoreBlock):
                 rr += dx
                 cc += dy
 
-            if check_valid(rr, cc, RoadBlock):
+            if self.check_valid(rr, cc, RoadBlock):
                 if (DIRECTION_OFFSETS[self.environment.matrix[rr][cc].direction]== offset):
                     options.append((rr, cc))
 
 
         options = [(i, j)]
-        while check_valid(r, c, SemaphoreBlock):
+        while self.check_valid(r, c, SemaphoreBlock):
             if direction == Directions.NORTH or direction == Directions.SOUTH:
                 check_option(DIRECTION_OFFSETS[Directions.EAST])
                 check_option(DIRECTION_OFFSETS[Directions.WEST])
@@ -85,6 +84,6 @@ class Car(MovingAgent):
                 if direction == Directions.WEST:
                     c += 1
 
-        if check_valid(r, c, RoadBlock):
+        if self.check_valid(r, c, RoadBlock):
             options.append((r, c))
         return options[random.randint(0, len(options) - 1)]
