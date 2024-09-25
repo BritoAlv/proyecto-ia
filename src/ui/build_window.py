@@ -7,6 +7,7 @@ import pickle
 
 from environment import Block, RoadBlock, SemaphoreBlock, SidewalkBlock
 from globals import DIRECTION_COLOR, Colors, Directions, valid_coordinates
+from ui.start_window import StartWindow
 from ui.tile import Tile
 
 class _Widgets(Enum):
@@ -24,6 +25,7 @@ class _Widgets(Enum):
     name_input = 11
     place_name_input = 12
     place_description_input = 13
+    back_home_button = 14
 
 
 class BuildWindow(QMainWindow):
@@ -42,6 +44,7 @@ class BuildWindow(QMainWindow):
         self.setMinimumHeight(300)
 
         self._control_widgets : dict[_Widgets, QWidget] = {}
+        self._home_window = None
 
         main_layout = QVBoxLayout()
         self._message_label = QLabel()
@@ -52,6 +55,7 @@ class BuildWindow(QMainWindow):
         # Control layout set up
         ## Buttons
         control_layout = QVBoxLayout()
+        self._control_widgets[_Widgets.back_home_button] = QPushButton('Back Home')
         self._control_widgets[_Widgets.add_road_button] = QPushButton("Add Road")
         self._control_widgets[_Widgets.remove_road_button] = QPushButton("Remove Road")
         self._control_widgets[_Widgets.add_place_button] = QPushButton("Add Place")
@@ -75,6 +79,7 @@ class BuildWindow(QMainWindow):
         self._show_widgets(self._home_widgets_predicate)
 
         ## Connect to handle events
+        self._control_widgets[_Widgets.back_home_button].clicked.connect(self._handle_back_home)
         self._control_widgets[_Widgets.add_road_button].clicked.connect(self._handle_add_road)
         self._control_widgets[_Widgets.remove_road_button].clicked.connect(self._handle_remove_road)
         self._control_widgets[_Widgets.stop_button].clicked.connect(self._handle_stop)
@@ -122,7 +127,7 @@ class BuildWindow(QMainWindow):
         self._add_road = True
         self._show_widgets(lambda widget_id: widget_id in [_Widgets.stop_button])
 
-        self._paint_tiles(Colors.YELLOW, lambda i, j: self._matrix[i][j] == 0 and (i == 0 or j == 0 or i == self._grid_width - 1 or j == self._grid_height -1) and i != j and (i, j) != (0, self._grid_width - 1) and (i, j) != (self._grid_height - 1, 0))
+        self._paint_tiles(Colors.YELLOW, self._map_border_predicate)
 
     def _handle_remove_road(self):
         self._remove_road = True
@@ -172,9 +177,21 @@ class BuildWindow(QMainWindow):
         if 'matrices' not in os.listdir('./src/ui/'):
             os.mkdir('./src/ui/matrices')
 
+        # # Avoid create a map with an existing name
         # if f'{self._map_name}.pkl' in os.listdir('./src/ui/matrices'):
         #     self._message_label.setText('There is already a map named like that, please use other name')
         #     return
+
+        # Verify map's empty
+        map_empty = True
+        for i in range(self._grid_height):
+            for j in range(self._grid_width):
+                if block_matrix[i][j] != None:
+                    map_empty = False
+                    break
+        if map_empty:
+            self._message_label.setText('Cannot save an empty map')
+            return
         
         with open(f"./src/ui/matrices/{self._map_name}.pkl", 'wb') as file:
             pickle.dump(block_matrix, file)
@@ -186,7 +203,7 @@ class BuildWindow(QMainWindow):
 
         self._show_widgets(self._home_widgets_predicate)
 
-        self._paint_tiles(Colors.GREY, lambda i, j: self._matrix[i][j] == 0 and (i == 0 or j == 0 or i == self._grid_width - 1 or j == self._grid_height -1) and i != j and (i, j) != (0, self._grid_width - 1) and (i, j) != (self._grid_height - 1, 0))
+        self._paint_tiles(Colors.GREY, self._map_border_predicate)
 
     def _handle_zoom_in(self):
         for i in range(self._grid_height):
@@ -201,16 +218,20 @@ class BuildWindow(QMainWindow):
     def _handle_enter_name(self):
         self._map_name = self._control_widgets[_Widgets.name_input].text()
         self._show_widgets(self._home_widgets_predicate)
-        print(self._map_name)
 
     def _handle_enter_place(self):
         pass
+
+    def _handle_back_home(self):
+        self._home_window = StartWindow()
+        self._home_window.showMaximized()
+        self.close()
 
     def _handle_tile_clicked(self, coordinates : tuple[int, int]):
         i, j = coordinates
         direction = self._matrix[i][j]
 
-        if self._add_road and direction == 0 and (i == 0 or j == 0 or i == self._grid_width - 1 or j == self._grid_height -1) and i != j and coordinates != (0, self._grid_width - 1) and coordinates != (self._grid_height - 1, 0):
+        if self._add_road and direction == 0 and (i == 0 or j == 0 or i == self._grid_height - 1 or j == self._grid_width -1) and i != j and coordinates != (0, self._grid_width - 1) and coordinates != (self._grid_height - 1, 0):
             vertical = i == 0 or i == self._grid_height - 1
             if vertical:
                 length = self._grid_height
@@ -277,6 +298,9 @@ class BuildWindow(QMainWindow):
 
     def _home_widgets_predicate(self, widget_id):
         return widget_id not in [_Widgets.stop_button, _Widgets.enter_name_button, _Widgets.enter_place_button, _Widgets.name_input, _Widgets.place_name_input, _Widgets.place_description_input]
+    
+    def _map_border_predicate(self, i : int, j : int):
+        return self._matrix[i][j] == 0 and (i == 0 or j == 0 or i == self._grid_height - 1 or j == self._grid_width - 1) and i != j and (i, j) != (0, self._grid_width - 1) and (i, j) != (self._grid_height - 1, 0)
         
 if __name__ == '__main__':
     app = QApplication(sys.argv)

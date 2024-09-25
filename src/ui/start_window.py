@@ -11,6 +11,7 @@ class StartWindow(QMainWindow):
         self.setMinimumWidth(700)
         self.setMinimumHeight(700)
         self.selection_window = None
+        self.size_window = None
 
         main_layout = QVBoxLayout()
         # main_layout.setSpacing(0)
@@ -23,6 +24,7 @@ class StartWindow(QMainWindow):
         select_button = QPushButton("Select a map")
         build_button.setFont(QFont("Arial", 30, 50, False))
         select_button.setFont(QFont("Arial", 30, 50, False))
+        build_button.clicked.connect(self._build)
         select_button.clicked.connect(self._select)
         
         main_layout.addWidget(title_label)
@@ -39,6 +41,11 @@ class StartWindow(QMainWindow):
         self.selection_window.showMaximized()
         self.close()
 
+    def _build(self):
+        from ui.size_window import SizeWindow
+        self.size_window = SizeWindow()
+        self.size_window.showMaximized()
+        self.close()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
