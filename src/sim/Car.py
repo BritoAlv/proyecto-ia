@@ -55,6 +55,11 @@ class Car(MovingAgent):
             dy = offset[1]
             rr = r + dx
             cc = c + dy
+
+            while valid_coordinates(rr, cc, len(self.environment.matrix), len(self.environment.matrix[0])) and isinstance(self.environment.matrix[rr][cc], SemaphoreBlock):
+                rr += dx
+                cc += dy
+
             if valid_coordinates(rr, cc, len(self.environment.matrix), len(self.environment.matrix[0])) and isinstance(self.environment.matrix[rr][cc], RoadBlock):
                 if (DIRECTION_OFFSETS[self.environment.matrix[rr][cc].direction]== offset):
                     options.append((rr, cc))
