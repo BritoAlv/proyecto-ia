@@ -10,6 +10,8 @@ import time
 class Car(MovingAgent):
     def __init__(self, position, environment):
         super().__init__(position, environment)
+        self.next_positions : list[tuple[int, int]] = []
+        self.attempts : int = 0
 
     def check_free(self, i, j):
             return (
@@ -23,26 +25,68 @@ class Car(MovingAgent):
         self.environment.cars[id] = (x, y)
         self.position = (x, y)
 
+    def update_list(self):
+        """
+        If the car doesn't move after two attempts delete this strategy.
+        """
+        if self.attempts >= 3:
+            self.next_positions = []
+        
+        """
+        With probability 0.4 update the list to use a new one.
+        """
+        if random.random() < 0.2 :
+            self.next_positions = [] # A* should fill this list
+
     def act(self) -> None:
         while True:
             time.sleep(self.sleep_time)
             i, j = self.position
             with self.environment.lock:
                 offset = DIRECTION_OFFSETS[self.environment.matrix[i][j].direction]
-                m = offset[0]
-                n = offset[1]
-                x = i + m
-                y = j + n
-                if self.check_valid(x, y, RoadBlock):
+                direction = self.environment.matrix[i][j].direction
+                self.update_list()
+                if len(self.next_positions) > 0:
+                    # use top position for moving
+                    next_pos = self.next_positions[0]
+                    x = next_pos[0]
+                    y = next_pos[1]
+
+                    car_moved = False
+
+                    if self.check_valid(x, y, RoadBlock):
                         if self.check_free(x, y):
                             self.set_car_pos(i, j, x, y, self.id)
-                elif self.check_valid(x, y, SemaphoreBlock):
-                    representative = self.environment.matrix[x][y].representative
-                    direction = self.environment.matrix[i][j].direction
-                    if direction == self.environment.semaphores[representative]:
-                        new_pos = self.pos_cross_semaphor(x, y, direction)
-                        if self.check_free(new_pos[0], new_pos[1]):
-                            self.set_car_pos(i, j, new_pos[0], new_pos[1], self.id)
+                            car_moved = True
+                    
+                    elif self.check_valid( i + offset[0], j + offset[1], SemaphoreBlock):
+                        representative = self.environment.matrix[x][y].representative
+                        if direction == self.environment.semaphores[representative]:
+                            if self.check_free(new_pos[0], new_pos[1]):
+                                self.set_car_pos(i, j, new_pos[0], new_pos[1], self.id)
+                                car_moved = True
+
+                    if not car_moved:
+                        self.attempts += 1
+                    else:
+                        self.next_positions.pop(0)
+
+                else:
+                    # use random moving to obtain next position
+                    m = offset[0]
+                    n = offset[1]
+                    x = i + m
+                    y = j + n
+                    if self.check_valid(x, y, RoadBlock):
+                        if self.check_free(x, y):
+                            self.set_car_pos(i, j, x, y, self.id)
+                    elif self.check_valid(x, y, SemaphoreBlock):
+                        representative = self.environment.matrix[x][y].representative
+                        if direction == self.environment.semaphores[representative]:
+                            new_pos = self.pos_cross_semaphor(x, y, direction)
+                            if self.check_free(new_pos[0], new_pos[1]):
+                                self.set_car_pos(i, j, new_pos[0], new_pos[1], self.id)
+                
 
     def check_valid(self, x, y, class_instance):
         return valid_coordinates(x, y, len(self.environment.matrix), len(self.environment.matrix[0])) and isinstance(self.environment.matrix[x][y], class_instance)
