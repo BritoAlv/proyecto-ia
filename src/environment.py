@@ -40,7 +40,6 @@ class Environment:
         self.semaphores: dict[tuple[int, int], int] = {}
         self._add_semaphores()
         self.lock = Lock()
-
     def _add_semaphores(self) -> None:
         height = len(self.matrix)
         width = len(self.matrix[0])

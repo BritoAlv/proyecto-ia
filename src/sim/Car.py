@@ -1,4 +1,4 @@
-from environment import RoadBlock, SemaphoreBlock
+from environment import Environment, RoadBlock, SemaphoreBlock
 from globals import DIRECTION_OFFSETS, Directions, valid_coordinates
 from sim.MovingAgent import MovingAgent
 
@@ -8,10 +8,11 @@ import time
 
 
 class Car(MovingAgent):
-    def __init__(self, position, environment):
+    def __init__(self, position : tuple[int, int], goal : tuple[int, int], environment : Environment):
         super().__init__(position, environment)
         self.next_positions: list[tuple[int, int]] = []
         self.attempts: int = 0
+        self.goal : tuple[int, int] = goal
 
     def check_free(self, i, j):
         return (
@@ -36,13 +37,17 @@ class Car(MovingAgent):
         With probability 0.4 update the list to use a new one.
         """
         if random.random() < 0.2:
-            self.next_positions = []  # A* should fill this list
+            self.next_positions = []
 
     def act(self) -> None:
         while True:
-            time.sleep(self.sleep_time)
+            time.sleep(self.sleep_time) # clock race 
             i, j = self.position
             with self.environment.lock:
+                if self.position == self.goal: # car reached goal so done.
+                    self.environment.matrix[i][j].car_id = None
+                    self.environment.cars.pop(self.id)
+                    return
                 offset = DIRECTION_OFFSETS[self.environment.matrix[i][j].direction]
                 direction = self.environment.matrix[i][j].direction
                 self.update_list()

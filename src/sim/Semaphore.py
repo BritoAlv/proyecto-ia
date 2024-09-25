@@ -10,8 +10,7 @@ import time
 class Semaphore(Agent):
     def act(self) -> None:
         while True:
-            time.sleep(0.5)
-
+            time.sleep(1)
             with self.environment.lock:
                 light_directions = [
                     Directions.NORTH,

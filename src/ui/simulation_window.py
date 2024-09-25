@@ -202,6 +202,8 @@ class SimulationWindow(QWidget):
         for item_id in items_to_drop:
             self.simulation_scene.removeItem(scene_items[item_id])
             scene_items.pop(item_id)
+            self.simulation_scene.removeItem(self.agent_labels[item_id])
+            self.agent_labels.pop(item_id)
 
 if __name__ == '__main__':  
     app = QApplication(sys.argv)

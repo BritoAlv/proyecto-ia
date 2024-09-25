@@ -14,8 +14,8 @@ class EventHandler:
         
         # Create 20 car-events/walker-events
         for _ in range(20):
-            self._car_event()
             self._walker_event()
+            self._car_event()
 
     def _start_semaphores(self):
         for semaphore_id in self.environment.semaphores:
@@ -28,12 +28,15 @@ class EventHandler:
     def _car_event(self):
         with self.environment.lock:
             free_blocks = self._get_free_blocks(RoadBlock)
-            block = random.choice(free_blocks)
-            car = Car(block.coordinates, self.environment)
-            block.car_id = car.id
-            car_thread = Thread(target=car.act)
-            car_thread.daemon = True
-            car_thread.start()
+            two_blocks = random.choices(free_blocks, k = 2)
+            start_block = two_blocks[0]
+            end_block = two_blocks[1]
+            if start_block != end_block:
+                car = Car(start_block.coordinates, end_block.coordinates, self.environment)
+                start_block.car_id = car.id
+                car_thread = Thread(target=car.act)
+                car_thread.daemon = True
+                car_thread.start()
 
     def _walker_event(self):
         with self.environment.lock:
