@@ -49,6 +49,9 @@ class Car(MovingAgent):
     def pos_cross_semaphor(self, i, j, direction) -> tuple[int, int]:
         r = i
         c = j
+        
+        def check_valid(x, y, class_instance):
+            return valid_coordinates(x, y, len(self.environment.matrix), len(self.environment.matrix[0])) and isinstance(self.environment.matrix[x][y], class_instance)
 
         def check_option(offset):
             dx = offset[0]
@@ -56,18 +59,17 @@ class Car(MovingAgent):
             rr = r + dx
             cc = c + dy
 
-            while valid_coordinates(rr, cc, len(self.environment.matrix), len(self.environment.matrix[0])) and isinstance(self.environment.matrix[rr][cc], SemaphoreBlock):
+            while check_valid(rr, cc, SemaphoreBlock):
                 rr += dx
                 cc += dy
 
-            if valid_coordinates(rr, cc, len(self.environment.matrix), len(self.environment.matrix[0])) and isinstance(self.environment.matrix[rr][cc], RoadBlock):
+            if check_valid(rr, cc, RoadBlock):
                 if (DIRECTION_OFFSETS[self.environment.matrix[rr][cc].direction]== offset):
                     options.append((rr, cc))
 
+
         options = [(i, j)]
-        while valid_coordinates(
-            r, c, len(self.environment.matrix), len(self.environment.matrix[0])
-        ) and isinstance(self.environment.matrix[r][c], SemaphoreBlock):
+        while check_valid(r, c, SemaphoreBlock):
             if direction == Directions.NORTH or direction == Directions.SOUTH:
                 check_option(DIRECTION_OFFSETS[Directions.EAST])
                 check_option(DIRECTION_OFFSETS[Directions.WEST])
@@ -83,8 +85,6 @@ class Car(MovingAgent):
                 if direction == Directions.WEST:
                     c += 1
 
-        if valid_coordinates(
-            r, c, len(self.environment.matrix), len(self.environment.matrix[0])
-        ) and isinstance(self.environment.matrix[r][c], RoadBlock):
+        if check_valid(r, c, RoadBlock):
             options.append((r, c))
         return options[random.randint(0, len(options) - 1)]

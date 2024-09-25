@@ -1,10 +1,8 @@
-from abc import ABC, abstractmethod
-import pickle
-import random
-from threading import Lock, Thread
+from abc import ABC
+from threading import Lock
 import time
-from uuid import UUID, uuid4
-from globals import Directions, valid_coordinates
+from uuid import UUID
+from globals import Directions
 
 
 class Block(ABC):
