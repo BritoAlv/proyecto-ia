@@ -52,7 +52,7 @@ class Car(MovingAgent):
         while queue:
             top = heapq.heappop(queue)
             for neighbour, edge_weight in self.get_neighbours(top):
-                neighbour_score = neighbour.parent.score + edge_weight
+                neighbour_score = neighbour.parent.score + 1 + (edge_weight - 1) / (neighbour.parent.score + 1)
                 if neighbour.pos not in seen:
                     seen[neighbour.pos] = neighbour
                     neighbour.score = neighbour_score
@@ -85,16 +85,17 @@ class Car(MovingAgent):
         if self.check_valid(x, y, RoadBlock):
             result.append( 
                 (
-                    CarGraphNode((x, y), car.direction, car), 
-                    1 
+                    CarGraphNode((x, y), car.direction, car),  
+                    1 if self.environment.matrix[x][y].car_id == None else 2 )
                 ) 
-            )
+            
 
         elif self.check_valid(x, y, SemaphoreBlock):
+            semaphor = self.environment.semaphores[self.environment.matrix[x][y].representative]
             result = [
                 (
                     CarGraphNode(z, self.environment.matrix[z[0]][z[1]].direction, car), 
-                    1
+                    semaphor.overload + (1 if self.environment.matrix[z[0]][z[1]].car_id != None else 0)
                 )
                 for z in self.semaphor_options(x, y, car.direction)
             ]
@@ -180,7 +181,6 @@ class Car(MovingAgent):
                         self.attempts += 1
                     else:
                         self.next_positions.pop(0)
-
                 else:
                     # use random moving to obtain next position
                     m = offset[0]

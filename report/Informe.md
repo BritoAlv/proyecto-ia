@@ -19,3 +19,10 @@ Cómo el carro obtiene esa información ?
 Con propabilidad $p$ ejecutará un algoritmo para obtener este camino, con este camino, si se quedará estancado en una posición del mapa, lo desechará y se comportará sin información, si no se queda estancado usará, mientras, este camino para moverse, pudiendo con probabilidad $p$ recalcular este camino.
 
 Qué algoritmo se usa para obtener esta información ?
+
+Inicialmente es posible usar Dijsktra para obtener el camino más corto entre la posición inicial y el goal, pero esto no tendría en cuenta que tan cargados estárían las carreteras y semáforos de por medio, para incluir esto, a el peso de una arista de A -> B, en vez de ser $1$, uniformemente, lo modificamos de la siguiente forma:
+	- si en $B$ hay un carro añadimos un peso adicional, pero dado que el entorno es dinámico, no tiene sentido que si $B$ se encuentra muy alejado de la posición inicial, tenga efecto que haya un carro en esta posición, dado que en el tiempo en que $A$ se translada a esa posición es posible que esta esté libre o sigua ocupada, para cuantificar esto, el peso adicional que le añadimos, es dividido entre la distancia de $B$ a la posición inicial, de esta forma solamente tendrían un efecto significativo los carros cercanos a la posición actual de el carro.
+	- si en $B$ hay un semáforo añadimos un peso adicional, determinado por el semáforo, y como se explicó en la situación anterior lo dividimos por la distancia.
+	
+Este peso adicional es $1$ en el caso de un carro, y un número entre $[1, 5]$ en el caso de los semáforos. Cuando esto es dividido por la distancia da un número entre $[1, 5]$, pero una vez que $d \geq 5$ será un número entre $[0, 1]$ para asegurar que no le quite toda la importancia a la distancia original.
+	  
