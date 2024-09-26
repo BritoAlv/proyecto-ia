@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphi
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QBrush, QFont
 
-from environment import Environment, RoadBlock, SemaphoreBlock, SidewalkBlock
+from environment import Environment, PlaceBlock, RoadBlock, SemaphoreBlock, SidewalkBlock
 from globals import DIRECTION_OFFSETS, Directions, valid_coordinates
 from sim.event_handler import EventHandler
 from ui.start_window import StartWindow
@@ -106,6 +106,8 @@ class SimulationWindow(QWidget):
                     color = Qt.lightGray
                 elif isinstance(block, SemaphoreBlock):
                     color = Qt.darkGray
+                elif isinstance(block, PlaceBlock):
+                    color = Qt.white
                 else:
                     continue
 

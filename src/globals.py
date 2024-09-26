@@ -18,6 +18,7 @@ class Directions:
     INTERSECTION = -1
     EOR = -2
     EMPTY = 0
+    PLACE = -3
 
 DIRECTION_COLOR = {
     Directions.NORTH: Colors.BLUE,
@@ -26,6 +27,8 @@ DIRECTION_COLOR = {
     Directions.WEST: Colors.ORANGE,
     Directions.EMPTY: Colors.GREY,
     Directions.INTERSECTION: Colors.VIOLET,
+    Directions.EOR: Colors.BLACK,
+    Directions.PLACE: Colors.WHITE
 }
 
 DIRECTION_OFFSETS = {
