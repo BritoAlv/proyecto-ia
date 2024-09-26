@@ -9,6 +9,12 @@ class Block(ABC):
     def __init__(self, coordinates: tuple[int, int]) -> None:
         self.coordinates = coordinates
 
+class PlaceBlock(Block):
+    def __init__(self, coordinates: tuple[int, int], name : str, description : str, representative : tuple[int, int]) -> None:
+        super().__init__(coordinates)
+        self.name = name
+        self.description = description
+        self.representative = representative 
 
 class SemaphoreBlock(Block):
     def __init__(
