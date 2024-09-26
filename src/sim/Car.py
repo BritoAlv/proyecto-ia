@@ -1,10 +1,27 @@
-import heapq
 from environment import Environment, RoadBlock, SemaphoreBlock
 from globals import DIRECTION_OFFSETS, Directions, valid_coordinates
 from sim.MovingAgent import MovingAgent
 
 import random
 import time
+import heapq
+
+class CarGraphNode:
+    def __init__(
+        self, pos: tuple[int, int], direction: Directions, parent : 'CarGraphNode' ) -> None:
+        self.pos = pos
+        self.direction = direction
+        self.score = 0
+        self.parent : None | 'CarGraphNode' = parent
+
+    def __hash__(self) -> int:
+        return self.pos.__hash__()
+
+    def __eq__(self, value: object) -> bool:
+        return isinstance(value, CarGraphNode) and self.pos == value.pos
+    
+    def __lt__(self, value : object) -> bool:
+        return isinstance(value, CarGraphNode) and self.score < value.score
 
 
 class Car(MovingAgent):
@@ -15,10 +32,77 @@ class Car(MovingAgent):
         self.next_positions: list[tuple[int, int]] = []
         self.attempts: int = 0
         self.goal: tuple[int, int] = goal
+        self.max_attempts = 3
+        self.p = 1
 
     def dijkstra(self) -> list[tuple[int, int]]:
+        x, y = self.position
+        start_node = CarGraphNode(
+            self.position, self.environment.matrix[x][y].direction, None
+        )
+
+        queue = []
+        heapq.heappush(queue, start_node)
+
+        seen = {}
+        seen[self.position] = start_node
+
+        connected = False
+
+        while queue:
+            top = heapq.heappop(queue)
+            for neighbour, edge_weight in self.get_neighbours(top):
+                neighbour_score = neighbour.parent.score + edge_weight
+                if neighbour.pos not in seen:
+                    seen[neighbour.pos] = neighbour
+                    neighbour.score = neighbour_score
+                    heapq.heappush(queue, neighbour)
+                elif neighbour_score < seen[neighbour.pos].score:
+                    seen[neighbour.pos].parent = top
+                    seen[neighbour.pos].score = neighbour_score
+
+            if top.pos == self.goal:
+                connected = True
+                break
+
+        if connected:
+            path = [self.goal]
+            while path[-1] != self.position:
+                path.append((seen[path[-1]]).parent.pos)
+            path.reverse()
+            return path[1:]
+
         return []
 
+    def get_neighbours(self, car: CarGraphNode) -> list[tuple[CarGraphNode, float]]:
+        result = []
+        x, y = car.pos
+        direction = DIRECTION_OFFSETS[car.direction]
+
+        x += direction[0]
+        y += direction[1]
+
+        if self.check_valid(x, y, RoadBlock):
+            result.append( 
+                (
+                    CarGraphNode((x, y), car.direction, car), 
+                    1 
+                ) 
+            )
+
+        elif self.check_valid(x, y, SemaphoreBlock):
+            result = [
+                (
+                    CarGraphNode(z, self.environment.matrix[z[0]][z[1]].direction, car), 
+                    1
+                )
+                for z in self.semaphor_options(x, y, car.direction)
+            ]
+
+        return result
+
+    def path_finder(self) -> list[tuple[int, int]]:
+        return self.dijkstra()
 
     def check_free(self, i, j):
         return (
@@ -36,14 +120,14 @@ class Car(MovingAgent):
         """
         If the car doesn't move after two attempts delete this strategy.
         """
-        if self.attempts >= 3:
+        if self.attempts >= self.max_attempts:
             self.next_positions = []
 
         """
-        With probability 0.4 update the list to use a new one.
+        With probability p update the list to use a new one.
         """
-        if random.random() < 0.2:
-            self.next_positions = self.dijkstra()
+        if random.random() < self.p:
+            self.next_positions = self.path_finder()
 
     def remove_car(self):
         i, j = self.position
@@ -61,6 +145,12 @@ class Car(MovingAgent):
                 offset = DIRECTION_OFFSETS[self.environment.matrix[i][j].direction]
                 direction = self.environment.matrix[i][j].direction
                 self.update_list()
+
+                print("Logging")
+                print(f"Position is {i, j}")
+                print(f"Goal is {self.goal}")
+                print(f"Path is {self.next_positions}")
+
                 if len(self.next_positions) > 0:
                     # use top position for moving
                     next_pos = self.next_positions[0]
@@ -72,19 +162,13 @@ class Car(MovingAgent):
                     # Check if cell is free and its valid.
                     if self.check_valid(x, y, RoadBlock) and self.check_free(x, y):
                         # Case 1 : there is a semaphore from (i, j) to (x, y)
-                        if self.check_valid(
-                            i + offset[0], j + offset[1], SemaphoreBlock
-                        ):
-                            representative = self.environment.matrix[x][
-                                y
-                            ].representative
+                        sem_x = i + offset[0]
+                        sem_y = j + offset[1]
+                        if self.check_valid(sem_x, sem_y, SemaphoreBlock):
+                            representative = self.environment.matrix[sem_x][sem_y].representative
                             if direction == self.environment.semaphores[representative]:
-                                if new_pos in self.semaphore_options(
-                                    i + offset[0], j + offset[1], direction
-                                ):
-                                    self.set_car_pos(
-                                        i, j, new_pos[0], new_pos[1], self.id
-                                    )
+                                if next_pos in self.semaphor_options(sem_x, sem_y, direction):
+                                    self.set_car_pos(i, j, next_pos[0], next_pos[1], self.id)
                                     car_moved = True
                         # Case 2: (i, j) to (x, y)
                         else:
