@@ -2,11 +2,11 @@ from enum import Enum
 import os
 import sys
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow, QHBoxLayout, QScrollArea, QGridLayout, QVBoxLayout, QPushButton, QLabel, QLineEdit
+from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow, QHBoxLayout, QScrollArea, QGridLayout, QVBoxLayout, QPushButton, QLabel, QLineEdit, QTextEdit
 import pickle
 
-from environment import Block, RoadBlock, SemaphoreBlock, SidewalkBlock
-from globals import DIRECTION_COLOR, Colors, Directions, valid_coordinates
+from environment import Block, PlaceBlock, RoadBlock, SemaphoreBlock, SidewalkBlock
+from globals import DIRECTION_COLOR, DIRECTION_OFFSETS, Colors, Directions, valid_coordinates
 from ui.start_window import StartWindow
 from ui.tile import Tile
 
@@ -36,8 +36,11 @@ class BuildWindow(QMainWindow):
         self._grid_width = width
         self._tiles : list[list[Tile]] = []
         self._matrix : list[list[int]] = []
+        self._places : dict[tuple[int, int], tuple[str, str]] = {}
         self._add_road = False
         self._remove_road = False
+        self._add_place = False
+        self._current_place : tuple[int, int] = None
 
         self.setWindowTitle("Build")
         self.setMinimumWidth(300)
@@ -53,7 +56,6 @@ class BuildWindow(QMainWindow):
         core_layout = QHBoxLayout()
 
         # Control layout set up
-        ## Buttons
         control_layout = QVBoxLayout()
         self._control_widgets[_Widgets.back_home_button] = QPushButton('Back Home')
         self._control_widgets[_Widgets.add_road_button] = QPushButton("Add Road")
@@ -61,19 +63,21 @@ class BuildWindow(QMainWindow):
         self._control_widgets[_Widgets.add_place_button] = QPushButton("Add Place")
         self._control_widgets[_Widgets.remove_place_button] = QPushButton("Remove Place")
         self._control_widgets[_Widgets.save_button] = QPushButton("Save")
-        self._control_widgets[_Widgets.stop_button] = QPushButton("Stop")
-
         self._control_widgets[_Widgets.name_button] = QPushButton('Name')
+
+        self._control_widgets[_Widgets.name_input] = QLineEdit()
+        self._control_widgets[_Widgets.name_input].setPlaceholderText("Map's name")
         self._control_widgets[_Widgets.enter_name_button] = QPushButton('Enter')
+
+        self._control_widgets[_Widgets.place_name_input] = QLineEdit()
+        self._control_widgets[_Widgets.place_name_input].setPlaceholderText("Place's name")
+        self._control_widgets[_Widgets.place_description_input] = QTextEdit()
+        self._control_widgets[_Widgets.place_description_input].setPlaceholderText("Place's description")
         self._control_widgets[_Widgets.enter_place_button] = QPushButton('Enter')
 
+        self._control_widgets[_Widgets.stop_button] = QPushButton("Stop")
         self._control_widgets[_Widgets.zoom_in_button] = QPushButton("+")
         self._control_widgets[_Widgets.zoom_out_button] = QPushButton("-")
-        
-        ## Text input
-        self._control_widgets[_Widgets.name_input] = QLineEdit()
-        self._control_widgets[_Widgets.place_name_input] = QLineEdit()
-        self._control_widgets[_Widgets.place_description_input] = QLineEdit()
 
         ## Display required widgets
         self._show_widgets(self._home_widgets_predicate)
@@ -88,6 +92,8 @@ class BuildWindow(QMainWindow):
         self._control_widgets[_Widgets.save_button].clicked.connect(self._handle_save)
         self._control_widgets[_Widgets.name_button].clicked.connect(self._handle_name)
         self._control_widgets[_Widgets.enter_name_button].clicked.connect(self._handle_enter_name)
+        self._control_widgets[_Widgets.add_place_button].clicked.connect(self._handle_add_place)
+        self._control_widgets[_Widgets.remove_place_button].clicked.connect(self._handle_remove_place)
         self._control_widgets[_Widgets.enter_place_button].clicked.connect(self._handle_enter_place)
 
         ## Wire with parent layout
@@ -139,6 +145,7 @@ class BuildWindow(QMainWindow):
 
 
     def _handle_save(self):
+        print(self._map_name)
         if self._map_name == '':
             self._message_label.setText("You must name the map created")
             return
@@ -156,7 +163,7 @@ class BuildWindow(QMainWindow):
 
                 direction = self._matrix[i][j]
 
-                if direction == -1:
+                if direction == Directions.INTERSECTION:
                     block_matrix[i].append(SemaphoreBlock((i, j), (i, j)))
 
                     offsets = [(-1, 0), (0, -1)]
@@ -165,8 +172,24 @@ class BuildWindow(QMainWindow):
                         if isinstance(neighbor_block, SemaphoreBlock):
                             block_matrix[i][j] = (SemaphoreBlock((i, j), neighbor_block.representative))
                             break
+                
+                elif direction == Directions.PLACE:
+                    two_offsets = [(2, 0), (-2, 0), (0, 2), (0, -2)]
+                    name, description = self._places[i, j]
 
-                elif direction != 0:
+                    representative : tuple[int, int] = None
+                    for p, q in two_offsets:
+                        x, y = i + p, j + q
+
+                        if not valid_coordinates(x, y, self._grid_height, self._grid_width):
+                            continue
+
+                        if self._matrix[x][y] in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+                            representative = x, y
+
+                    block_matrix[i].append(PlaceBlock((i, j), name, description, representative))
+
+                elif direction != Directions.EMPTY:
                     block_matrix[i].append(RoadBlock((i, j), direction))
 
                 else:
@@ -174,7 +197,7 @@ class BuildWindow(QMainWindow):
 
                     offsets = [(1, 0), (0, 1), (-1, 0), (0, -1)]
                     for p, q in offsets:
-                        if valid_coordinates(i + p, j + q, self._grid_height, self._grid_width) and self._matrix[i + p][j + q] != 0:
+                        if valid_coordinates(i + p, j + q, self._grid_height, self._grid_width) and self._matrix[i + p][j + q] not in [Directions.EMPTY, Directions.PLACE]:
                             block_matrix[i][j] = SidewalkBlock((i, j), p == 0)
                             break
         
@@ -190,7 +213,7 @@ class BuildWindow(QMainWindow):
         map_empty = True
         for i in range(self._grid_height):
             for j in range(self._grid_width):
-                if block_matrix[i][j] != None:
+                if isinstance(block_matrix[i][j], RoadBlock):
                     map_empty = False
                     break
         if map_empty:
@@ -204,10 +227,13 @@ class BuildWindow(QMainWindow):
     def _handle_stop(self):
         self._add_road = False
         self._remove_road = False
+        self._add_place = False
+        self._current_place = None
 
         self._show_widgets(self._home_widgets_predicate)
 
         self._paint_tiles(Colors.GREY, self._map_border_predicate)
+        self._paint_tiles(Colors.GREY, self._available_place_predicate)
 
     def _handle_zoom_in(self):
         for i in range(self._grid_height):
@@ -221,10 +247,31 @@ class BuildWindow(QMainWindow):
             
     def _handle_enter_name(self):
         self._map_name = self._control_widgets[_Widgets.name_input].text()
-        self._show_widgets(self._home_widgets_predicate)
+        self._handle_stop()
+
+    def _handle_add_place(self):
+        self._add_place = True
+        self._show_widgets(lambda widget_id: widget_id in [_Widgets.place_name_input, _Widgets.place_description_input, _Widgets.zoom_in_button, _Widgets.zoom_out_button, _Widgets.enter_place_button])
+
+        self._paint_tiles(Colors.CYAN, self._available_place_predicate)
+    
+
+    def _handle_remove_place(self):
+        pass
 
     def _handle_enter_place(self):
-        pass
+        place_name = self._control_widgets[_Widgets.place_name_input].text()
+        place_description = self._control_widgets[_Widgets.place_description_input].toPlainText()
+
+        if place_name == '':
+            self._message_label.setText('Must give a name to the interest place')
+            return 
+
+        self._places[self._current_place] = place_name, place_description
+        self._control_widgets[_Widgets.place_name_input].setText('')
+        self._control_widgets[_Widgets.place_description_input].setText('')
+        self._handle_stop()
+
 
     def _handle_back_home(self):
         self._home_window = StartWindow()
@@ -268,7 +315,7 @@ class BuildWindow(QMainWindow):
                 else:
                     self._tiles[p][q].set_color(color)
                     self._matrix[p][q] = direction
-        elif self._remove_road and direction not in [Directions.EMPTY, Directions.INTERSECTION]:
+        elif self._remove_road and direction not in [Directions.EMPTY, Directions.INTERSECTION, Directions.PLACE]:
             vertical = direction in [Directions.NORTH, Directions.SOUTH]
             length = self._grid_height - 2 if vertical else self._grid_width - 2
 
@@ -311,6 +358,12 @@ class BuildWindow(QMainWindow):
                         self._matrix[p][q] = direction
                         self._tiles[p][q].set_color(DIRECTION_COLOR[direction])
 
+        elif self._add_place and self._available_place_predicate(i, j):
+            self._matrix[i][j] = Directions.PLACE
+            self._tiles[i][j].set_color(DIRECTION_COLOR[Directions.PLACE])
+            self._add_place = False
+            self._current_place = i, j
+
     def _show_widgets(self, predicate = lambda widget_id: True) -> None:
         for widget_id in self._control_widgets:
             if predicate(widget_id):
@@ -337,9 +390,36 @@ class BuildWindow(QMainWindow):
         # no_first_border = i != 0 and j != 0 and i != self._grid_height - 1 and j != self._grid_width - 1
 
         return self._matrix[i][j] == 0 and first_border and no_corner
+    
+    def _available_place_predicate(self, i : int, j : int):
+        two_offsets = [(2, 0), (-2, 0), (0, 2), (0, -2)]
+
+        for p, q in DIRECTION_OFFSETS.values():
+            x = i + p
+            y = j + q
+
+            if not valid_coordinates(x, y, self._grid_height, self._grid_width):
+                continue
+                
+            if self._matrix[i][j] == Directions.EMPTY and self._matrix[x][y] in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+                return False
+
+        for p, q in two_offsets:
+            x = i + p
+            y = j + q
+
+            if not valid_coordinates(x, y, self._grid_height, self._grid_width):
+                continue
+                
+            if self._matrix[i][j] == Directions.EMPTY and self._matrix[x][y] in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+                return True
+        
+        return False
         
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = BuildWindow(20, 20)
     window.showMaximized()
     app.exec_()
+
+a = QTextEdit()
