@@ -35,16 +35,61 @@ class Car(MovingAgent):
         self.max_attempts = 3
         self.p = 1
 
+
+    def depth_bound_search(self, depth = 4) -> list[tuple[int, int]]:
+        """
+        look up until a depth, and choose the best path, goal is minimize distance. 
+        """
+        x, y = self.goal
+        start_node = CarGraphNode(
+            self.goal, self.environment.matrix[x][y].direction, None
+        )
+
+        queue : list[CarGraphNode] = []
+        heapq.heappush(queue, start_node)
+
+        seen : dict[tuple[int, int], CarGraphNode] = {}
+        seen[self.position] = start_node
+
+        while queue:
+            top = heapq.heappop(queue)
+            for neighbour, _ in self.get_neighbours(top):
+                neighbour_score = neighbour.parent.score + 1
+                if neighbour.pos not in seen:
+                    seen[neighbour.pos] = neighbour
+                    neighbour.score = neighbour_score
+                    heapq.heappush(queue, neighbour)
+                elif neighbour_score < seen[neighbour.pos].score:
+                    seen[neighbour.pos].parent = top
+                    seen[neighbour.pos].score = neighbour_score
+
+        best_path, score = [], 1e9+1
+        def dfs(curr_path = [self.position], curr_score = 0):
+            if curr_path[-1] not in seen:
+                return
+            if len(curr_path) == depth + 1:
+                if curr_score + seen[curr_path[-1]].score < score:
+                    score = curr_score
+                    best_path = curr_path
+                return
+            else:
+                for neigbour, edge_weight in self.get_neighbours(seen[curr_path[-1]]):
+                    if neighbour.pos not in curr_path:
+                        dfs( curr_path + [neigbour.pos], curr_score + edge_weight )
+
+        dfs()
+        return best_path
+ 
     def dijkstra(self) -> list[tuple[int, int]]:
         x, y = self.position
         start_node = CarGraphNode(
             self.position, self.environment.matrix[x][y].direction, None
         )
 
-        queue = []
+        queue : list[CarGraphNode] = []
         heapq.heappush(queue, start_node)
 
-        seen = {}
+        seen : dict[tuple[int, int], CarGraphNode] = {}
         seen[self.position] = start_node
 
         connected = False
