@@ -125,13 +125,13 @@ class BuildWindow(QMainWindow):
 
     def _handle_add_road(self):
         self._add_road = True
-        self._show_widgets(lambda widget_id: widget_id in [_Widgets.stop_button])
+        self._show_widgets(lambda widget_id: widget_id in [_Widgets.stop_button, _Widgets.zoom_in_button, _Widgets.zoom_out_button])
 
         self._paint_tiles(Colors.YELLOW, self._map_border_predicate)
 
     def _handle_remove_road(self):
         self._remove_road = True
-        self._show_widgets(lambda widget_id: widget_id in [_Widgets.stop_button])
+        self._show_widgets(lambda widget_id: widget_id in [_Widgets.stop_button, _Widgets.zoom_in_button, _Widgets.zoom_out_button])
 
     def _handle_name(self):
         self._show_widgets(lambda widget_id: widget_id in [_Widgets.enter_name_button, _Widgets.name_input])
@@ -150,6 +150,10 @@ class BuildWindow(QMainWindow):
             block_matrix.append([])
             
             for j in range(self._grid_width):
+                if i == 0 or j == 0 or i == self._grid_height - 1 or j == self._grid_width - 1:
+                    block_matrix[i].append(SidewalkBlock((i, j), i == 0 or i == self._grid_height - 1))
+                    continue
+
                 direction = self._matrix[i][j]
 
                 if direction == -1:
@@ -231,18 +235,30 @@ class BuildWindow(QMainWindow):
         i, j = coordinates
         direction = self._matrix[i][j]
 
-        if self._add_road and direction == 0 and (i == 0 or j == 0 or i == self._grid_height - 1 or j == self._grid_width -1) and i != j and coordinates != (0, self._grid_width - 1) and coordinates != (self._grid_height - 1, 0):
+        if self._add_road and self._map_border_predicate(i, j):
             vertical = i == 0 or i == self._grid_height - 1
             if vertical:
-                length = self._grid_height
+                length = self._grid_height - 2
                 direction = Directions.SOUTH if i == 0 else Directions.NORTH
                 color = DIRECTION_COLOR[direction]
+
+                # Avoid start-row to be able to generate a new road
+                self._matrix[0][j] = self._matrix[self._grid_height - 1][j] = Directions.EOR
+                self._tiles[0][j].set_color(Colors.BLACK)
+                self._tiles[self._grid_height - 1][j].set_color(Colors.BLACK)
             else:
-                length = self._grid_width
+                length = self._grid_width - 2
                 direction = Directions.EAST if j == 0 else Directions.WEST
                 color = DIRECTION_COLOR[direction]
 
+                # Avoid start-column to be able to generate a new road
+                self._matrix[i][0] = self._matrix[i][self._grid_width - 1] = Directions.EOR
+                self._tiles[i][0].set_color(Colors.BLACK)
+                self._tiles[i][self._grid_width - 1].set_color(Colors.BLACK)
+
             for k in range(length):
+                k += 1
+
                 p = k if vertical else i
                 q = j if vertical else k
 
@@ -254,9 +270,21 @@ class BuildWindow(QMainWindow):
                     self._matrix[p][q] = direction
         elif self._remove_road and direction not in [Directions.EMPTY, Directions.INTERSECTION]:
             vertical = direction in [Directions.NORTH, Directions.SOUTH]
-            length = self._grid_height if vertical else self._grid_width
+            length = self._grid_height - 2 if vertical else self._grid_width - 2
+
+            if vertical:
+                # Enable start-row
+                self._matrix[0][j] = self._matrix[self._grid_height - 1][j] = Directions.EMPTY
+                self._tiles[0][j].set_color(DIRECTION_COLOR[Directions.EMPTY])
+                self._tiles[self._grid_height - 1][j].set_color(DIRECTION_COLOR[Directions.EMPTY])
+            else:
+                # Enable start-column
+                self._matrix[i][0] = self._matrix[i][self._grid_width - 1] = Directions.EMPTY
+                self._tiles[i][0].set_color(DIRECTION_COLOR[Directions.EMPTY])
+                self._tiles[i][self._grid_width - 1].set_color(DIRECTION_COLOR[Directions.EMPTY])
 
             for k in range(length):
+                k += 1
                 p = k if vertical else i
                 q = j if vertical else k
                 
@@ -300,7 +328,15 @@ class BuildWindow(QMainWindow):
         return widget_id not in [_Widgets.stop_button, _Widgets.enter_name_button, _Widgets.enter_place_button, _Widgets.name_input, _Widgets.place_name_input, _Widgets.place_description_input]
     
     def _map_border_predicate(self, i : int, j : int):
-        return self._matrix[i][j] == 0 and (i == 0 or j == 0 or i == self._grid_height - 1 or j == self._grid_width - 1) and i != j and (i, j) != (0, self._grid_width - 1) and (i, j) != (self._grid_height - 1, 0)
+        first_border = (i == 0 or j == 0 or i == self._grid_height - 1 or j == self._grid_width - 1)
+
+        no_corner =  (i, j) != (0, 0) and (i, j) != (self._grid_height - 1, self._grid_width - 1) and (i, j) != (0, self._grid_width - 1) and (i, j) != (self._grid_height - 1, 0)
+
+        # second_border = (i == 1 or j == 1 or i == self._grid_height - 2 or j == self._grid_width - 2)
+        # no_corner =  (i, j) != (1, 1) and (i, j) != (self._grid_height - 2, self._grid_width - 2) and (i, j) != (1, self._grid_width - 2) and (i, j) != (self._grid_height - 2, 1)
+        # no_first_border = i != 0 and j != 0 and i != self._grid_height - 1 and j != self._grid_width - 1
+
+        return self._matrix[i][j] == 0 and first_border and no_corner
         
 if __name__ == '__main__':
     app = QApplication(sys.argv)
