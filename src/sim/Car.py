@@ -113,7 +113,7 @@ class Car(MovingAgent):
     def set_car_pos(self, i, j, x, y, id):
         self.environment.matrix[i][j].car_id = None
         self.environment.matrix[x][y].car_id = id
-        self.environment.cars[id] = (x, y)
+        self.environment.cars[id] = self
         self.position = (x, y)
 
     def update_list(self):
@@ -146,7 +146,7 @@ class Car(MovingAgent):
                 direction = self.environment.matrix[i][j].direction
                 self.update_list()
 
-                print("Logging")
+                print(f"Logging Car #{self.gui_label}")
                 print(f"Position is {i, j}")
                 print(f"Goal is {self.goal}")
                 print(f"Path is {self.next_positions}")
@@ -166,7 +166,7 @@ class Car(MovingAgent):
                         sem_y = j + offset[1]
                         if self.check_valid(sem_x, sem_y, SemaphoreBlock):
                             representative = self.environment.matrix[sem_x][sem_y].representative
-                            if direction == self.environment.semaphores[representative]:
+                            if direction == self.environment.semaphores[representative].current:
                                 if next_pos in self.semaphor_options(sem_x, sem_y, direction):
                                     self.set_car_pos(i, j, next_pos[0], next_pos[1], self.id)
                                     car_moved = True
@@ -192,7 +192,7 @@ class Car(MovingAgent):
                             self.set_car_pos(i, j, x, y, self.id)
                     elif self.check_valid(x, y, SemaphoreBlock):
                         representative = self.environment.matrix[x][y].representative
-                        if direction == self.environment.semaphores[representative]:
+                        if direction == self.environment.semaphores[representative].current:
                             new_pos = self.pos_cross_semaphor(x, y, direction)
                             if self.check_free(new_pos[0], new_pos[1]):
                                 self.set_car_pos(i, j, new_pos[0], new_pos[1], self.id)

@@ -9,6 +9,7 @@ class Agent(ABC):
         self.id = id
         self.environment = environment
         self.sleep_time = 2
+        self.gui_label : int = -1
 
     @abstractmethod
     def act(self) -> None:

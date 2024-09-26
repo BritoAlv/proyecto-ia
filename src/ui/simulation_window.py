@@ -7,6 +7,7 @@ from PyQt5.QtGui import QBrush, QFont
 
 from environment import Environment, RoadBlock, SemaphoreBlock, SidewalkBlock
 from globals import DIRECTION_OFFSETS, Directions, valid_coordinates
+from sim.MovingAgent import MovingAgent
 from sim.event_handler import EventHandler
 from ui.start_window import StartWindow
 
@@ -165,7 +166,7 @@ class SimulationWindow(QWidget):
 
     def _change_lights(self):
         for semaphore_id in self.environment.semaphores:
-            light_direction = self.environment.semaphores[semaphore_id]
+            light_direction = self.environment.semaphores[semaphore_id].current
             
             semaphore_item = self.semaphore_items[semaphore_id]
             for direction in semaphore_item.light_directions:
@@ -174,12 +175,13 @@ class SimulationWindow(QWidget):
                 else:
                     semaphore_item.light_directions[direction].setBrush(QBrush(Qt.red))
 
-    def _move_agent(self, environment_agents : dict[UUID, tuple[int, int]], scene_items : dict[UUID, QGraphicsItem], color : Qt.BrushStyle = Qt.blue, agent_size : int = 30):
+    def _move_agent(self, environment_agents : dict[UUID, MovingAgent], scene_items : dict[UUID, QGraphicsItem], color : Qt.BrushStyle = Qt.blue, agent_size : int = 30):
         # Add new agent and update existing ones
         for agent_id in environment_agents:
-            i, j = environment_agents[agent_id]
+            i, j = environment_agents[agent_id].position
             if agent_id not in scene_items:
                 agent_item = self._add_rectangle(i, j, agent_size, agent_size, color)
+                environment_agents[agent_id].gui_label = len(self.agent_labels)
                 self.agent_labels[agent_id] = self.__add_text(str(len(self.agent_labels)), agent_item.x(), agent_item.y())
                 scene_items[agent_id] = agent_item
             else:

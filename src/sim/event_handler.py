@@ -13,13 +13,13 @@ class EventHandler:
         self._start_semaphores()
         
         # Create 20 car-events/walker-events
-        for _ in range(20):
+        for _ in range(10):
             self._walker_event()
             self._car_event()
 
     def _start_semaphores(self):
         for semaphore_id in self.environment.semaphores:
-            semaphore = Semaphore(semaphore_id, self.environment)
+            semaphore = self.environment.semaphores[semaphore_id]
             semaphore_tread = Thread(target=semaphore.act)
             semaphore_tread.daemon = True
             semaphore_tread.start()

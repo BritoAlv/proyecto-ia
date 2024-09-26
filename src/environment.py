@@ -35,11 +35,19 @@ class SidewalkBlock(Block):
 class Environment:
     def __init__(self, matrix: list[list[Block]]) -> None:
         self.matrix = matrix
-        self.cars: dict[UUID, tuple[int, int]] = {}
-        self.walkers: dict[UUID, tuple[int, int]] = {}
-        self.semaphores: dict[tuple[int, int], int] = {}
+
+        from sim.Car import Car
+        self.cars: dict[UUID, Car] = {}
+        
+        from sim.Walker import Walker
+        self.walkers: dict[UUID, Walker] = {}
+
+        from sim.Semaphore import Semaphore
+        self.semaphores: dict[tuple[int, int], Semaphore] = {}
+
         self._add_semaphores()
         self.lock = Lock()
+
     def _add_semaphores(self) -> None:
         height = len(self.matrix)
         width = len(self.matrix[0])
@@ -47,5 +55,7 @@ class Environment:
         for i in range(height):
             for j in range(width):
                 block = self.matrix[i][j]
-                if isinstance(block, SemaphoreBlock):
-                    self.semaphores[block.representative] = Directions.NORTH
+                if isinstance(block, SemaphoreBlock) and block.representative not in self.semaphores:
+                    from sim.Semaphore import Semaphore
+                    self.semaphores[block.representative] = Semaphore(block.representative, self)
+                    self.semaphores[block.representative].gui_label = len(self.semaphores)

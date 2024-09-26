@@ -34,6 +34,6 @@ class Walker(MovingAgent):
                     if isinstance(next_block, SidewalkBlock) and next_block.walker_id == None:
                         next_block.walker_id = self.id
                         current_block.walker_id = None
-                        self.environment.walkers[self.id] = x, y
+                        self.environment.walkers[self.id] = self
                         self.position = x, y
                         break
