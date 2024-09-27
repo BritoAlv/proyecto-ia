@@ -181,66 +181,64 @@ class Car(MovingAgent):
         self.environment.cars.pop(self.id)
 
     def act(self) -> None:
-        while True:
-            time.sleep(self.sleep_time)  # clock race
-            i, j = self.position
-            with self.environment.lock:
-                if self.position == self.goal:  # car reached goal so done.
-                    self.remove_car()
-                    return
-                offset = DIRECTION_OFFSETS[self.environment.matrix[i][j].direction]
-                direction = self.environment.matrix[i][j].direction
-                self.update_list()
+        i, j = self.position
+        
+        if self.position == self.goal:  # car reached goal so done.
+            self.remove_car()
+            return
+        offset = DIRECTION_OFFSETS[self.environment.matrix[i][j].direction]
+        direction = self.environment.matrix[i][j].direction
+        self.update_list()
 
-                print(f"Logging Car #{self.gui_label}")
-                print(f"Position is {i, j}")
-                print(f"Goal is {self.goal}")
-                print(f"Path is {self.next_positions}")
+        print(f"Logging Car #{self.gui_label}")
+        print(f"Position is {i, j}")
+        print(f"Goal is {self.goal}")
+        print(f"Path is {self.next_positions}")
 
-                if len(self.next_positions) > 0:
-                    # use top position for moving
-                    next_pos = self.next_positions[0]
-                    x = next_pos[0]
-                    y = next_pos[1]
+        if len(self.next_positions) > 0:
+            # use top position for moving
+            next_pos = self.next_positions[0]
+            x = next_pos[0]
+            y = next_pos[1]
 
-                    car_moved = False
+            car_moved = False
 
-                    # Check if cell is free and its valid.
-                    if self.check_valid(x, y, RoadBlock) and self.check_free(x, y):
-                        # Case 1 : there is a semaphore from (i, j) to (x, y)
-                        sem_x = i + offset[0]
-                        sem_y = j + offset[1]
-                        if self.check_valid(sem_x, sem_y, SemaphoreBlock):
-                            representative = self.environment.matrix[sem_x][sem_y].representative
-                            if direction == self.environment.semaphores[representative].current:
-                                if next_pos in self.semaphor_options(sem_x, sem_y, direction):
-                                    self.set_car_pos(i, j, next_pos[0], next_pos[1], self.id)
-                                    car_moved = True
-                        # Case 2: (i, j) to (x, y)
-                        else:
-                            if x - i == offset[0] and y - j == offset[1]:
-                                self.set_car_pos(i, j, x, y, self.id)
-                                car_moved = True
-
-                    if not car_moved:
-                        self.attempts += 1
-                    else:
-                        self.next_positions.pop(0)
+            # Check if cell is free and its valid.
+            if self.check_valid(x, y, RoadBlock) and self.check_free(x, y):
+                # Case 1 : there is a semaphore from (i, j) to (x, y)
+                sem_x = i + offset[0]
+                sem_y = j + offset[1]
+                if self.check_valid(sem_x, sem_y, SemaphoreBlock):
+                    representative = self.environment.matrix[sem_x][sem_y].representative
+                    if direction == self.environment.semaphores[representative].current:
+                        if next_pos in self.semaphor_options(sem_x, sem_y, direction):
+                            self.set_car_pos(i, j, next_pos[0], next_pos[1], self.id)
+                            car_moved = True
+                # Case 2: (i, j) to (x, y)
                 else:
-                    # use random moving to obtain next position
-                    m = offset[0]
-                    n = offset[1]
-                    x = i + m
-                    y = j + n
-                    if self.check_valid(x, y, RoadBlock):
-                        if self.check_free(x, y):
-                            self.set_car_pos(i, j, x, y, self.id)
-                    elif self.check_valid(x, y, SemaphoreBlock):
-                        representative = self.environment.matrix[x][y].representative
-                        if direction == self.environment.semaphores[representative].current:
-                            new_pos = self.pos_cross_semaphor(x, y, direction)
-                            if self.check_free(new_pos[0], new_pos[1]):
-                                self.set_car_pos(i, j, new_pos[0], new_pos[1], self.id)
+                    if x - i == offset[0] and y - j == offset[1]:
+                        self.set_car_pos(i, j, x, y, self.id)
+                        car_moved = True
+
+            if not car_moved:
+                self.attempts += 1
+            else:
+                self.next_positions.pop(0)
+        else:
+            # use random moving to obtain next position
+            m = offset[0]
+            n = offset[1]
+            x = i + m
+            y = j + n
+            if self.check_valid(x, y, RoadBlock):
+                if self.check_free(x, y):
+                    self.set_car_pos(i, j, x, y, self.id)
+            elif self.check_valid(x, y, SemaphoreBlock):
+                representative = self.environment.matrix[x][y].representative
+                if direction == self.environment.semaphores[representative].current:
+                    new_pos = self.pos_cross_semaphor(x, y, direction)
+                    if self.check_free(new_pos[0], new_pos[1]):
+                        self.set_car_pos(i, j, new_pos[0], new_pos[1], self.id)
 
     def pos_cross_semaphor(self, i, j, direction) -> tuple[int, int]:
         r = i
