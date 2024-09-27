@@ -2,7 +2,6 @@ from abc import ABC
 import random
 from uuid import UUID
 
-
 class Block(ABC):
     def __init__(self, coordinates: tuple[int, int]) -> None:
         self.coordinates = coordinates
@@ -21,20 +20,17 @@ class SemaphoreBlock(Block):
         super().__init__(coordinates)
         self.representative = representative
 
-
 class RoadBlock(Block):
     def __init__(self, coordinates: tuple[int, int], direction: int) -> None:
         super().__init__(coordinates)
         self.direction = direction
         self.car_id: UUID = None
 
-
 class SidewalkBlock(Block):
     def __init__(self, coordinates: tuple[int, int], vertical: bool) -> None:
         super().__init__(coordinates)
         self.vertical = vertical
         self.walker_id: UUID = None
-
 
 class Environment:
     def __init__(self, matrix: list[list[Block]]) -> None:
@@ -81,7 +77,7 @@ class Environment:
             sidewalk_blocks = event_handler._get_free_blocks(SidewalkBlock)
 
             from sim.Car import Car
-            car = Car(random.choice(road_blocks).coordinates, random.choice(road_blocks).coordinates, self, len(self.walkers))
+            car = Car(random.choice(road_blocks).coordinates, random.choice(road_blocks).coordinates, self, len(self.cars))
             
             from sim.Walker import Walker
             walker = Walker(random.choice(sidewalk_blocks).coordinates, self, len(self.walkers))
