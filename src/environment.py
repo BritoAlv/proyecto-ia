@@ -74,7 +74,7 @@ class Environment:
 
     # Testing purpose method
     def _initialize(self):
-        from sim.event_handler import EventHandler
+        from sim.event import EventHandler
         event_handler = EventHandler(self)
 
         for _ in range(20):

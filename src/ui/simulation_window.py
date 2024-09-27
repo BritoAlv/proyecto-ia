@@ -10,7 +10,6 @@ from PyQt5.QtGui import QBrush, QFont
 from environment import Environment, PlaceBlock, RoadBlock, SemaphoreBlock, SidewalkBlock
 from globals import DIRECTION_OFFSETS, Directions, valid_coordinates
 from sim.MovingAgent import MovingAgent
-from sim.event_handler import EventHandler
 from ui.start_window import StartWindow
 
 
