@@ -25,4 +25,9 @@ Inicialmente es posible usar Dijsktra para obtener el camino más corto entre la
 	- si en $B$ hay un semáforo añadimos un peso adicional, determinado por el semáforo, y como se explicó en la situación anterior lo dividimos por la distancia.
 	
 Este peso adicional es $1$ en el caso de un carro, y un número entre $[1, 5]$ en el caso de los semáforos. Cuando esto es dividido por la distancia da un número entre $[1, 5]$, pero una vez que $d \geq 5$ será un número entre $[0, 1]$ para asegurar que no le quite toda la importancia a la distancia original.
-	  
+
+Otro algoritmo puede ser el siguiente:
+
+	- calcular la distancia sin pesos adicionales, desde el objetivo a las demás casillas del tablero, 
+	
+Entonces con un dfs de profundidad limitada explorar la vecindad de la posición actual, asignando pesos a los caminos encontrados, a cada camino, después, se le suma la distancia restante a el nodo objetivo para determinar entre los caminos encontrados por el dfs cual escoger.
