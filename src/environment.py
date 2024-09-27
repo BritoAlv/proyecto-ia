@@ -65,8 +65,7 @@ class Environment:
                 # Extract semaphores representatives
                 if isinstance(block, SemaphoreBlock) and block.representative not in self.semaphores:
                     from sim.Semaphore import Semaphore
-                    self.semaphores[block.representative] = Semaphore(block.representative, self)
-                    self.semaphores[block.representative].gui_label = len(self.semaphores)
+                    self.semaphores[block.representative] = Semaphore(block.representative, self, len(self.semaphores))
 
                 # Extract interest places
                 if isinstance(block, PlaceBlock):
@@ -82,9 +81,10 @@ class Environment:
             sidewalk_blocks = event_handler._get_free_blocks(SidewalkBlock)
 
             from sim.Car import Car
-            car = Car(random.choice(road_blocks).coordinates, random.choice(road_blocks).coordinates, self)
+            car = Car(random.choice(road_blocks).coordinates, random.choice(road_blocks).coordinates, self, len(self.walkers))
+            
             from sim.Walker import Walker
-            walker = Walker(random.choice(sidewalk_blocks).coordinates, self)
+            walker = Walker(random.choice(sidewalk_blocks).coordinates, self, len(self.walkers))
 
             self.cars[car.id] = car
             self.walkers[walker.id] = walker

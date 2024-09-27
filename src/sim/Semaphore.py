@@ -13,8 +13,8 @@ light_directions = [
 
 
 class Semaphore(Agent):
-    def __init__(self, id, environment: Environment):
-        super().__init__(id, environment)
+    def __init__(self, id, environment: Environment, gui_label):
+        super().__init__(id, environment, gui_label)
         self.overload = 1
         self.current : Directions = Directions.NORTH
 

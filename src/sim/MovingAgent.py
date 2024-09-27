@@ -7,6 +7,6 @@ from uuid import uuid4
 
 
 class MovingAgent(Agent, ABC):
-    def __init__(self, position, environment: Environment):
-        super().__init__(uuid4(), environment)
+    def __init__(self, position, environment: Environment, gui_label):
+        super().__init__(uuid4(), environment, gui_label)
         self.position = position

@@ -27,8 +27,8 @@ class CarGraphNode:
 class Car(MovingAgent):
     def __init__(
         self, position: tuple[int, int], goal: tuple[int, int], environment: Environment
-    ):
-        super().__init__(position, environment)
+    , gui_label):
+        super().__init__(position, environment, gui_label)
         self.next_positions: list[tuple[int, int]] = []
         self.attempts: int = 0
         self.goal: tuple[int, int] = goal
