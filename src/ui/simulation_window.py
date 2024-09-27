@@ -34,78 +34,99 @@ class SimulationWindow(QWidget):
     def __init__(self, matrix_path : str):
         super().__init__()
 
-        self.setWindowTitle("Simulation")
-        self.setMinimumWidth(700)
-        self.setMinimumHeight(700)
-        self.home_window : StartWindow = None
-
+        # Load matrix data into main memory
         with open(matrix_path, 'rb') as file:
             matrix = pickle.load(file)
         environment = Environment(matrix)
 
-        self.scale_factor = 60
-        self.environment = environment
-        self.car_items : dict[UUID, QGraphicsItem] = {}
-        self.walker_items : dict[UUID, QGraphicsItem] = {}
-        self.semaphore_items : dict[tuple[int, int], SemaphoreItem] = {}
+        # Business (simulation) logic properties
+        self._environment = environment
 
-        self.cars = {}
-        self.agent_labels = {}
+        self._car_items : dict[UUID, QGraphicsItem] = {}
+        self._walker_items : dict[UUID, QGraphicsItem] = {}
+        self._semaphore_items : dict[tuple[int, int], SemaphoreItem] = {}
 
-        # Set up the main layout (vertical layout for buttons and view)
+        self._home_window : StartWindow = None
+        self._scale_factor = 60
+
+        self._cars = {}
+        self._agent_labels = {}
+
+        # Create and connect timer to handle the simulation loop
+        self.timer = QTimer()
+        self.timer.timeout.connect(self._simulate)
+
+        # Visualization setup
+        self.setWindowTitle("Simulation")
+        self.setMinimumWidth(700)
+        self.setMinimumHeight(700)
+
         main_layout = QVBoxLayout()
         main_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
 
+        ## Add a horizontal top-layout to hold control buttons
+        top_layout = QHBoxLayout()
+
+        ### Setup control buttons
+        start_button = QPushButton("Start")
+        start_button.setFixedSize(200, 30)
         stop_button = QPushButton("Stop")
         stop_button.setFixedSize(200, 30)
-        stop_button.clicked.connect(self._back_home)
-        main_layout.addWidget(stop_button)
+        end_button = QPushButton("End and see results")
+        end_button.setFixedSize(200, 30)
 
+        start_button.clicked.connect(self._handle_start)
+        stop_button.clicked.connect(self._handle_stop)
+        end_button.clicked.connect(self._handle_end)
+
+        top_layout.addWidget(start_button)
+        top_layout.addWidget(stop_button)
+        top_layout.addWidget(end_button)
+
+        main_layout.addLayout(top_layout)
+
+        ## Add view and simulation scene to visualize the actual map with all events
         self.view = ZoomableGraphicsView()
         self.simulation_scene = QGraphicsScene()
         self._build_simulation_scene()
-
-        # Set the scene for the view
         self.view.setScene(self.simulation_scene)
 
-        # Add the QGraphicsView to the main layout
         main_layout.addWidget(self.view)
-
-        # Set the layout on the main widget
         self.setLayout(main_layout)
 
-        self.timer = QTimer()
-        self.timer.timeout.connect(self._simulate)
-        self.timer.start(100)
-
     def _simulate(self):
-        for semaphore in self.environment.semaphores.values():
+        # Convert dictionary values to list (in three cases) to avoid dictionary overwriting while iterating
+        for semaphore in list(self._environment.semaphores.values()):
                 semaphore.act()
 
-        # Convert self.environment.cars.values() to list to avoid dictionary overwriting while iterating
-        for car in list(self.environment.cars.values()):
+        for car in list(self._environment.cars.values()):
             car.act()
         
-        # Convert self.environment.walker.values() to list to avoid dictionary overwriting while iterating
-        for walker in list(self.environment.walkers.values()):
+        for walker in list(self._environment.walkers.values()):
             walker.act()
 
         self._update_scene()
 
+    def _handle_start(self):
+        self.timer.start(100)
 
-    def _back_home(self):
-        self.home_window = StartWindow()
-        self.home_window.showMaximized()
+    def _handle_stop(self):
+        self.timer.stop()
+
+    def _handle_end(self):
+        self.timer.stop()
+        self._home_window = StartWindow()
+        self._home_window.showMaximized()
 
         self.close()
 
     def _build_simulation_scene(self):
-        matrix = self.environment.matrix
+        matrix = self._environment.matrix
         height = len(matrix)
         width = len(matrix[0])
 
         # Set background
-        background = QGraphicsRectItem(0, 0, width * self.scale_factor, height * self.scale_factor)
+        background = QGraphicsRectItem(0, 0, width * self._scale_factor, height * self._scale_factor)
         background.setBrush(QBrush(Qt.darkGreen))
         self.simulation_scene.addItem(background)
 
@@ -123,7 +144,7 @@ class SimulationWindow(QWidget):
                 else:
                     continue
 
-                rectangle = self._add_rectangle(i, j, self.scale_factor, self.scale_factor, color)
+                rectangle = self._add_rectangle(i, j, self._scale_factor, self._scale_factor, color)
 
                 if isinstance(block, RoadBlock):
                     pos = f" ({i}, {j})"
@@ -144,13 +165,13 @@ class SimulationWindow(QWidget):
                     neighbor = matrix[i + p][j + q]
                     if isinstance(neighbor, SemaphoreBlock):
                         representative = neighbor.representative
-                        if representative not in self.semaphore_items:
-                            self.semaphore_items[representative] = SemaphoreItem()
-                        self.semaphore_items[representative].light_directions[block.direction] = rectangle
+                        if representative not in self._semaphore_items:
+                            self._semaphore_items[representative] = SemaphoreItem()
+                        self._semaphore_items[representative].light_directions[block.direction] = rectangle
 
     def _add_rectangle(self, i : int, j : int, width : int, height : int, color : Qt.BrushStyle) -> QGraphicsRectItem:
-        x = j * self.scale_factor
-        y = i * self.scale_factor
+        x = j * self._scale_factor
+        y = i * self._scale_factor
 
         rectangle = QGraphicsRectItem(x, y, width, height)
         rectangle.setBrush(QBrush(color))
@@ -158,7 +179,7 @@ class SimulationWindow(QWidget):
         self.simulation_scene.addItem(rectangle)
         return rectangle
     
-    def __add_text(self, text : str, x : float, y : float):
+    def __add_text__(self, text : str, x : float, y : float):
         text_item = QGraphicsTextItem(text)
         font = QFont("Arial", 8, QFont.Thin)
         text_item.setFont(font)
@@ -168,19 +189,19 @@ class SimulationWindow(QWidget):
 
 
     def _add_text(self, text : str, i : int, j : int):
-        return self.__add_text(text, j * self.scale_factor, i * self.scale_factor)
+        return self.__add_text__(text, j * self._scale_factor, i * self._scale_factor)
         
     
     def _update_scene(self):
         self._change_lights()
-        self._move_agent(self.environment.cars, self.car_items)
-        self._move_agent(self.environment.walkers, self.walker_items, Qt.cyan, 15)
+        self._move_agent(self._environment.cars, self._car_items)
+        self._move_agent(self._environment.walkers, self._walker_items, Qt.cyan, 15)
 
     def _change_lights(self):
-        for semaphore_id in self.environment.semaphores:
-            light_direction = self.environment.semaphores[semaphore_id].current
+        for semaphore_id in self._environment.semaphores:
+            light_direction = self._environment.semaphores[semaphore_id].current
             
-            semaphore_item = self.semaphore_items[semaphore_id]
+            semaphore_item = self._semaphore_items[semaphore_id]
             for direction in semaphore_item.light_directions:
                 if direction == light_direction:
                     semaphore_item.light_directions[direction].setBrush(QBrush(Qt.green))
@@ -193,18 +214,18 @@ class SimulationWindow(QWidget):
             i, j = environment_agents[agent_id].position
             if agent_id not in scene_items:
                 agent_item = self._add_rectangle(i, j, agent_size, agent_size, color)
-                environment_agents[agent_id].gui_label = len(self.agent_labels)
-                self.agent_labels[agent_id] = self.__add_text(str(len(self.agent_labels)), agent_item.x(), agent_item.y())
+                environment_agents[agent_id].gui_label = len(self._agent_labels)
+                self._agent_labels[agent_id] = self.__add_text__(str(len(self._agent_labels)), agent_item.x(), agent_item.y())
                 scene_items[agent_id] = agent_item
             else:
                 agent_item = scene_items[agent_id]
                 x_previous, y_previous = agent_item.absolute_position
-                x, y = j * self.scale_factor, i * self.scale_factor
+                x, y = j * self._scale_factor, i * self._scale_factor
 
-                scaled_offset = self.scale_factor / 3.5
+                scaled_offset = self._scale_factor / 3.5
                 agent_item.setX(x - x_previous + scaled_offset)
                 agent_item.setY(y - y_previous + scaled_offset)
-                self.agent_labels[agent_id].setPos(x + scaled_offset, y + scaled_offset)
+                self._agent_labels[agent_id].setPos(x + scaled_offset, y + scaled_offset)
                 agent_item.update()
                 
         # Remove unused agents
@@ -216,8 +237,8 @@ class SimulationWindow(QWidget):
         for item_id in items_to_drop:
             self.simulation_scene.removeItem(scene_items[item_id])
             scene_items.pop(item_id)
-            self.simulation_scene.removeItem(self.agent_labels[item_id])
-            self.agent_labels.pop(item_id)
+            self.simulation_scene.removeItem(self._agent_labels[item_id])
+            self._agent_labels.pop(item_id)
 
 if __name__ == '__main__':  
     app = QApplication(sys.argv)
