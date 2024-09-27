@@ -68,7 +68,9 @@ class SimulationWindow(QWidget):
         ## Simulation properties
         self._date = datetime(2000, 1, 1)
         self._events_queue: PriorityQueue[Event] = PriorityQueue()
-        self._event : Event = Event(self._date + timedelta(seconds=1), EventType.CAR_EVENT)
+        self._event: Event = Event(self._date + timedelta(seconds=1), EventType.CAR_EVENT)
+        self._timer_period: int = 300
+        self._simulation_on = False
 
         # ### Push a car-event
         # self._events_queue.put(Event(self._date + timedelta(seconds=1), EventType.CAR_EVENT))
@@ -111,14 +113,22 @@ class SimulationWindow(QWidget):
         stop_button.setFixedSize(200, 30)
         end_button = QPushButton("End and see results")
         end_button.setFixedSize(200, 30)
+        faster_button = QPushButton("Faster")
+        faster_button.setFixedSize(200, 30)
+        slower_button = QPushButton("Slower")
+        slower_button.setFixedSize(200, 30)
 
         start_button.clicked.connect(self._handle_start)
         stop_button.clicked.connect(self._handle_stop)
         end_button.clicked.connect(self._handle_end)
+        faster_button.clicked.connect(self._handle_faster)
+        slower_button.clicked.connect(self._handle_slower)
 
         top_layout.addWidget(start_button)
         top_layout.addWidget(stop_button)
         top_layout.addWidget(end_button)
+        top_layout.addWidget(faster_button)
+        top_layout.addWidget(slower_button)
 
         main_layout.addLayout(top_layout)
 
@@ -159,9 +169,11 @@ class SimulationWindow(QWidget):
         self._date += timedelta(seconds=1)
 
     def _handle_start(self):
-        self._timer.start(300)
+        self._simulation_on = True
+        self._timer.start(self._timer_period)
 
     def _handle_stop(self):
+        self._simulation_on = False
         self._timer.stop()
 
     def _handle_end(self):
@@ -170,6 +182,23 @@ class SimulationWindow(QWidget):
         self._home_window.showMaximized()
 
         self.close()
+
+    def _handle_faster(self):
+        if not self._simulation_on or self._timer_period <= 50:
+            return
+
+        self._timer_period -= 50
+        self._handle_stop()
+        self._handle_start()
+    
+    def _handle_slower(self):
+        if not self._simulation_on or self._timer_period >= 1000:
+            return
+        
+        self._timer_period += 50
+        self._handle_stop()
+        self._handle_start()
+        
 
     def _build_simulation_scene(self):
         matrix = self._environment.matrix
