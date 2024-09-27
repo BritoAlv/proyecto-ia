@@ -40,15 +40,17 @@ class SimulationWindow(QWidget):
         environment = Environment(matrix)
 
         # Business (simulation) logic properties
-        self._environment = environment
+        self._environment = environment # Core data structure
 
+        ## Properties to display agents
         self._car_items : dict[UUID, QGraphicsItem] = {}
         self._walker_items : dict[UUID, QGraphicsItem] = {}
         self._semaphore_items : dict[tuple[int, int], SemaphoreItem] = {}
 
-        self._home_window : StartWindow = None
-        self._scale_factor = 60
+        self._home_window : StartWindow = None # Reference to window
+        self._scale_factor = 60 ## Scale factor to visualize items
 
+        ## Properties to display labels
         self._cars = {}
         self._agent_labels = {}
 
@@ -95,6 +97,9 @@ class SimulationWindow(QWidget):
         self.setLayout(main_layout)
 
     def _simulate(self):
+        '''
+        Core simulation method, it holds an iteration over the simulation loop
+        '''
         # Convert dictionary values to list (in three cases) to avoid dictionary overwriting while iterating
         for semaphore in list(self._environment.semaphores.values()):
                 semaphore.act()
