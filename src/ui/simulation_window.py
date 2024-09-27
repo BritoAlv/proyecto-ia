@@ -214,8 +214,7 @@ class SimulationWindow(QWidget):
             i, j = environment_agents[agent_id].position
             if agent_id not in scene_items:
                 agent_item = self._add_rectangle(i, j, agent_size, agent_size, color)
-                environment_agents[agent_id].gui_label = len(self._agent_labels)
-                self._agent_labels[agent_id] = self.__add_text__(str(len(self._agent_labels)), agent_item.x(), agent_item.y())
+                self._agent_labels[agent_id] = self.__add_text__(str(environment_agents[agent_id].gui_label), agent_item.x(), agent_item.y())
                 scene_items[agent_id] = agent_item
             else:
                 agent_item = scene_items[agent_id]
