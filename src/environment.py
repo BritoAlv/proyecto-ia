@@ -52,11 +52,28 @@ class Environment:
         from sim.Semaphore import Semaphore
         self.semaphores: dict[tuple[int, int], Semaphore] = {}
 
-        self._add_semaphores()
         self._initialize()
-        # self.lock = Lock()
 
-    def _add_semaphores(self) -> None:
+
+    def _initialize(self):
+        from sim.event_handler import EventHandler
+        event_handler = EventHandler(self)
+
+        for _ in range(20):
+            road_blocks = event_handler._get_type_blocks(RoadBlock)
+            road_free_blocks = event_handler._get_free_blocks(RoadBlock)
+            sidewalk_blocks = event_handler._get_free_blocks(SidewalkBlock)
+
+            from sim.Car import Car
+            car = Car(random.choice(road_free_blocks).coordinates, random.choice(road_blocks).coordinates, self)
+            car.gui_label = len(self.cars)
+            from sim.Walker import Walker
+            walker = Walker(random.choice(sidewalk_blocks).coordinates, self)
+            walker.gui_label = len(self.walkers)
+
+            self.cars[car.id] = car
+            self.walkers[walker.id] = walker
+
         height = len(self.matrix)
         width = len(self.matrix[0])
 
@@ -67,19 +84,3 @@ class Environment:
                     from sim.Semaphore import Semaphore
                     self.semaphores[block.representative] = Semaphore(block.representative, self)
                     self.semaphores[block.representative].gui_label = len(self.semaphores)
-
-    def _initialize(self):
-        from sim.event_handler import EventHandler
-        event_handler = EventHandler(self)
-
-        for _ in range(20):
-            road_blocks = event_handler._get_free_blocks(RoadBlock)
-            sidewalk_blocks = event_handler._get_free_blocks(SidewalkBlock)
-
-            from sim.Car import Car
-            car = Car(random.choice(road_blocks).coordinates, random.choice(road_blocks).coordinates, self)
-            from sim.Walker import Walker
-            walker = Walker(random.choice(sidewalk_blocks).coordinates, self)
-
-            self.cars[car.id] = car
-            self.walkers[walker.id] = walker
