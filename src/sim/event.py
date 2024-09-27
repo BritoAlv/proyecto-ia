@@ -70,3 +70,16 @@ class EventHandler:
                     elif block_type == SidewalkBlock and block.walker_id == None:
                         free_blocks.append(block)
         return free_blocks
+    
+    def _get_type_blocks(self, block_type : type) -> list:
+        matrix = self.environment.matrix
+        height = len(matrix)
+        width = len(matrix[0])
+
+        blocks : list[block_type] = []
+        for i in range(height):
+            for j in range(width):
+                block = matrix[i][j]
+                if isinstance(block, block_type):
+                    blocks.append(block)
+        return blocks
