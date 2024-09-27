@@ -2,9 +2,7 @@ from environment import Environment, RoadBlock
 from globals import Directions
 from sim.Agent import Agent
 
-
 import random
-import time
 
 light_directions = [
     Directions.NORTH,
@@ -21,7 +19,4 @@ class Semaphore(Agent):
         self.current : Directions = Directions.NORTH
 
     def act(self) -> None:
-        while True:
-            time.sleep(1)
-            with self.environment.lock:
-                self.current = random.choice(light_directions)
+        self.current = random.choice(light_directions)

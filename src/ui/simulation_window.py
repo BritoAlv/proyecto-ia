@@ -1,5 +1,7 @@
 import pickle
 import sys
+from threading import Thread
+import time
 from uuid import UUID
 from PyQt5.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QGraphicsRectItem, QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QGraphicsItem, QGraphicsTextItem
 from PyQt5.QtCore import Qt, QTimer
@@ -40,7 +42,6 @@ class SimulationWindow(QWidget):
         with open(matrix_path, 'rb') as file:
             matrix = pickle.load(file)
         environment = Environment(matrix)
-        event_handler = EventHandler(environment)
 
         self.scale_factor = 60
         self.environment = environment
@@ -55,11 +56,6 @@ class SimulationWindow(QWidget):
         main_layout = QVBoxLayout()
         main_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
 
-        # # Create a label to display some information
-        # label = QLabel("Traffic Simulation", self)
-        # label.setFont(QFont("Arial", 30, 500, False))
-        # main_layout.addWidget(label) 
-        
         stop_button = QPushButton("Stop")
         stop_button.setFixedSize(200, 30)
         stop_button.clicked.connect(self._back_home)
@@ -79,13 +75,28 @@ class SimulationWindow(QWidget):
         self.setLayout(main_layout)
 
         self.timer = QTimer()
-        self.timer.timeout.connect(self._update_scene)
+        self.timer.timeout.connect(self._simulate)
         self.timer.start(100)
-        event_handler.start()
+
+    def _simulate(self):
+        for semaphore in self.environment.semaphores.values():
+                semaphore.act()
+
+        # Convert self.environment.cars.values() to list to avoid dictionary overwriting while iterating
+        for car in list(self.environment.cars.values()):
+            car.act()
+        
+        # Convert self.environment.walker.values() to list to avoid dictionary overwriting while iterating
+        for walker in list(self.environment.walkers.values()):
+            walker.act()
+
+        self._update_scene()
+
 
     def _back_home(self):
         self.home_window = StartWindow()
         self.home_window.showMaximized()
+
         self.close()
 
     def _build_simulation_scene(self):
@@ -161,10 +172,9 @@ class SimulationWindow(QWidget):
         
     
     def _update_scene(self):
-        with self.environment.lock:
-            self._change_lights()
-            self._move_agent(self.environment.cars, self.car_items)
-            self._move_agent(self.environment.walkers, self.walker_items, Qt.cyan, 15)
+        self._change_lights()
+        self._move_agent(self.environment.cars, self.car_items)
+        self._move_agent(self.environment.walkers, self.walker_items, Qt.cyan, 15)
 
     def _change_lights(self):
         for semaphore_id in self.environment.semaphores:

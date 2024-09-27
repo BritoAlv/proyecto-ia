@@ -1,4 +1,5 @@
 from abc import ABC
+import random
 from threading import Lock
 import time
 from uuid import UUID
@@ -52,7 +53,8 @@ class Environment:
         self.semaphores: dict[tuple[int, int], Semaphore] = {}
 
         self._add_semaphores()
-        self.lock = Lock()
+        self._initialize()
+        # self.lock = Lock()
 
     def _add_semaphores(self) -> None:
         height = len(self.matrix)
@@ -65,3 +67,19 @@ class Environment:
                     from sim.Semaphore import Semaphore
                     self.semaphores[block.representative] = Semaphore(block.representative, self)
                     self.semaphores[block.representative].gui_label = len(self.semaphores)
+
+    def _initialize(self):
+        from sim.event_handler import EventHandler
+        event_handler = EventHandler(self)
+
+        for _ in range(20):
+            road_blocks = event_handler._get_free_blocks(RoadBlock)
+            sidewalk_blocks = event_handler._get_free_blocks(SidewalkBlock)
+
+            from sim.Car import Car
+            car = Car(random.choice(road_blocks).coordinates, random.choice(road_blocks).coordinates, self)
+            from sim.Walker import Walker
+            walker = Walker(random.choice(sidewalk_blocks).coordinates, self)
+
+            self.cars[car.id] = car
+            self.walkers[walker.id] = walker
