@@ -4,12 +4,26 @@ class Nlp:
     def __init__(self) -> None:
         self.api_key = "amk4WhcFI6dXBHJUzcjhQhwUhmgjMqlP"
         self.llm = Mistral(api_key=self.api_key)
-        self.initial_prompt = 'dependiendo de la informacion que brinda la afirmacion analiza dependiendo de la actividad el lugar en el que se realiza y la hora especifica , en caso de no existir este ultimo debes suponerlo.Debes devolverme la respuesta en el formato                   {type: "actividad"            value: [lugar, hora]} el type siempre sera "actividad"    y que puedas reconocer si habla de eso varias veces       de la forma   de un array de ese objeto              y solo quiero ese array no me des mas  texto adicional                                  . La afirmacion es la siguiente :'
-    
+        self.initial_prompt = '''te voy a dar algo asi ( "Universidad de La Habana", "Principal centro de Educación Superior del país. Presenta cinco facultades y una capacidad de 1500 alumnos tanto de pregrado como postgrado." ) y de este texto se extrae esto son que contiene las siguiente propiedades:
+
+        walkers: Probabilidad que lo visite un peatón. Número entre 0 y 1
+        cars: Probabilidad que lo visite un auto. Número entre 0 y 1
+        months: Meses en los que está activo
+        hours: Intervalo de horas (hora militar) al día en que está activo. Lista de dos elementos. ([7, 17] significa de 7am a 5pm)
+        Ejemplo:
+
+        {
+            "walkers": 0.8,
+            "cars": 0.4,
+            "months": ["September", "October", "November", "December", "January", "February", "March", "April", "May", "June"],
+            "hours": [7, 17]
+        } 
+        entonces yo te voy a dar otro texto y quiero que me devuelvas un json como el que te enseñe para el texto que te dare'''
+
     def response(self, text):
         response = self.llm.chat.complete(
-            model="mistral-large-latest",
-            messages=[
+        model = "mistral-large-latest",
+        messages = [
                 {"role": "user", "content": self.initial_prompt + text}
             ]
         )
