@@ -1,4 +1,5 @@
 from mistralai import Mistral
+import json
 
 class Nlp:
     def __init__(self) -> None:
@@ -18,7 +19,7 @@ class Nlp:
             "months": ["September", "October", "November", "December", "January", "February", "March", "April", "May", "June"],
             "hours": [7, 17]
         } 
-        entonces yo te voy a dar otro texto y quiero que me devuelvas un json como el que te enseñe para el texto que te dare'''
+        entonces yo te voy a dar otro texto y quiero que me devuelvas un json como el que te enseñe y en la respuesta solo quiero ese json para el texto que te dare: a las diez habra aniversario en el estadio'''
 
     def response(self, text):
         response = self.llm.chat.complete(
@@ -27,9 +28,19 @@ class Nlp:
                 {"role": "user", "content": self.initial_prompt + text}
             ]
         )
-        return response.choices[0].message.content
+        return self.convert_json(response.choices[0].message.content)
     
+    def convert_json(self, text):
+        cleaned_json_string = text[8:-3]
+        try:
+            data_structure = json.loads(cleaned_json_string)
+            return data_structure
+
+        except json.JSONDecodeError:
+            return None
+            print("No se pudo decodificar el JSON.")
 
 nlp = Nlp()
 
-nlp.response(" a las diez habra aniversario en el estadio")
+response = nlp.response(" a las diez habra aniversario en el estadio y uno de cada diez carros lo visitan")
+print(response)
