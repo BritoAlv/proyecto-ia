@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from enum import Enum
+import math
 import random
 from numpy.random import exponential
 
@@ -39,16 +40,17 @@ class EventHandler:
     def _handle_car_event(self, event : Event) -> Event:
         # TODO: The exponential average time should vary depending on the time of the day (check on non-stationary Poisson Process to achieve accuracy)
         # Create a new Car-Event, using a Poisson distribution for car-event dates
-        time_offset = exponential(1000)
+        time_offset = math.ceil(exponential(10))
         next_date = event.date + timedelta(seconds=time_offset)
         next_car_event = Event(next_date, EventType.CAR_EVENT)
 
         # Get non-occupied road-blocks
         free_blocks = self._get_free_blocks(RoadBlock)
 
-        # Create and set up a new car
-        car = Car(random.choice(free_blocks).coordinates, random.choice(free_blocks).coordinates, self.environment)
-        self.environment.cars[car.id] = car
+        if len(free_blocks) > 0:
+            # Create and set up a new car
+            car = Car(random.choice(free_blocks).coordinates, random.choice(free_blocks).coordinates, self.environment, len(self.environment.cars))
+            self.environment.cars[car.id] = car
 
         return next_car_event
     
