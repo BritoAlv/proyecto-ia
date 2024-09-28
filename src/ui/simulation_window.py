@@ -31,7 +31,7 @@ from environment import (
 )
 from globals import DIRECTION_OFFSETS, Directions, valid_coordinates
 from sim.MovingAgent import MovingAgent
-from sim.event import Event, EventHandler, EventType
+from sim.Event import Event, EventHandler, EventType
 from ui.start_window import StartWindow
 
 

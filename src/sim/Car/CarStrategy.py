@@ -47,8 +47,6 @@ class CarStrategy:
             action = self.strategy.choose()
             self.history_actions.append(action)
             self.path = self.action_maps[action].algorithm(cur_pos, goal)
-            print(cur_pos, goal, self.path)
-
         if len(self.path) == 0:
             self.path = [cur_pos]
 
