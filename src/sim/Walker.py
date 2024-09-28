@@ -4,8 +4,6 @@ from sim.MovingAgent import MovingAgent
 
 
 import random
-import time
-
 
 class Walker(MovingAgent):
     def act(self) -> None:

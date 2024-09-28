@@ -35,7 +35,7 @@ class SidewalkBlock(Block):
 class Environment:
     def __init__(self, matrix: list[list[Block]]) -> None:
         # Local imports
-        from sim.Car import Car
+        from sim.Car.Car import Car
         from sim.Semaphore import Semaphore
         from sim.Walker import Walker
 
@@ -69,14 +69,14 @@ class Environment:
 
     # Testing purpose method
     def _initialize(self):
-        from sim.event import EventHandler
+        from sim.Event import EventHandler
         event_handler = EventHandler(self)
 
         for _ in range(20):
             road_blocks = event_handler._get_free_blocks(RoadBlock)
             sidewalk_blocks = event_handler._get_free_blocks(SidewalkBlock)
 
-            from sim.Car import Car
+            from sim.Car.Car import Car
             car = Car(random.choice(road_blocks).coordinates, random.choice(road_blocks).coordinates, self, len(self.cars))
             
             from sim.Walker import Walker

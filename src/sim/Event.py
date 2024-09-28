@@ -39,7 +39,7 @@ class EventHandler:
     def _handle_car_event(self, event : Event) -> Event:
         # TODO: The exponential average time should vary depending on the time of the day (check on non-stationary Poisson Process to achieve accuracy)
         # Create a new Car-Event, using a Poisson distribution for car-event dates
-        time_offset = exponential(300)
+        time_offset = exponential(1000)
         next_date = event.date + timedelta(seconds=time_offset)
         next_car_event = Event(next_date, EventType.CAR_EVENT)
 
