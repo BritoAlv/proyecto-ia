@@ -19,7 +19,7 @@ class Nlp:
             "months": ["September", "October", "November", "December", "January", "February", "March", "April", "May", "June"],
             "hours": [7, 17]
         } 
-        entonces yo te voy a dar otro texto y quiero que me devuelvas un json como el que te enseñe y en la respuesta solo quiero ese json para el texto que te dare: a las diez habra aniversario en el estadio'''
+        entonces yo te voy a dar otro texto y quiero que me devuelvas un json como el que te enseñe y en la respuesta solo quiero ese json para el texto que te dare: '''
 
     def response(self, text):
         response = self.llm.chat.complete(
@@ -38,9 +38,4 @@ class Nlp:
 
         except json.JSONDecodeError:
             return None
-            print("No se pudo decodificar el JSON.")
 
-nlp = Nlp()
-
-response = nlp.response(" a las diez habra aniversario en el estadio y uno de cada diez carros lo visitan")
-print(response)
