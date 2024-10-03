@@ -1,6 +1,6 @@
 from environment import Environment, RoadBlock, SemaphoreBlock
 from globals import DIRECTION_OFFSETS
-from sim.Car.CarCommon import check_free, check_valid, semaphor_options
+from sim.Car.CarCommon import check_free, check_valid, pos_cross_semaphor, semaphor_options
 from sim.Car.CarStrategy import CarStrategy
 from sim.MovingAgent import MovingAgent
 
@@ -43,7 +43,25 @@ class Car(MovingAgent):
                 if direction == self.environment.semaphores[representative].current:
                     if next_pos in semaphor_options(sem_x, sem_y, direction, self.environment):
                         self.set_car_pos(i, j, next_pos[0], next_pos[1], self.id)
+                        return
             # Case 2: (i, j) to (x, y)
             else:
                 if x - i == offset[0] and y - j == offset[1]:
                     self.set_car_pos(i, j, x, y, self.id)
+                    return
+        
+        self.strategy.path = []
+        m = offset[0]
+        n = offset[1]
+        x = i + m
+        y = j + n
+        if check_valid(x, y, RoadBlock, self.environment):
+            self.set_car_pos(i, j, x, y, self.id)
+            return
+        elif check_valid(x, y, SemaphoreBlock, self.environment):
+            representative = self.environment.matrix[x][y].representative
+            if direction == self.environment.semaphores[representative].current:
+                options = pos_cross_semaphor(x, y, direction, self.environment)
+                if len(options) > 0:
+                    self.set_car_pos(i, j, options[0][0], options[0][1], self.id)
+                    return
