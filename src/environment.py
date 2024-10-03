@@ -29,13 +29,13 @@ class RoadBlock(Block):
         super().__init__(coordinates)
         self.direction = direction
         self.car_id: UUID = None
+        self.walker_id : UUID = None
 
 
 class SidewalkBlock(Block):
     def __init__(self, coordinates: tuple[int, int], vertical: bool) -> None:
         super().__init__(coordinates)
         self.vertical = vertical
-        self.walker_id: UUID = None
 
 
 class Environment:
@@ -102,6 +102,6 @@ class Environment:
             from sim.Walker import Walker
 
             walker = Walker(random.choice(sidewalk_blocks).coordinates, self, len(self.walkers))
-
+            self.matrix[walker.position[0]][walker.position[1]].walker_id = walker.id
             self.cars[car.id] = car
             self.walkers[walker.id] = walker
