@@ -66,6 +66,7 @@ class Semaphore(Agent):
         self.current: Directions = Directions.NORTH
         self.fuzzy_values = {WHEATHER: 5, CAR_WAITING_TIME: 50, WALKER_WAITING_TIME: 50}
         self.fuzzy_system = FuzzySystem(input_f=[wheather, car_wait_time, walker_wait_time], output_f=[green_time, overload])
+        self.queue = []
         
         self.fuzzy_system.add_rule(GREEN_TIME, LOW, lambda x: min(x[CAR_WAITING_TIME][NORMAL], x[WALKER_WAITING_TIME][NORMAL], 1 - x[WHEATHER][RAINING]))
         self.fuzzy_system.add_rule(GREEN_TIME, AVERAGE, lambda x: min(x[CAR_WAITING_TIME][CHARGED], x[WALKER_WAITING_TIME][CHARGED], 1 - x[WHEATHER][CLOUD]))
@@ -89,15 +90,22 @@ class Semaphore(Agent):
         self.fuzzy_values[CAR_WAITING_TIME] = car_wait_time
         self.fuzzy_values[WALKER_WAITING_TIME] = walker_wait_time
         result = self.fuzzy_system.process(self.fuzzy_values)
-        self.green_time = result[GREEN_TIME]
+        self.queue.append(result[GREEN_TIME])
         self.overload = result[OVERLOAD]
-        
+    
+    def time_till_change(self) -> int:
+        """
+        return the remaining time that the semaphor will follow
+        """
+        return self.green_time - self.iter - 1
 
     def act(self) -> None:
         """
         The semaphor has a green time for default, this is updated using the fuzzy logic, the fuzzy values are updated using the set_fuzzy_values method. the semaphor will keep on a state until the green time is over, then it will change to the next direction in the array, if the direction is empty it will be red on all the directions, else will be green on a specific direction.
         """
         if self.iter >= self.green_time:
+            if len(self.queue) > 0:
+                self.green_time = self.queue.pop()
             self.iter = 0
             self.index += 1
             self.index %= len(self.directions)
