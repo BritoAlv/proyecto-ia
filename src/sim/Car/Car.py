@@ -10,8 +10,10 @@ class Car(MovingAgent):
         super().__init__(position, environment, gui_label)
         self.goal: tuple[int, int] = goal
         self.strategy = CarStrategy(environment)
-        self.total_time = 0
-        self.semaphor_time = 0
+        self.total_time_overall = 0
+        self.semaphor_time_over_all = 0
+        self.semaphor_stuck = 0
+        self.semaphor_pos = None
 
     def set_car_pos(self, i, j, x, y, id):
         self.environment.matrix[i][j].car_id = None
@@ -19,17 +21,22 @@ class Car(MovingAgent):
         self.environment.cars[id] = self
         self.position = (x, y)
 
+        if self.semaphor_pos != None:
+            print(f"Car {self.gui_label} added time {self.semaphor_stuck} after being stuck at semaphore {self.semaphor_pos}")
+            self.environment.semaphores[self.semaphor_pos].car_times.append(self.semaphor_stuck)
+            self.semaphor_time_over_all += self.semaphor_stuck
+            self.semaphor_stuck = 0
+            self.semaphor_pos = None
+
     def update_times(self):
-        self.total_time += 1
-        if self.position == self.strategy.history_pos[-1]:
-            self.semaphor_time += 1
+        self.total_time_overall += 1
 
     def remove_car(self):
         i, j = self.position
         self.environment.matrix[i][j].car_id = None
         self.environment.cars.pop(self.id)
-        self.environment.stats.cars_delay.append(self.total_time)
-        self.environment.stats.cars_semaphore_delay.append(self.semaphor_time)
+        self.environment.stats.cars_delay.append(self.total_time_overall)
+        self.environment.stats.cars_semaphore_delay.append(self.semaphor_time_over_all)
 
     def act(self) -> None:
         self.update_times()
@@ -52,6 +59,7 @@ class Car(MovingAgent):
                 representative = self.environment.matrix[sem_x][sem_y].representative
                 if direction == self.environment.semaphores[representative].current:
                     if next_pos in semaphor_options(sem_x, sem_y, direction, self.environment):
+                        self.semaphor_pos = representative
                         self.set_car_pos(i, j, next_pos[0], next_pos[1], self.id)
                         return
             # Case 2: (i, j) to (x, y)
@@ -59,19 +67,28 @@ class Car(MovingAgent):
                 if x - i == offset[0] and y - j == offset[1]:
                     self.set_car_pos(i, j, x, y, self.id)
                     return
-        
-        self.strategy.path = []
+        self.emergency_act()
+    
+    def emergency_act(self):
+        i, j = self.position
+        offset = DIRECTION_OFFSETS[self.environment.matrix[i][j].direction]
+        direction = self.environment.matrix[i][j].direction
         m = offset[0]
         n = offset[1]
         x = i + m
         y = j + n
         if check_valid(x, y, RoadBlock, self.environment):
             self.set_car_pos(i, j, x, y, self.id)
+            self.strategy.path = []
             return
         elif check_valid(x, y, SemaphoreBlock, self.environment):
             representative = self.environment.matrix[x][y].representative
             if direction == self.environment.semaphores[representative].current:
                 options = pos_cross_semaphor(x, y, direction, self.environment)
                 if len(options) > 0:
+                    self.semaphor_pos = representative
                     self.set_car_pos(i, j, options[0][0], options[0][1], self.id)
+                    self.strategy.path = []
                     return
+            
+        self.semaphor_stuck += 1
