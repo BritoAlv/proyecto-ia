@@ -22,7 +22,6 @@ class Car(MovingAgent):
         self.position = (x, y)
 
         if self.semaphor_pos != None:
-            print(f"Car {self.gui_label} added time {self.semaphor_stuck} after being stuck at semaphore {self.semaphor_pos}")
             self.environment.semaphores[self.semaphor_pos].car_times.append(self.semaphor_stuck)
             self.semaphor_time_over_all += self.semaphor_stuck
             self.semaphor_stuck = 0

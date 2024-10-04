@@ -82,6 +82,13 @@ TIME_CLASSIFICATION = "Time Classification" # ranges from 0 to 1440, the simulat
 time_var = FuzzyVariable( TIME_CLASSIFICATION, 0, 1440, time_classification)
 
 
+MONTH = "Month"
+month_var = FuzzyVariable(MONTH, 1, 12, {
+    LOW : BoundedFunction.gaussian_function(1, 1, 2, 1, 12),
+    AVERAGE : BoundedFunction.gaussian_function(1, 4, 1.5, 1, 12),
+    HIGH : BoundedFunction.gaussian_function(1, 12, 2, 1, 12),      
+})
+
 
 green_time = FuzzyVariable(GREEN_TIME, 1, 10, {
     LOW : BoundedFunction.gaussian_function(1, 1, 2, 1, 10),
@@ -109,8 +116,8 @@ class Semaphore(Agent):
         self.iter = 0
         self.index = 0
         self.current: Directions = Directions.NORTH
-        self.fuzzy_values = {TIME_CLASSIFICATION  : 450 , WHEATHER: 5, CAR_WAITING_TIME: 50, WALKER_WAITING_TIME: 50}
-        self.fuzzy_system = FuzzySystem(input_f=[time_var, wheather, car_wait_time, walker_wait_time], output_f=[green_time, overload])
+        self.fuzzy_values = {MONTH : 10, TIME_CLASSIFICATION  : 450 , WHEATHER: 5, CAR_WAITING_TIME: 50, WALKER_WAITING_TIME: 50}
+        self.fuzzy_system = FuzzySystem(input_f=[time_var, wheather, car_wait_time, walker_wait_time, month_var], output_f=[green_time, overload])
         self.queue = []
         self.car_times : list[int] = []
         
