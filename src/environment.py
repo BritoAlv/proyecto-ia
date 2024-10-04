@@ -3,6 +3,7 @@ import random
 from uuid import UUID
 
 from globals import valid_coordinates
+from stats import Stats
 
 
 class Block(ABC):
@@ -51,6 +52,7 @@ class Environment:
         self.walkers: dict[UUID, Walker] = {}
         self.semaphores: dict[tuple[int, int], Semaphore] = {}
         self.places: dict[tuple[int, int], PlaceBlock] = {}
+        self.stats: Stats = Stats()
         self._extract_data()  # Extract
 
         # Testing purpose call
