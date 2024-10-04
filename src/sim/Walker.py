@@ -12,6 +12,7 @@ class Walker(MovingAgent):
     def __init__(self, position, environment: Environment, gui_label):
         super().__init__(position, environment, gui_label)
         self.path = []
+        self.total_time = 0
 
     def set_walker_pos(self, new: tuple[int, int]):
         i, j = self.position

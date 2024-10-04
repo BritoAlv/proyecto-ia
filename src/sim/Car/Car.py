@@ -10,6 +10,8 @@ class Car(MovingAgent):
         super().__init__(position, environment, gui_label)
         self.goal: tuple[int, int] = goal
         self.strategy = CarStrategy(environment)
+        self.total_time = 0
+        self.semaphor_time = 0
 
     def set_car_pos(self, i, j, x, y, id):
         self.environment.matrix[i][j].car_id = None
@@ -17,12 +19,20 @@ class Car(MovingAgent):
         self.environment.cars[id] = self
         self.position = (x, y)
 
+    def update_times(self):
+        self.total_time += 1
+        if self.position == self.strategy.history_pos[-1]:
+            self.semaphor_time += 1
+
     def remove_car(self):
         i, j = self.position
         self.environment.matrix[i][j].car_id = None
         self.environment.cars.pop(self.id)
+        self.environment.stats.cars_delay.append(self.total_time)
+        self.environment.stats.cars_semaphore_delay.append(self.semaphor_time)
 
     def act(self) -> None:
+        self.update_times()
         if self.position == self.goal:  # car reached goal so done.
             self.remove_car()
             return
