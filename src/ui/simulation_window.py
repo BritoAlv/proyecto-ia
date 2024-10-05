@@ -66,14 +66,13 @@ class SimulationWindow(QWidget):
         self._event_handler = EventHandler(environment) 
 
         ## Simulation properties
-        self._date = datetime(2000, 1, 1)
         self._events_queue: PriorityQueue[Event] = PriorityQueue()
-        self._event: Event = Event(self._date + timedelta(seconds=1), EventType.CAR_EVENT)
+        self._event: Event = Event(self._environment.date + timedelta(seconds=1), EventType.CAR_EVENT)
         self._timer_period: int = 300
         self._simulation_on = False
 
         # ### Push a car-event
-        # self._events_queue.put(Event(self._date + timedelta(seconds=1), EventType.CAR_EVENT))
+        # self._events_queue.put(Event(self._environment.date + timedelta(seconds=1), EventType.CAR_EVENT))
 
         ## Properties to display agents
         self._car_items: dict[UUID, QGraphicsItem] = {}
@@ -148,7 +147,7 @@ class SimulationWindow(QWidget):
 
         if not debug:
             # Handle events
-            while self._event.date == self._date:
+            while self._event.date == self._environment.date:
                 future_event = self._event_handler.handle(self._event)
                 self._events_queue.put(future_event)
                 self._event = self._events_queue.get()
@@ -166,7 +165,7 @@ class SimulationWindow(QWidget):
         self._update_scene()
 
         # Increase simulation date
-        self._date += timedelta(seconds=1)
+        self._environment.date += timedelta(seconds=1)
 
     def _handle_start(self):
         self._simulation_on = True

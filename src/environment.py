@@ -1,4 +1,5 @@
 from abc import ABC
+from datetime import datetime
 import random
 from uuid import UUID
 
@@ -12,7 +13,13 @@ class Block(ABC):
 
 
 class PlaceBlock(Block):
-    def __init__(self, coordinates: tuple[int, int], name: str, description: str, representative: tuple[int, int]) -> None:
+    def __init__(
+        self,
+        coordinates: tuple[int, int],
+        name: str,
+        description: str,
+        representative: tuple[int, int],
+    ) -> None:
         super().__init__(coordinates)
         self.name = name
         self.description = description
@@ -20,7 +27,9 @@ class PlaceBlock(Block):
 
 
 class SemaphoreBlock(Block):
-    def __init__(self, coordinates: tuple[int, int], representative: tuple[int, int]) -> None:
+    def __init__(
+        self, coordinates: tuple[int, int], representative: tuple[int, int]
+    ) -> None:
         super().__init__(coordinates)
         self.representative = representative
 
@@ -30,7 +39,7 @@ class RoadBlock(Block):
         super().__init__(coordinates)
         self.direction = direction
         self.car_id: UUID = None
-        self.walker_id : UUID = None
+        self.walker_id: UUID = None
 
 
 class SidewalkBlock(Block):
@@ -40,7 +49,7 @@ class SidewalkBlock(Block):
 
 
 class Environment:
-    def __init__(self, matrix: list[list[Block]]) -> None:
+    def __init__(self, matrix: list[list[Block]], start_date: datetime = datetime(2000, 1, 1)) -> None:
         # Local imports
         from sim.Car.Car import Car
         from sim.Semaphore import Semaphore
@@ -51,6 +60,7 @@ class Environment:
         self.cars: dict[UUID, Car] = {}
         self.walkers: dict[UUID, Walker] = {}
         self.semaphores: dict[tuple[int, int], Semaphore] = {}
+        self.date: datetime = start_date
         self.places: dict[tuple[int, int], PlaceBlock] = {}
         self.stats: Stats = Stats()
         self._extract_data()  # Extract
@@ -67,10 +77,15 @@ class Environment:
                 block = self.matrix[i][j]
 
                 # Extract semaphores representatives
-                if isinstance(block, SemaphoreBlock) and block.representative not in self.semaphores:
+                if (
+                    isinstance(block, SemaphoreBlock)
+                    and block.representative not in self.semaphores
+                ):
                     from sim.Semaphore import Semaphore
 
-                    self.semaphores[block.representative] = Semaphore(block.representative, self, len(self.semaphores))
+                    self.semaphores[block.representative] = Semaphore(
+                        block.representative, self, len(self.semaphores)
+                    )
 
                 # Extract interest places
                 if isinstance(block, PlaceBlock):
@@ -78,14 +93,18 @@ class Environment:
 
         for i in range(height):
             for j in range(width):
-                block = self.matrix[i][j]        
+                block = self.matrix[i][j]
                 if isinstance(block, RoadBlock):
                     dx = [-1, 1, 0, 0]
                     dy = [0, 0, -1, 1]
                     for x, y in zip(dx, dy):
-                        if valid_coordinates(i + x, j + y, len(self.matrix), len(self.matrix[0])):
+                        if valid_coordinates(
+                            i + x, j + y, len(self.matrix), len(self.matrix[0])
+                        ):
                             if isinstance(self.matrix[i + x][j + y], SemaphoreBlock):
-                                self.semaphores[self.matrix[i + x][j + y].representative].add_direction(block.direction)
+                                self.semaphores[
+                                    self.matrix[i + x][j + y].representative
+                                ].add_direction(block.direction)
 
     # Testing purpose method
     def _initialize(self):
@@ -99,11 +118,18 @@ class Environment:
 
             from sim.Car.Car import Car
 
-            car = Car(random.choice(road_blocks).coordinates, random.choice(road_blocks).coordinates, self, len(self.cars))
+            car = Car(
+                random.choice(road_blocks).coordinates,
+                random.choice(road_blocks).coordinates,
+                self,
+                len(self.cars),
+            )
 
             from sim.Walker import Walker
 
-            walker = Walker(random.choice(sidewalk_blocks).coordinates, self, len(self.walkers))
+            walker = Walker(
+                random.choice(sidewalk_blocks).coordinates, self, len(self.walkers)
+            )
             self.matrix[walker.position[0]][walker.position[1]].walker_id = walker.id
             self.cars[car.id] = car
             self.walkers[walker.id] = walker
