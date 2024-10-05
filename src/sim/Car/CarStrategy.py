@@ -1,4 +1,6 @@
-from environment import Environment
+from environment import Environment, RoadBlock, SemaphoreBlock
+from globals import DIRECTION_OFFSETS
+from sim.Car.CarCommon import check_valid, pos_cross_semaphor
 from sim.Car.CarRandom import CarRandom
 from sim.Car.CarDepthDFS import DepthDFS
 from sim.Car.CarDijkstra import Dijkstra
@@ -37,16 +39,20 @@ class CarStrategy:
 
     def update(self, cur_pos: tuple[int, int], goal: tuple[int, int]):
         self.history_pos.append(cur_pos)
-        if len(self.history_actions) > 0:
+        if len(self.history_actions) > 0 and len(self.path) > 0:
             if len(self.history_pos) > 2 and self.history_pos[-1] != self.history_pos[-2]:
                 self.strategy.reward(self.strategy.c_state, self.history_actions[-1], 1)
             else:
                 self.strategy.no_reward(self.strategy.c_state, self.history_actions[-1], 1)
 
+        """
+        Try to update path using the action.
+        """
         if len(self.path) == 0:
             action = self.strategy.choose()
             self.history_actions.append(action)
             self.path = self.action_maps[action].algorithm(cur_pos, goal)
+        
         if len(self.path) == 0:
             self.path = [cur_pos]
 
@@ -56,7 +62,6 @@ class CarStrategy:
         if len(self.history_pos) > 3 and self.history_pos[-1] == self.history_pos[-2] == self.history_pos[-3]:
             self.strategy.change_state(0)
             
-
         if (len(self.history_pos) > 3 and len(set([self.history_pos[-1], self.history_pos[-2], self.history_pos[-3]])) == 3):
             self.strategy.change_state(1)
 

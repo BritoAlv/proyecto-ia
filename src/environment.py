@@ -1,17 +1,30 @@
 from abc import ABC
+from datetime import datetime, timedelta
 import random
 from uuid import UUID
+
+from globals import valid_coordinates
+from stats import Stats
+
 
 class Block(ABC):
     def __init__(self, coordinates: tuple[int, int]) -> None:
         self.coordinates = coordinates
 
+
 class PlaceBlock(Block):
-    def __init__(self, coordinates: tuple[int, int], name : str, description : str, representative : tuple[int, int]) -> None:
+    def __init__(
+        self,
+        coordinates: tuple[int, int],
+        name: str,
+        description: str,
+        representative: tuple[int, int],
+    ) -> None:
         super().__init__(coordinates)
         self.name = name
         self.description = description
-        self.representative = representative 
+        self.representative = representative
+
 
 class SemaphoreBlock(Block):
     def __init__(
@@ -20,20 +33,25 @@ class SemaphoreBlock(Block):
         super().__init__(coordinates)
         self.representative = representative
 
+
 class RoadBlock(Block):
     def __init__(self, coordinates: tuple[int, int], direction: int) -> None:
         super().__init__(coordinates)
         self.direction = direction
         self.car_id: UUID = None
+        self.walker_id: UUID = None
+
 
 class SidewalkBlock(Block):
     def __init__(self, coordinates: tuple[int, int], vertical: bool) -> None:
         super().__init__(coordinates)
         self.vertical = vertical
-        self.walker_id: UUID = None
+
 
 class Environment:
-    def __init__(self, matrix: list[list[Block]]) -> None:
+    def __init__(
+        self, matrix: list[list[Block]], start_date: datetime = datetime(2000, 1, 1)
+    ) -> None:
         # Local imports
         from sim.Car.Car import Car
         from sim.Semaphore import Semaphore
@@ -44,11 +62,14 @@ class Environment:
         self.cars: dict[UUID, Car] = {}
         self.walkers: dict[UUID, Walker] = {}
         self.semaphores: dict[tuple[int, int], Semaphore] = {}
-        self.places : dict[tuple[int, int], PlaceBlock] = {}
-        self._extract_data() # Extract 
+        self.date: datetime = start_date
+        self.weather: float = 0
+        self.places: dict[tuple[int, int], PlaceBlock] = {}
+        self.stats: Stats = Stats()
+        self._extract_data()  # Extract
 
         # Testing purpose call
-        self._initialize() 
+        self._initialize()
 
     def _extract_data(self) -> None:
         height = len(self.matrix)
@@ -59,17 +80,39 @@ class Environment:
                 block = self.matrix[i][j]
 
                 # Extract semaphores representatives
-                if isinstance(block, SemaphoreBlock) and block.representative not in self.semaphores:
+                if (
+                    isinstance(block, SemaphoreBlock)
+                    and block.representative not in self.semaphores
+                ):
                     from sim.Semaphore import Semaphore
-                    self.semaphores[block.representative] = Semaphore(block.representative, self, len(self.semaphores))
+
+                    self.semaphores[block.representative] = Semaphore(
+                        block.representative, self, len(self.semaphores)
+                    )
 
                 # Extract interest places
                 if isinstance(block, PlaceBlock):
                     self.places[(i, j)] = block
 
+        for i in range(height):
+            for j in range(width):
+                block = self.matrix[i][j]
+                if isinstance(block, RoadBlock):
+                    dx = [-1, 1, 0, 0]
+                    dy = [0, 0, -1, 1]
+                    for x, y in zip(dx, dy):
+                        if valid_coordinates(
+                            i + x, j + y, len(self.matrix), len(self.matrix[0])
+                        ):
+                            if isinstance(self.matrix[i + x][j + y], SemaphoreBlock):
+                                self.semaphores[
+                                    self.matrix[i + x][j + y].representative
+                                ].add_direction(block.direction)
+
     # Testing purpose method
     def _initialize(self):
         from sim.Event import EventHandler
+
         event_handler = EventHandler(self)
 
         for _ in range(20):
@@ -77,10 +120,30 @@ class Environment:
             sidewalk_blocks = event_handler._get_free_blocks(SidewalkBlock)
 
             from sim.Car.Car import Car
-            car = Car(random.choice(road_blocks).coordinates, random.choice(road_blocks).coordinates, self, len(self.cars))
-            
-            from sim.Walker import Walker
-            walker = Walker(random.choice(sidewalk_blocks).coordinates, self, len(self.walkers))
 
+            car = Car(
+                random.choice(road_blocks).coordinates,
+                random.choice(road_blocks).coordinates,
+                self,
+                len(self.cars),
+            )
+
+            from sim.Walker import Walker
+
+            walker = Walker(
+                random.choice(sidewalk_blocks).coordinates, self, len(self.walkers)
+            )
+            self.matrix[walker.position[0]][walker.position[1]].walker_id = walker.id
             self.cars[car.id] = car
             self.walkers[walker.id] = walker
+
+    def increase_date(self, seconds: int = 1):
+        previous_day = self.date.day
+        self.date += timedelta(seconds=seconds)
+        next_day = self.date.day
+
+        if previous_day != next_day:
+            self.update_weather()
+
+    def update_weather(self):
+        self.weather = random.uniform(0, 0.4)
