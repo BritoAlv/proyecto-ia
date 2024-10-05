@@ -1,5 +1,5 @@
 from abc import ABC
-from datetime import datetime
+from datetime import datetime, timedelta
 import random
 from uuid import UUID
 
@@ -49,7 +49,9 @@ class SidewalkBlock(Block):
 
 
 class Environment:
-    def __init__(self, matrix: list[list[Block]], start_date: datetime = datetime(2000, 1, 1)) -> None:
+    def __init__(
+        self, matrix: list[list[Block]], start_date: datetime = datetime(2000, 1, 1)
+    ) -> None:
         # Local imports
         from sim.Car.Car import Car
         from sim.Semaphore import Semaphore
@@ -61,6 +63,7 @@ class Environment:
         self.walkers: dict[UUID, Walker] = {}
         self.semaphores: dict[tuple[int, int], Semaphore] = {}
         self.date: datetime = start_date
+        self.weather: float = 0
         self.places: dict[tuple[int, int], PlaceBlock] = {}
         self.stats: Stats = Stats()
         self._extract_data()  # Extract
@@ -133,3 +136,14 @@ class Environment:
             self.matrix[walker.position[0]][walker.position[1]].walker_id = walker.id
             self.cars[car.id] = car
             self.walkers[walker.id] = walker
+
+    def increase_date(self, seconds: int = 1):
+        previous_day = self.date.day
+        self.date += timedelta(seconds=seconds)
+        next_day = self.date.day
+
+        if previous_day != next_day:
+            self.update_weather()
+
+    def update_weather(self):
+        self.weather = random.uniform(0, 0.4)

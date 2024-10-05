@@ -71,8 +71,8 @@ class SimulationWindow(QWidget):
         self._timer_period: int = 300
         self._simulation_on = False
 
-        # ### Push a car-event
-        # self._events_queue.put(Event(self._environment.date + timedelta(seconds=1), EventType.CAR_EVENT))
+        ### Push a rain-event
+        self._events_queue.put(Event(self._environment.date + timedelta(seconds=2), EventType.RAIN_EVENT))
 
         ## Properties to display agents
         self._car_items: dict[UUID, QGraphicsItem] = {}
@@ -116,6 +116,7 @@ class SimulationWindow(QWidget):
         faster_button.setFixedSize(200, 30)
         slower_button = QPushButton("Slower")
         slower_button.setFixedSize(200, 30)
+        self._date_label = QLabel(text=self._environment.date.__str__())
 
         start_button.clicked.connect(self._handle_start)
         stop_button.clicked.connect(self._handle_stop)
@@ -128,6 +129,7 @@ class SimulationWindow(QWidget):
         top_layout.addWidget(end_button)
         top_layout.addWidget(faster_button)
         top_layout.addWidget(slower_button)
+        top_layout.addWidget(self._date_label)
 
         main_layout.addLayout(top_layout)
 
@@ -165,7 +167,7 @@ class SimulationWindow(QWidget):
         self._update_scene()
 
         # Increase simulation date
-        self._environment.date += timedelta(seconds=1)
+        self._environment.increase_date()
 
     def _handle_start(self):
         self._simulation_on = True
@@ -183,10 +185,16 @@ class SimulationWindow(QWidget):
         self.close()
 
     def _handle_faster(self):
-        if not self._simulation_on or self._timer_period <= 50:
+        if not self._simulation_on or self._timer_period <= 1:
             return
 
-        self._timer_period -= 50
+        if self._timer_period <= 10:
+            self._timer_period -= 1
+        elif self._timer_period <= 50:
+            self._timer_period -= 10
+        else:
+            self._timer_period -= 50
+
         self._handle_stop()
         self._handle_start()
     
@@ -194,7 +202,11 @@ class SimulationWindow(QWidget):
         if not self._simulation_on or self._timer_period >= 1000:
             return
         
-        self._timer_period += 50
+        if self._timer_period < 50:
+            self._timer_period = 50
+        else:
+            self._timer_period += 50
+
         self._handle_stop()
         self._handle_start()
         
@@ -288,6 +300,7 @@ class SimulationWindow(QWidget):
         return self.__add_text__(text, j * self._scale_factor, i * self._scale_factor)
 
     def _update_scene(self):
+        self._date_label.setText(self._environment.date.__str__()) 
         self._change_lights()
         self._move_agent(self._environment.cars, self._car_items)
         self._move_agent(self._environment.walkers, self._walker_items, Qt.cyan, 15)

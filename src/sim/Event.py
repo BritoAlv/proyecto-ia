@@ -11,6 +11,7 @@ from sim.Car.Car import Car
 class EventType(Enum):
     CAR_EVENT = 0
     WALKER_EVENT = 1
+    RAIN_EVENT = 2
 
 class Event: 
     def __init__(self, date: datetime, event_type : EventType) -> None:
@@ -37,6 +38,8 @@ class EventHandler:
             return self._handle_car_event(event)
         elif event.type == EventType.WALKER_EVENT:
             return self._handle_walker_event(event)
+        elif event.type == EventType.RAIN_EVENT:
+            return self._handle_rain_event(event)
     
     def _handle_car_event(self, event : Event) -> Event:
         # TODO: The exponential average time should vary depending on the time of the day (check on non-stationary Poisson Process to achieve accuracy)
@@ -61,6 +64,22 @@ class EventHandler:
     
     def _handle_walker_event(self, event : Event) -> Event:
         pass
+
+    def _handle_rain_event(self, event: Event) -> Event:
+        wet_months = [5, 6, 7, 8, 9, 10, 11]
+        mean = 1 if event.date.month in wet_months else 10
+        time_offset = math.ceil(exponential(mean))
+        next_date = event.date + timedelta(days=time_offset)
+        next_rain_event = Event(next_date, EventType.RAIN_EVENT)
+
+        mean = 0.9 if event.date.month in wet_months else 0.7
+        standard_deviation = 0.1
+        beta = mean / math.pow(standard_deviation, 2)
+        alpha = mean * beta
+        rain_intensity = random.gammavariate(alpha, 1 / beta)
+        self.environment.weather = rain_intensity
+
+        return next_rain_event
         
     def _get_free_blocks(self, block_type : type):
         matrix = self.environment.matrix
