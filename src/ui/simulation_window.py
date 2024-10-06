@@ -32,7 +32,7 @@ from environment import (
 from globals import DIRECTION_OFFSETS, Directions, valid_coordinates
 from sim.MovingAgent import MovingAgent
 from sim.Event import Event, EventHandler, EventType
-from ui.start_window import StartWindow
+from ui.stats_window import StatsWindow
 
 
 class ZoomableGraphicsView(QGraphicsView):
@@ -79,7 +79,7 @@ class SimulationWindow(QWidget):
         self._walker_items: dict[UUID, QGraphicsItem] = {}
         self._semaphore_items: dict[tuple[int, int], SemaphoreItem] = {}
 
-        self._home_window: StartWindow = None  # Reference to window
+        self._stats_window: StatsWindow = None  # Reference to window
         self._scale_factor = 60  ## Scale factor to visualize items
 
         ## Properties to display labels
@@ -179,8 +179,8 @@ class SimulationWindow(QWidget):
 
     def _handle_end(self):
         self._timer.stop()
-        self._home_window = StartWindow()
-        self._home_window.showMaximized()
+        self._stats_window = StatsWindow(self._environment)
+        self._stats_window.showMaximized()
 
         self.close()
 

@@ -64,6 +64,7 @@ class Environment:
         self.cars: dict[UUID, Car] = {}
         self.walkers: dict[UUID, Walker] = {}
         self.semaphores: dict[tuple[int, int], Semaphore] = {}
+        self.start_date: datetime = start_date
         self.date: datetime = start_date
         self.weather: float = 0
         self.places: dict[tuple[int, int], PlaceBlock] = {}
