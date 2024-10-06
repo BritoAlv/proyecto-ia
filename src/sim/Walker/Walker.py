@@ -18,11 +18,11 @@ class Walker(MovingAgent):
         gui_label = len(environment.walkers)
         super().__init__(position, environment, gui_label)
         
-        self.environment.matrix[self.position[0]][self.position[1]].walkers_id.append(self.id)
+        i, j = self.position
+        self.environment.matrix[i][j].walkers_id.append(self.id)
         self.environment.walkers[self.id] = self
 
         self.path = []
-        self.total_time = 0
 
         places = random.choices(self.environment.place_blocks, k=random.randint(1, len(self.environment.place_blocks)))
         places_g = random.choices(places, k=random.randint(1, len(places)))
@@ -34,7 +34,6 @@ class Walker(MovingAgent):
             beliefs[place.name] = PlaceBelief(place.name, random.choice(self.environment.place_blocks).coordinates)
 
 
-
         self.place_beliefs = beliefs
         self.place_desires : dict[str, int] = place_desires
         
@@ -44,15 +43,15 @@ class Walker(MovingAgent):
         self.reactive_ness = random.random()
         self.reset_prob = 0.05
 
-
-
     def set_walker_pos(self, new: tuple[int, int]):
         i, j = self.position
         x, y = new
         assert(abs(i-x)+ abs(j -y) in [1, 0])
-        self.position = new
-        self.environment.matrix[i][j].walkers_id.remove(self.id)
-        self.environment.matrix[x][y].walkers_id.append(self.id)
+        current_block = self.environment.matrix[i][j]
+        next_block = self.environment.matrix[x][y]
+        self.position = (x, y)
+        current_block.walkers_id.remove(self.id)
+        next_block.walkers_id.append(self.id)
 
     
     def try_move(self, next_pos : tuple[int, int]) -> bool:
@@ -159,7 +158,7 @@ class Walker(MovingAgent):
                         self.place_desires[place_name] += 2
 
     def update_desires_known_places(self):
-        for place_name in self.place_beliefs:
+        for place_name in self.place_desires:
             if self.place_beliefs[place_name].belief_state == 1:
                 self.place_desires[place_name] += 2
 

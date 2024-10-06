@@ -37,7 +37,7 @@ class RoadBlock(Block):
         super().__init__(coordinates)
         self.direction = direction
         self.car_id: UUID = None
-        self.walker_id: UUID = None
+        self.walkers_id: list[UUID] = []
 
 
 class SidewalkBlock(Block):
