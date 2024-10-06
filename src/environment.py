@@ -19,11 +19,13 @@ class PlaceBlock(Block):
         name: str,
         description: str,
         representative: tuple[int, int],
+        meta_data: dict = None
     ) -> None:
         super().__init__(coordinates)
         self.name = name
         self.description = description
         self.representative = representative
+        self.meta_data: dict = meta_data
 
 
 class SemaphoreBlock(Block):
@@ -39,13 +41,13 @@ class RoadBlock(Block):
         super().__init__(coordinates)
         self.direction = direction
         self.car_id: UUID = None
-        self.walker_id: UUID = None
 
 
 class SidewalkBlock(Block):
     def __init__(self, coordinates: tuple[int, int], vertical: bool) -> None:
         super().__init__(coordinates)
         self.vertical = vertical
+        self.walker_id: UUID = None
 
 
 class Environment:

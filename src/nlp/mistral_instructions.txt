@@ -43,6 +43,8 @@ If you can't infer any of those variables (we'll make sure to give you enough in
     "hours": [6, 6]
 }
 
-One last thing, do not explain what you did or make any comments, just give the output json string, and don't put ``` at the start or at the end, please.
+One last thing, do not explain what you did or make any comments, just give the json string, and don't put ```json at the start and ``` at the end, please. 
+
+Remember just the json!
 
 That's all. Here comes the real input. Good luck:
