@@ -1,8 +1,9 @@
 from environment import Environment, PlaceBlock, RoadBlock, SemaphoreBlock, SidewalkBlock
 from globals import DIRECTION_OFFSETS, valid_coordinates
-from sim.Car.CarCommon import check_free
+
 from sim.MovingAgent import MovingAgent
-from sim.Walker import WalkerDijkstra
+from sim.Walker.WalkerDijkstra import WalkerDijkstra
+from sim.Walker.WalkerRandom import WalkerRandom
 from sim.Walker.PathFinder import PathFinder
 from sim.Walker.PlaceBelief import PlaceBelief
 
@@ -13,7 +14,7 @@ from sim.Walker.WalkerRandom import WalkerRandom
 
 class Walker(MovingAgent):
     def __init__(self, environment: Environment):
-        position = random.choice(environment.sidewalk_blocks).coordinates, 
+        position = random.choice(environment.sidewalk_blocks).coordinates
         gui_label = len(environment.walkers)
         super().__init__(position, environment, gui_label)
         
@@ -103,10 +104,10 @@ class Walker(MovingAgent):
             - if social allows add to my knowledge its knowledge,
         """
         i, j = self.position
-        for dx, dy in [(1, 0), (-1, 0), (0, 1), (0,-1)]:
+        for dx, dy in DIRECTION_OFFSETS.values():
             x = i + dx
             y = j + dy
-            if valid_coordinates(x, y, self.environment.matrix, len(self.environment.matrix[0])):
+            if valid_coordinates(x, y, len(self.environment.matrix), len(self.environment.matrix[0])):
                 place = self.environment.matrix[x][y]
                 if isinstance(place, PlaceBlock):
                     name = place.name
@@ -124,7 +125,7 @@ class Walker(MovingAgent):
         for walker_id in self.environment.matrix[i][j].walkers_id:
             if walker_id != self.id and random.random() >= self.social_prob:
                 other_walker = self.environment.walkers[walker_id]
-                self.mix_beliefs(other_walker.place_beliefs)
+                self.mix_beliefs(other_walker)
 
     def mix_beliefs(self, other : 'Walker'):
         others = other.place_beliefs
@@ -172,17 +173,15 @@ class Walker(MovingAgent):
         candidates = [place for place, desire in self.place_desires.items() if desire == max_desire]
         return random.choice(candidates)
 
-    def choose_plan(self, place_intention : str) -> PathFinder:
+    def choose_plan(self, place_intented : str) -> PathFinder:
         """
         This method should choose a method to compute the algorithm used to get to the path
         """
-
         """
         Implementation is : If desire is big enough and know where it is use dikstra, else use 
         a random to explore the environment.
         """
-        place = self.place_beliefs[place_intention]
-        if self.place_desires[place] > 4 and self.place_beliefs[place].belief_state == 1:
+        if place_intented in self.place_desires and self.place_desires[place_intented] > 4 and self.place_beliefs[place_intented].belief_state == 1:
             return WalkerDijkstra(self.environment) # replace with Dikstra
         return WalkerRandom(self.environment)
 
@@ -203,10 +202,10 @@ class Walker(MovingAgent):
             # the plan gives a path that the walker should follow.
 
             goal_place_pos = self.place_beliefs[place_intention].belief_pos
-            for dx, dy in DIRECTION_OFFSETS:
+            for dx, dy in DIRECTION_OFFSETS.values():
                 x = goal_place_pos[0] + dx
                 y = goal_place_pos[1] + dy
-                if valid_coordinates(x, y, self.environment.matrix, len(self.environment.matrix[0])):
+                if valid_coordinates(x, y, len(self.environment.matrix), len(self.environment.matrix[0])):
                     if isinstance(self.environment.matrix[x][y], SidewalkBlock):
                         self.path = plan.path_finder(self.position, goal_place_pos)
                         assert(len(self.path) > 0)

@@ -407,6 +407,6 @@ class SimulationWindow(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = SimulationWindow("./src/ui/matrices/f_test.pkl")
+    window = SimulationWindow("./src/ui/matrices/a.pkl")
     window.showMaximized()
     app.exec_()

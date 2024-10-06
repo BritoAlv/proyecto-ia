@@ -65,7 +65,7 @@ class Environment:
         self.stats: Stats = Stats()
         self._extract_data()  # Extract
 
-        self.sideway_block = self._get_type_blocks(SidewalkBlock)
+        self.sidewalk_blocks = self._get_type_blocks(SidewalkBlock)
         self.place_blocks = self._get_type_blocks(PlaceBlock)
         self.road_blocks = self._get_type_blocks(RoadBlock)
         self.free_blocks = self._get_free_blocks(RoadBlock)

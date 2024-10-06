@@ -5,7 +5,7 @@ from sim.Car.CarCommon import check_valid, semaphor_options
 from sim.Walker.PathFinder import PathFinder, WalkerGraphNode
 
 
-class Dijkstra(PathFinder):
+class WalkerDijkstra(PathFinder):
     def algorithm(self, cur_pos: tuple[int, int], goal: tuple[int, int]) -> list[tuple[int, int]]:
         return self.dijkstra(cur_pos, goal)
 
