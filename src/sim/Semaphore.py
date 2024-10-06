@@ -108,7 +108,7 @@ overload = FuzzyVariable(
 )
 
 class Semaphore(Agent):
-    def __init__(self, id, environment: Environment, gui_label):
+    def __init__(self, id, environment: Environment, gui_label : int, useFuzzy : bool = True ) :
         super().__init__(id, environment, gui_label)
         self.directions = [Directions.EMPTY]
         self.overload = 1
@@ -121,6 +121,7 @@ class Semaphore(Agent):
         self.queue = []
         self.car_times : list[int] = []
         self.walkers_times : list[int] = []
+        self.useFuzzy = useFuzzy
         
         self.fuzzy_system.add_rule(GREEN_TIME, LOW, lambda x: min(x[CAR_WAITING_TIME][NORMAL], x[WALKER_WAITING_TIME][NORMAL], 1 - x[WHEATHER][RAINING], x[TIME_CLASSIFICATION][DAWN], x[TIME_CLASSIFICATION][NOON]))
         self.fuzzy_system.add_rule(GREEN_TIME, AVERAGE, lambda x: min(x[CAR_WAITING_TIME][CHARGED], x[WALKER_WAITING_TIME][CHARGED], 1 - x[WHEATHER][CLOUD], x[TIME_CLASSIFICATION][MORNING]))
@@ -134,9 +135,10 @@ class Semaphore(Agent):
             self.directions.append(direction)
 
     def update_system(self):
-        result = self.fuzzy_system.process(self.fuzzy_values)
-        self.queue.append(result[GREEN_TIME])
-        self.overload = result[OVERLOAD]
+        if self.useFuzzy:
+            result = self.fuzzy_system.process(self.fuzzy_values)
+            self.queue.append(result[GREEN_TIME])
+            self.overload = result[OVERLOAD]
 
     def update_fuzzy(self, name : str, value : float):
         self.fuzzy_values[name] = value
