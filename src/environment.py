@@ -44,6 +44,7 @@ class SidewalkBlock(Block):
     def __init__(self, coordinates: tuple[int, int], vertical: bool) -> None:
         super().__init__(coordinates)
         self.vertical = vertical
+        self.walkers_id: list[UUID] = []
 
 
 class Environment:
@@ -64,8 +65,42 @@ class Environment:
         self.stats: Stats = Stats()
         self._extract_data()  # Extract
 
+        self.sideway_block = self._get_type_blocks(SidewalkBlock)
+        self.place_blocks = self._get_type_blocks(PlaceBlock)
+        self.road_blocks = self._get_type_blocks(RoadBlock)
+        self.free_blocks = self._get_free_blocks(RoadBlock)
+
         # Testing purpose call
         self._initialize()
+
+    def _get_free_blocks(self, block_type: type):
+        matrix = self.matrix
+        height = len(matrix)
+        width = len(matrix[0])
+        free_blocks: list[RoadBlock] = []
+
+        for i in range(height):
+            for j in range(width):
+                block = matrix[i][j]
+                if isinstance(block, block_type):
+                    if block_type == RoadBlock and block.car_id == None:
+                        free_blocks.append(block)
+                    elif block_type == SidewalkBlock :
+                        free_blocks.append(block)
+        return free_blocks
+
+    def _get_type_blocks(self, block_type: type) -> list:
+        matrix = self.matrix
+        height = len(matrix)
+        width = len(matrix[0])
+
+        blocks: list[block_type] = []
+        for i in range(height):
+            for j in range(width):
+                block = matrix[i][j]
+                if isinstance(block, block_type):
+                    blocks.append(block)
+        return blocks
 
     def _extract_data(self) -> None:
         height = len(self.matrix)
@@ -96,41 +131,14 @@ class Environment:
                             if isinstance(self.matrix[i + x][j + y], SemaphoreBlock):
                                 self.semaphores[self.matrix[i + x][j + y].representative].add_direction(block.direction)
 
-
     # Testing purpose method
     def _initialize(self):
-        from sim.Event import EventHandler
-        event_handler = EventHandler(self)
-        for _ in range(20):
-            road_blocks = event_handler._get_free_blocks(RoadBlock)
-            sidewalk_blocks = event_handler._get_free_blocks(SidewalkBlock)
-            place_blocks = event_handler._get_type_blocks(PlaceBlock)
-            self.create_car(road_blocks)
-            self.create_walker(sidewalk_blocks, place_blocks)
-
-    def create_car(self, road_blocks : list[RoadBlock]):
         from sim.Car.Car import Car
-        car = Car(
-                random.choice(road_blocks).coordinates,
-                random.choice(road_blocks).coordinates,
-                self,
-                len(self.cars),
-            )
-
-        self.cars[car.id] = car
-
-
-    def create_walker(self, sidewalk_blocks : list[SidewalkBlock], place_blocks : list[PlaceBlock]):
         from sim.Walker.Walker import Walker
-        from sim.Walker.PlaceBelief import PlaceBelief
-        places = random.choices(place_blocks, k=random.randint(1, len(place_blocks)))
-        beliefs = {}
-        for place in places:
-            beliefs[place.name] = PlaceBelief(place.name, random.choice(place_blocks).coordinates, random.random() <= 0.3, random.randint(1, 5))
-        walker = Walker(random.choice(sidewalk_blocks).coordinates, self, len(self.walkers), beliefs)
-        self.matrix[walker.position[0]][walker.position[1]].walker_id = walker.id
-        self.walkers[walker.id] = walker
-
+        for _ in range(20):
+            _ = Car(self)
+            _ = Walker(self)
+        
 
     def increase_date(self, seconds: int = 1):
         previous_day = self.date.day

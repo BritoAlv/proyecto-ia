@@ -1,3 +1,4 @@
+import random
 from environment import Environment, RoadBlock, SemaphoreBlock
 from globals import DIRECTION_OFFSETS
 from sim.Car.CarCommon import check_free, check_valid, pos_cross_semaphor, semaphor_options
@@ -6,8 +7,18 @@ from sim.MovingAgent import MovingAgent
 
 
 class Car(MovingAgent):
-    def __init__(self, position: tuple[int, int], goal: tuple[int, int], environment: Environment, gui_label):
+    def __init__(self, environment: Environment):
+
+        free_block = random.choice(environment.free_blocks)
+        environment.free_blocks.remove(free_block)
+        goal_block = random.choice(environment.road_blocks)
+        position = free_block.coordinates
+        goal = goal_block.coordinates
+        gui_label = len(environment.cars)
         super().__init__(position, environment, gui_label)
+        self.environment.matrix[self.position[0]][self.position[1]].car_id = self.id
+        self.environment.cars[self.id] = self
+
         self.goal: tuple[int, int] = goal
         self.strategy = CarStrategy(environment)
         self.total_time_overall = 0

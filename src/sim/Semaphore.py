@@ -120,6 +120,7 @@ class Semaphore(Agent):
         self.fuzzy_system = FuzzySystem(input_f=[time_var, wheather, car_wait_time, walker_wait_time, month_var], output_f=[green_time, overload])
         self.queue = []
         self.car_times : list[int] = []
+        self.walkers_times : list[int] = []
         
         self.fuzzy_system.add_rule(GREEN_TIME, LOW, lambda x: min(x[CAR_WAITING_TIME][NORMAL], x[WALKER_WAITING_TIME][NORMAL], 1 - x[WHEATHER][RAINING], x[TIME_CLASSIFICATION][DAWN], x[TIME_CLASSIFICATION][NOON]))
         self.fuzzy_system.add_rule(GREEN_TIME, AVERAGE, lambda x: min(x[CAR_WAITING_TIME][CHARGED], x[WALKER_WAITING_TIME][CHARGED], 1 - x[WHEATHER][CLOUD], x[TIME_CLASSIFICATION][MORNING]))
@@ -157,6 +158,14 @@ class Semaphore(Agent):
             avg_time = sum / len(self.car_times)
             self.update_fuzzy(CAR_WAITING_TIME, avg_time)
             self.car_times = []
+
+        if len(self.walkers_times) >= 5:
+            sum = 0
+            for x in self.walkers_times:
+                sum += x
+            avg_time = sum / len(self.walkers_times)
+            self.update_fuzzy(WALKER_WAITING_TIME, avg_time)
+            self.walkers_times = []
 
         if self.iter >= self.green_time:
             if len(self.queue) > 0:
