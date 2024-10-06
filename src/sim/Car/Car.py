@@ -4,9 +4,9 @@ from sim.Car.CarCommon import check_free, check_valid, pos_cross_semaphor, semap
 from sim.Car.CarStrategy import CarStrategy
 from sim.MovingAgent import MovingAgent
 
+
 class Car(MovingAgent):
-    def __init__(
-        self, position: tuple[int, int], goal: tuple[int, int], environment: Environment, gui_label):
+    def __init__(self, position: tuple[int, int], goal: tuple[int, int], environment: Environment, gui_label):
         super().__init__(position, environment, gui_label)
         self.goal: tuple[int, int] = goal
         self.strategy = CarStrategy(environment)
@@ -15,10 +15,12 @@ class Car(MovingAgent):
         self.semaphor_stuck = 0
         self.semaphor_pos = None
 
-    def set_car_pos(self, i, j, x, y, id):
+    def set_car_pos(self, new_pos: tuple[int, int]):
+        i, j = self.position
+        x, y = new_pos
         self.environment.matrix[i][j].car_id = None
         self.environment.matrix[x][y].car_id = id
-        self.environment.cars[id] = self
+        self.environment.cars[self.id] = self
         self.position = (x, y)
 
         if self.semaphor_pos != None:
@@ -42,7 +44,7 @@ class Car(MovingAgent):
         if self.position == self.goal:  # car reached goal so done.
             self.remove_car()
             return
-        
+
         self.strategy.update(self.position, self.goal)
         next_pos = self.strategy.next_pos()
         x, y = next_pos
@@ -59,15 +61,15 @@ class Car(MovingAgent):
                 if direction == self.environment.semaphores[representative].current:
                     if next_pos in semaphor_options(sem_x, sem_y, direction, self.environment):
                         self.semaphor_pos = representative
-                        self.set_car_pos(i, j, next_pos[0], next_pos[1], self.id)
+                        self.set_car_pos(next_pos)
                         return
             # Case 2: (i, j) to (x, y)
             else:
                 if x - i == offset[0] and y - j == offset[1]:
-                    self.set_car_pos(i, j, x, y, self.id)
+                    self.set_car_pos((x, y))
                     return
         self.emergency_act()
-    
+
     def emergency_act(self):
         i, j = self.position
         offset = DIRECTION_OFFSETS[self.environment.matrix[i][j].direction]
@@ -77,7 +79,7 @@ class Car(MovingAgent):
         x = i + m
         y = j + n
         if check_valid(x, y, RoadBlock, self.environment):
-            self.set_car_pos(i, j, x, y, self.id)
+            self.set_car_pos((x, y))
             self.strategy.path = []
             return
         elif check_valid(x, y, SemaphoreBlock, self.environment):
@@ -86,8 +88,8 @@ class Car(MovingAgent):
                 options = pos_cross_semaphor(x, y, direction, self.environment)
                 if len(options) > 0:
                     self.semaphor_pos = representative
-                    self.set_car_pos(i, j, options[0][0], options[0][1], self.id)
+                    self.set_car_pos(options[0])
                     self.strategy.path = []
                     return
-            
+
         self.semaphor_stuck += 1
