@@ -556,7 +556,7 @@ class BuildWindow(QMainWindow):
             nlp_output = self._nlp.process_place_description(nlp_input)
             return json.loads(nlp_output)
         except Exception as e:
-            print(f"Error while contacting NLP API: {e.__str__()} \n {e.__doc__}")
+            print(f"Error while contacting NLP API: {e.__str__()} \n {e.doc}")
             return None
 
 
