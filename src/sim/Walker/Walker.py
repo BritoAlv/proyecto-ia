@@ -6,13 +6,15 @@ from sim.MovingAgent import MovingAgent
 
 import random
 
+from sim.Walker.PlaceBelief import PlaceBelief
 
 class Walker(MovingAgent):
-
-    def __init__(self, position, environment: Environment, gui_label):
+    def __init__(self, position, environment: Environment , gui_label : int, place_beliefs : dict[str, PlaceBelief]):
         super().__init__(position, environment, gui_label)
         self.path = []
         self.total_time = 0
+        self.place_beliefs = place_beliefs
+
 
     def set_walker_pos(self, new: tuple[int, int]):
         i, j = self.position

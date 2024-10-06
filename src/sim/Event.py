@@ -7,7 +7,7 @@ from numpy.random import exponential
 
 from environment import Environment, RoadBlock, SidewalkBlock
 from sim.Car.Car import Car
-from sim.Walker import Walker
+from sim.Walker.Walker import Walker
 
 
 class EventType(Enum):
@@ -124,7 +124,7 @@ class EventHandler:
                 if isinstance(block, block_type):
                     if block_type == RoadBlock and block.car_id == None:
                         free_blocks.append(block)
-                    elif block_type == SidewalkBlock and block.walker_id == None:
+                    elif block_type == SidewalkBlock :
                         free_blocks.append(block)
         return free_blocks
 

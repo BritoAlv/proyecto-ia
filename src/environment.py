@@ -27,9 +27,7 @@ class PlaceBlock(Block):
 
 
 class SemaphoreBlock(Block):
-    def __init__(
-        self, coordinates: tuple[int, int], representative: tuple[int, int]
-    ) -> None:
+    def __init__(self, coordinates: tuple[int, int], representative: tuple[int, int]) -> None:
         super().__init__(coordinates)
         self.representative = representative
 
@@ -49,13 +47,11 @@ class SidewalkBlock(Block):
 
 
 class Environment:
-    def __init__(
-        self, matrix: list[list[Block]], start_date: datetime = datetime(2000, 1, 1)
-    ) -> None:
+    def __init__(self, matrix: list[list[Block]], start_date: datetime = datetime(2000, 1, 1)) -> None:
         # Local imports
         from sim.Car.Car import Car
         from sim.Semaphore import Semaphore
-        from sim.Walker import Walker
+        from sim.Walker.Walker import Walker
 
         # Core logic properties
         self.matrix = matrix
@@ -80,15 +76,10 @@ class Environment:
                 block = self.matrix[i][j]
 
                 # Extract semaphores representatives
-                if (
-                    isinstance(block, SemaphoreBlock)
-                    and block.representative not in self.semaphores
-                ):
+                if isinstance(block, SemaphoreBlock) and block.representative not in self.semaphores:
                     from sim.Semaphore import Semaphore
 
-                    self.semaphores[block.representative] = Semaphore(
-                        block.representative, self, len(self.semaphores)
-                    )
+                    self.semaphores[block.representative] = Semaphore(block.representative, self, len(self.semaphores))
 
                 # Extract interest places
                 if isinstance(block, PlaceBlock):
@@ -101,41 +92,45 @@ class Environment:
                     dx = [-1, 1, 0, 0]
                     dy = [0, 0, -1, 1]
                     for x, y in zip(dx, dy):
-                        if valid_coordinates(
-                            i + x, j + y, len(self.matrix), len(self.matrix[0])
-                        ):
+                        if valid_coordinates(i + x, j + y, len(self.matrix), len(self.matrix[0])):
                             if isinstance(self.matrix[i + x][j + y], SemaphoreBlock):
-                                self.semaphores[
-                                    self.matrix[i + x][j + y].representative
-                                ].add_direction(block.direction)
+                                self.semaphores[self.matrix[i + x][j + y].representative].add_direction(block.direction)
+
 
     # Testing purpose method
     def _initialize(self):
         from sim.Event import EventHandler
-
         event_handler = EventHandler(self)
-
         for _ in range(20):
             road_blocks = event_handler._get_free_blocks(RoadBlock)
             sidewalk_blocks = event_handler._get_free_blocks(SidewalkBlock)
+            place_blocks = event_handler._get_type_blocks(PlaceBlock)
+            self.create_car(road_blocks)
+            self.create_walker(sidewalk_blocks, place_blocks)
 
-            from sim.Car.Car import Car
-
-            car = Car(
+    def create_car(self, road_blocks : list[RoadBlock]):
+        from sim.Car.Car import Car
+        car = Car(
                 random.choice(road_blocks).coordinates,
                 random.choice(road_blocks).coordinates,
                 self,
                 len(self.cars),
             )
 
-            from sim.Walker import Walker
+        self.cars[car.id] = car
 
-            walker = Walker(
-                random.choice(sidewalk_blocks).coordinates, self, len(self.walkers)
-            )
-            self.matrix[walker.position[0]][walker.position[1]].walker_id = walker.id
-            self.cars[car.id] = car
-            self.walkers[walker.id] = walker
+
+    def create_walker(self, sidewalk_blocks : list[SidewalkBlock], place_blocks : list[PlaceBlock]):
+        from sim.Walker.Walker import Walker
+        from sim.Walker.PlaceBelief import PlaceBelief
+        places = random.choices(place_blocks, k=random.randint(1, len(place_blocks)))
+        beliefs = {}
+        for place in places:
+            beliefs[place.name] = PlaceBelief(place.name, random.choice(place_blocks).coordinates, random.random() <= 0.3, random.randint(1, 5))
+        walker = Walker(random.choice(sidewalk_blocks).coordinates, self, len(self.walkers), beliefs)
+        self.matrix[walker.position[0]][walker.position[1]].walker_id = walker.id
+        self.walkers[walker.id] = walker
+
 
     def increase_date(self, seconds: int = 1):
         previous_day = self.date.day
