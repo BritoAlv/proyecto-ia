@@ -40,8 +40,8 @@ class Walker(MovingAgent):
         
         # probs.
         self.social_prob = random.random()
-        self.trustn = random.random()
-        self.reactive = random.random()
+        self.trust_ness = random.random()
+        self.reactive_ness = random.random()
         self.reset_prob = 0.05
 
 
@@ -131,7 +131,7 @@ class Walker(MovingAgent):
         others = other.place_beliefs
         for place_name in others:
             other_place_belief = others[place_name]
-            if other_place_belief.belief_state == 1 or self.trustn <= 0.3:
+            if other_place_belief.belief_state == 1 or self.trust_ness <= 0.3:
                 self.place_beliefs[place_name] = other_place_belief
 
     def update_desires(self):
@@ -211,7 +211,6 @@ class Walker(MovingAgent):
                         assert(len(self.path) > 0)
                         break
         if len(self.path) > 0:
-            current_pos = self.position
             next_pos = self.path[0]
             if self.try_move(next_pos):
                 self.path.pop(0)

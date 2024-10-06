@@ -6,7 +6,7 @@ from sim.Walker.PathFinder import PathFinder, WalkerGraphNode
 
 
 class WalkerDijkstra(PathFinder):
-    def algorithm(self, cur_pos: tuple[int, int], goal: tuple[int, int]) -> list[tuple[int, int]]:
+    def path_finder(self, cur_pos: tuple[int, int], goal: tuple[int, int]) -> list[tuple[int, int]]:
         return self.dijkstra(cur_pos, goal)
 
     def get_neighbours(self, current: WalkerGraphNode) -> list[tuple[WalkerGraphNode, float]]:
@@ -16,14 +16,14 @@ class WalkerDijkstra(PathFinder):
         height = len(matrix)
         width = len(matrix[0])
 
-        if isinstance(i, j, RoadBlock):
+        if isinstance(matrix[i][j], RoadBlock):
             direction = DIRECTION_OFFSETS[matrix[i][j].direction]
             x =  i + direction[0]
             y = j + direction[1]
             return [ (WalkerGraphNode((x, y), current), 1) ] 
 
-        if isinstance(i, j, SidewalkBlock):
-            for direction in DIRECTION_OFFSETS[current.direction]:
+        if isinstance(matrix[i][j], SidewalkBlock):
+            for direction in DIRECTION_OFFSETS.values():
                 x =  i + direction[0]
                 y = j + direction[1]
 
@@ -53,7 +53,7 @@ class WalkerDijkstra(PathFinder):
 
     def dijkstra(self, cur_pos: tuple[int, int], goal: tuple[int, int]) -> list[tuple[int, int]]:
         x, y = cur_pos
-        start_node = WalkerGraphNode(cur_pos, self.environment.matrix[x][y].direction, None)
+        start_node = WalkerGraphNode(cur_pos, None)
 
         queue: list[WalkerGraphNode] = []
         heapq.heappush(queue, start_node)
@@ -86,4 +86,4 @@ class WalkerDijkstra(PathFinder):
             path.reverse()
             return path[1:]
 
-        return cur_pos
+        return [cur_pos]
