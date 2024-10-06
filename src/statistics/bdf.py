@@ -16,5 +16,5 @@ data = generate_random_data(400, [[3, 1], [30, 7], [2, 1], [20, 5]])
 data_with = generate_random_data(400, [[2, 1], [25, 4], [2, 0.4], [15, 4]])
 
 # Save the DataFrame as a JSON file
-data.to_csv('traffic_simulation_data.csv')
-data.to_csv('traffic_simulation_data_whith.csv')
+data.to_csv('./src/statistics/traffic_simulation_data.csv')
+data_with.to_csv('./src/statistics/traffic_simulation_data_with.csv')
