@@ -52,7 +52,7 @@ class SidewalkBlock(Block):
 
 class Environment:
     def __init__(
-        self, matrix: list[list[Block]], start_date: datetime = datetime(2000, 1, 1)
+        self, name: str, matrix: list[list[Block]], start_date: datetime = datetime(2000, 1, 1)
     ) -> None:
         # Local imports
         from sim.Car.Car import Car
@@ -61,6 +61,7 @@ class Environment:
 
         # Core logic properties
         self.matrix = matrix
+        self.name = name
         self.cars: dict[UUID, Car] = {}
         self.walkers: dict[UUID, Walker] = {}
         self.semaphores: dict[tuple[int, int], Semaphore] = {}

@@ -1,10 +1,9 @@
 from datetime import datetime, timedelta
 from functools import partial
+import os
 import pickle
 from queue import PriorityQueue
 import sys
-from threading import Thread
-import time
 from uuid import UUID
 from PyQt5.QtWidgets import (
     QApplication,
@@ -59,7 +58,7 @@ class SimulationWindow(QWidget):
         # Load matrix data into main memory
         with open(matrix_path, "rb") as file:
             matrix = pickle.load(file)
-        environment = Environment(matrix)
+        environment = Environment(os.path.basename(matrix_path)[:-4], matrix)
 
         # Business (simulation) logic properties
         self._environment = environment  ## Core data structure
