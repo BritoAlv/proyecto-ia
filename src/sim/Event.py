@@ -16,6 +16,22 @@ class EventType(Enum):
     RAIN_EVENT = 2
 
 
+MONTHS = {
+    1: 'January',
+    2: 'February',
+    3: 'March',
+    4: 'April',
+    5: 'May',
+    6: 'June',
+    7: 'July',
+    8: 'August',
+    9: 'September',
+    10: 'October',
+    11: 'November',
+    12: 'December'
+}
+
+
 class Event:
     def __init__(self, date: datetime, event_type: EventType) -> None:
         self.date = date
@@ -176,7 +192,7 @@ class EventHandler:
 
         for place in self.environment.places.values():
             # Process place
-            probability = 0.9  # Template, actual method should use nlp to calculate that probability
+            probability = self._get_place_probability(place.meta_data)
 
             if place.representative not in places_probabilities:
                 places_probabilities[place.representative] = [probability]
@@ -222,3 +238,17 @@ class EventHandler:
         )
 
         return closest_place_probability * factor
+    
+    def _get_place_probability(self, place_meta_data: dict, car_biased: bool = True):
+        if place_meta_data == None:
+            return 0.5
+        
+        month = MONTHS[self.environment.date.month]
+
+        if month in place_meta_data['months'] and place_meta_data['hours'][0] <= self.environment.date.hour <= place_meta_data['hours'][1]:
+            if car_biased:
+                return place_meta_data['cars']
+            else:
+                return place_meta_data['walkers']
+        else:
+            return 0.1
