@@ -10,7 +10,7 @@
 - David Becerra Lezcano C-312
 - Javier Lima García C-312
 
-## Introducción
+## 1. Introducción
 
 Son numerosos los problemas derivados de un tráfico no controlado: contaminación (atmosférica, sonora), congestiones (que generan malestar en la población) e incluso retrasos en la economía. De ahí que resulte fundamental para un país el minimizar estas variables negativas. Sin embargo, el tráfico en una ciudad resulta un sistema muy complejo, un problema que va unido al aumento de autos y peatones en infraestructuras que apenas varían (carreteras, puentes, aceras, etc). 
 
@@ -18,19 +18,100 @@ Dadas estas problemáticas son necesarios modelos fiables de la realidad, capace
 
 Gracias a los avances computacionales/tecnológicos de la actualidad ya es posible la construcción de estos modelos, donde la simulación constituye la pieza clave. Basadas en agentes inteligentes estas simulaciones han abierto la puerta a estudios que están revolucionando el diseño y manejo del tráfico con el mínimo gasto de recursos.
 
-### Implementación
+### 1.1 Problema fundamental
 
-#### Fuzzy Logic 
+En este proyecto pretendemos dar respuesta a la siguiente interrogante:
+
+**¿Es posible mejorar el tráfico de una ciudad mediante el uso de semáforos inteligentes?**
+
+(Donde "semáforos inteligentes" se entiende por aquellos semáforos capaces de ajustar su comportamiento de acuerdo a múltiples de variables del entorno con el fin de minimizar el tiempo de espera de tanto automóviles, como de peatones)
+
+Para ello, utilizamos una simulación, basada en **Eventos Discretos** que contiene múltiples agentes inteligentes guiados por un modelo **BDI** (Belief, Desire, Intention).
+
+### 1.2 Modelación
+
+Para llevar a cabo la simulación y abstraer las variables necesarias para nuestra investigación, decidimos modelar el problema de la siguiente forma:
+
+#### Mapa
+
+![](./images/map.png)
+
+El mapa de una ciudad está representado por una matriz que contiene como estructuras principales:
+
+- carreteras (casillas gris claro en la image)
+- aceras (casillas amarillas en la imagen)
+- intersecciones (casillas gris oscuro en la imagen)
+- lugares de interés (casillas blancas en la imagen)
+
+Las carreteras y aceras constituyen los medios a través de los cuales se desplazan automóviles y peatones respectivamente. Con el fin de relajar la modelación decidimos que las carreteras tuvieran solo cuatro direcciones (norte, sur, este y oeste) y estuvieran rodeadas por aceras.
+
+La unión de dos carreteras constituye una intersección, y son estas las estructuras en las que están presentes los semáforos. De nuevo, con el fin de abstraernos de detalles, decidimos que todas las intersecciones presentaran un semáforo.
+
+Por último, los lugares de interés representan sitios que potencialmente pueden ser visitados por múltiples peatones y automóviles. Estos lugares de interés, poseen una descripción (en lenguaje natural) que afecta su influencia en el entorno de la simulación como veremos más adelante.
+
+#### Semáforos
+
+Los semáforos controlan el tráfico en las intersecciones. Apuntando al fin del proyecto, diseñamos dos tipos de semáforos: semáforos inteligentes y semáforos estándar.
+
+Los semáforos inteligentes regulan su comportamiento a partir de las variables del entorno (clima, horario, etc) utilizando como motor la lógica difusa (como veremos más adelante). Los semáforos estándar, por su parte, poseen un tiempo predefinido en su ciclo que no varía durante la simulación.
+Decidimos también, con el fin de simplificar, que los semáforos solo tuvieran como luces: rojo y verde.
+
+#### Automóviles y peatones (casillas azul y cyan respectivamente en la imagen)
+
+Los automóviles, junto a los peatones, se desplazan por el mapa, siguiendo la ruta más eficiente teniendo en cuenta la distancia y considerando la carga de los semáforos. Estos en conjunto con los semáforos, representan los agentes inteligentes de la simulación.
+
+## 2. Implementación
+
+### 2.1 Simulación de Eventos Discretos
+
+#### 2.1.1 Marco teórico
+
+La **simulación de eventos discretos (SED)** es una técnica utilizada para modelar sistemas en los que el estado cambia en momentos específicos del tiempo debido a eventos que ocurren. En este contexto, un **evento discreto** es una ocurrencia puntual que altera el estado del sistema.
+
+Los elementos básicos de la SED:
+
+1. **Eventos**:
+   - Son las ocurrencias que generan cambios en el sistema. Estos eventos se producen en tiempos discretos y cada evento puede modificar variables del sistema, estados o desencadenar otros eventos futuros.
+   - Ejemplos de eventos: llegada de un cliente a una cola, inicio o finalización de un servicio, fallo de una máquina, etc.
+
+2. **Reloj de simulación**:
+   - La simulación utiliza un reloj para rastrear el tiempo simulado, avanzando de un evento al siguiente. No se avanza el tiempo continuamente, sino que solo se actualiza cuando ocurre un evento (esto es lo que significa que los eventos son "discretos").
+
+3. **Agenda de eventos futuros (AEL)**:
+   - Esta agenda es una lista que contiene los eventos programados para ocurrir en el futuro. La simulación avanza en el tiempo ejecutando el evento más cercano en la agenda, actualizando el estado del sistema y luego recalculando o añadiendo nuevos eventos.
+   
+4. **Variables de estado**:
+   - Estas son las variables que describen el sistema en cualquier punto del tiempo. Dependiendo de cómo cambian estas variables (debido a los eventos), se puede observar cómo evoluciona el sistema con el tiempo.
+   
+5. **Entidades**:
+   - Son los objetos que fluyen a través del sistema y que están sujetos a los eventos. Por ejemplo, en una simulación de una tienda, las entidades pueden ser los clientes que entran, hacen fila y son atendidos.
+
+6. **Atributos**:
+   - Son las características de las entidades. Cada entidad puede tener diferentes atributos que definen su comportamiento en la simulación. Por ejemplo, en un sistema de atención al cliente, un cliente podría tener un atributo que define su tiempo de servicio.
+
+7. **Recursos**:
+   - Son los componentes del sistema que las entidades utilizan. Por ejemplo, en un sistema de colas, los cajeros son un recurso limitado que los clientes usan para ser atendidos.
+
+8. **Colas**:
+   - Las colas son lugares donde las entidades esperan cuando los recursos no están disponibles. La lógica de la cola (FIFO, LIFO, etc.) es fundamental en muchas simulaciones.
+
+<!-- 
+#### 2.1.2 Detalles de implementación
+
+Dado que la simulación realizada, tiene en cuenta detalles particulares -->
+
+
+### 2.2 Fuzzy Logic 
 
 Fuzzy Logic es una forma en la que se representa de forma continúa la verdad, siendo $0$ totalmente falso, $1$ totalmente verdadero, de forma que existe un grado de verdad que sería un número en $[0, 1]$. Un sistema de inferencia usando lógica difusa, posee :
 
-##### Variables Fuzzy
+#### Variables Fuzzy
 
 Una variable Fuzzy posee un dominio que puede ser por ejemplo los números reales entre $[0, 1]$, asociado a una variable fuzzy hay conjuntos de los cuales esta variable posee un grado de pertenencia ( un número entre $[0, 1]$), de ahí que sea es necesario tener para cada variable, para cada conjunto, una función cuyo dominio es el dominio de la variable y cuya salida es un número entre $[0, 1]$ indicando el grado de pertenencia de esta variable a el conjunto. Un sistema está compuesto por variables Fuzzy de entrada y variables Fuzzy de salida. Su entrada es valores de estas variables fuzzy en su dominio y su salida serían valores de las variables fuzzy de salida en su dominio. Por tanto su objetivo es dado el valor de las variables de entrada estimar el valor de las variables fuzzy de salida.
 
 ![](./images/time_membership.png)
 
-##### Reglas
+#### Reglas
 
 Las operaciones lógicas pueden ser representadas de varias formas, usamos:
     - $NOT(x) = 1 - x$
@@ -41,7 +122,7 @@ Las reglas permiten hallar los grados de pertenencia de las variables de salida 
 
 el grado de pertenencia de la variable de salida "propina" en el conjunto "alta" es el resultado de el *and* entre los grados de pertenencia de buena respecto a calidad de la comida y de rápido respecto a tiempo del servicio.
 
-##### Proceso de inferencia
+#### Proceso de inferencia
 
 Con lo explicado anteriormente el proceso sería, primero se usa los valores de dominio de las variables de entrada para hallar su grado de pertenencia en cada una de sus clasificaciones, con estos grados de pertenencia se deducen los grados de pertenencia de las variables de salida usando reglas, quedaría la siguiente pregunta: ¿Dados los grados de pertenencia de una variable en sus clasificaciones cómo encontrar un valor en su dominio cuya evaluación de estos grados? ( es como hallar el inverso de una función).
 
@@ -69,38 +150,9 @@ En la arquitectura BDI los agentes poseen creencias sobre su entorno que pueden 
 
 Primero percibe el entorno actual, lo que actualiza sus creencias, en base a esto y sus deseos anteriores actualize sus deseos y sus intenciones, traza un plan y comienza a ejecutar este paso a paso. Pero en cada paso puede suceder que ya no sea factible continuar este plan ( debido a cambios en el entorno) por lo que debe *reaccionar* cambiando sus intenciones y por tanto un plan nuevo, puede finalizar su plan procediendo a escoger uno nuevo. También puede reconsiderar si continuar ejecutando el plan ( que tanto reconsidera es lo que influye en el balance entre la reactividad y la pro-actividad) y finalmente es posible que a consecuencia de la actualización de sus deseos no tenga sentido continuar con el plan por lo que parará y buscará uno nuevo.
 
-### Problema fundamental
 
-En este proyecto pretendemos dar respuesta a la siguiente interrogante:
 
-**¿Es posible mejorar el tráfico de una ciudad mediante el uso de semáforos inteligentes?**
-
-(Donde "semáforos inteligentes" se entiende por aquellos semáforos capaces de ajustar su comportamiento de acuerdo a múltiples de variables del entorno con el fin de minimizar el tiempo de espera de tanto automóviles, como de peatones)
-
-Para ello, utilizamos una simulación, basada en **Eventos Discretos** que contiene múltiples agentes inteligentes guiados por un modelo **BDI** (Belief, Desire, Intention).
-
-### Modelación
-
-Para llevar a cabo la simulación y abstraer las variables necesarias para nuestra investigación, decidimos modelar el problema de la siguiente forma:
-
-#### Mapa
-
-![](./images/map.png)
-
-El mapa de una ciudad está representado por una matriz que contiene como estructuras principales:
-
-- carreteras
-- aceras
-- intersecciones
-- lugares de interés
-
-Las carreteras y aceras constituyen los medios a través de los cuales se desplazan automóviles y peatones respectivamente. Con el fin de relajar la modelación decidimos que las carreteras tuvieran solo cuatro direcciones (norte, sur, este y oeste) y estuvieran rodeadas por aceras.
-
-La unión de dos carreteras constituye una intersección, y son estas las estructuras en las que están presentes lo semáforos. De nuevo, con el fin de abstraernos de detalles, decidimos que todas las intersecciones presentaran un semáforo.
-
-Por último, los lugares de interés representan sitios que potencialmente pueden ser visitados por múltiples peatones y automóviles. Estos lugares de interés, poseen una descripción (en lenguaje natural) que afecta sin influencia en el entorno de la simulación como veremos más adelante.
-
-#### Semáforos
+### 2.4 Semáforos
 
 Los semáforos poseen un sistema de lógica difusa en su comportamiento, alternan entre *ROJO*, permitiendo el paso de los peatones, y *VERDE* permitiendo el paso de los carros, que tanto tiempo debe permanecer un semáforo en *VERDE* y que tan cargado se encuentra son las preguntas que debe responder el sistema de lógica difusa. Con el objetivo de que si el factor peatonal es alto estaría menos tiempo en *VERDE* y viceversa. Aunque influyen más factores.
 
@@ -203,10 +255,7 @@ Escoge un plan de la siguiente forma: Escoge como lugar o intención a ir el de 
 
 4 - Finalmente escoge la siguiente posición en el camino determinado por su plan para moverse, si no le es posible moverse se mantiene en la posición actual.
 
-#### Eventos
-
-
-## Referencias
+## 3. Referencias
 An Introduction to Multi Agent Systems, Michael Wooldridge
 Temas de Simulación, Luciano García Garrido
 Fuzzy Sets and Fuzzy Logic Theory and Applications, GEORGE J.KLIR AND BO YUAN
