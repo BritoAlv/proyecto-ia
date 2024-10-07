@@ -145,7 +145,7 @@ class Semaphore(Agent):
     def update_from_environment(self):
         self.update_fuzzy( MONTH , self.environment.date.month)
         self.update_fuzzy( WHEATHER, self.environment.weather)
-        self.update_system(  TIME_CLASSIFICATION , self.environment.date.hour * 60 + self.environment.date.minute)
+        self.update_fuzzy(  TIME_CLASSIFICATION , self.environment.date.hour * 60 + self.environment.date.minute)
 
     def update_fuzzy(self, name : str, value : float):
         self.fuzzy_values[name] = value
