@@ -134,7 +134,7 @@ Hay varias formas de responder esa pregunta, usamos el método del centroide que
 ![](./images/centroid.png)
 
 
-#### BDI y Agentes Inteligentes
+#### 2.3 BDI y Agentes Inteligentes
 
 Los agentes inteligentes deben tener en cuenta los siguientes tres características :
 
@@ -256,6 +256,7 @@ Escoge un plan de la siguiente forma: Escoge como lugar o intención a ir el de 
 4 - Finalmente escoge la siguiente posición en el camino determinado por su plan para moverse, si no le es posible moverse se mantiene en la posición actual.
 
 ## 3. Referencias
+
 An Introduction to Multi Agent Systems, Michael Wooldridge
 Temas de Simulación, Luciano García Garrido
 Fuzzy Sets and Fuzzy Logic Theory and Applications, GEORGE J.KLIR AND BO YUAN
