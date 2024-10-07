@@ -70,21 +70,14 @@ class EventHandler:
         next_car_event = Event(next_date, EventType.CAR_EVENT)
 
         # Get non-occupied road-blocks
-        free_blocks = self._get_free_blocks(RoadBlock)
-        if len(free_blocks) > 0:
+        if len(self.environment.free_blocks) > 0:
             goals, goals_probabilities = self._get_roads_probabilities()
 
-            start_position = random.choice(free_blocks).coordinates
             goal_position = random.choices(goals, goals_probabilities)[0]
 
             # Create and set up a new car
-            car = Car(
-                start_position,
-                goal_position,
-                self.environment,
-                len(self.environment.cars),
-            )
-            self.environment.cars[car.id] = car
+            _ = Car(goal_position, self.environment)
+            
 
         return next_car_event
 
@@ -94,21 +87,10 @@ class EventHandler:
         next_walker_event = Event(next_date, EventType.WALKER_EVENT)
 
         # Get non-occupied road-blocks
-        free_blocks = self._get_free_blocks(RoadBlock)
-        if len(free_blocks) > 0:
-            goals, goals_probabilities = self._get_roads_probabilities(car_biased=False)
-
-            start_position = random.choice(free_blocks).coordinates
-            goal_position = random.choices(goals, goals_probabilities)[0]
-
-            # Create and set up a new walker
-            car = Walker(
-                start_position,
-                goal_position,
-                self.environment,
-                len(self.environment.cars),
-            )
-            self.environment.cars[car.id] = car
+        if len(self.environment.place_blocks) > 0:
+            # select a non empty subset of the PlaceBlocks change this to use probs or etc.
+            places = random.choices(self.environment.place_blocks, k=random.randint(1, len(self.environment.place_blocks)))
+            _ = Walker(places, self.environment)
 
         return next_walker_event
 

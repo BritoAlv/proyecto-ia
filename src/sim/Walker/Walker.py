@@ -13,7 +13,7 @@ import random
 from sim.Walker.WalkerRandom import WalkerRandom
 
 class Walker(MovingAgent):
-    def __init__(self, environment: Environment):
+    def __init__(self, places : list[PlaceBlock], environment: Environment):
         position = random.choice(environment.sidewalk_blocks).coordinates
         gui_label = len(environment.walkers)
         super().__init__(position, environment, gui_label)
@@ -24,7 +24,6 @@ class Walker(MovingAgent):
 
         self.path = []
 
-        places = random.choices(self.environment.place_blocks, k=random.randint(1, len(self.environment.place_blocks)))
         places_g = random.choices(places, k=random.randint(1, len(places)))
         beliefs : dict[str, PlaceBelief] = {}
         place_desires : dict[str, int] = {}

@@ -13,14 +13,7 @@ class Block(ABC):
 
 
 class PlaceBlock(Block):
-    def __init__(
-        self,
-        coordinates: tuple[int, int],
-        name: str,
-        description: str,
-        representative: tuple[int, int],
-        meta_data: dict = None
-    ) -> None:
+    def __init__(self, coordinates: tuple[int, int], name: str, description: str, representative: tuple[int, int], meta_data: dict = None) -> None:
         super().__init__(coordinates)
         self.name = name
         self.description = description
@@ -89,7 +82,7 @@ class Environment:
                 if isinstance(block, block_type):
                     if block_type == RoadBlock and block.car_id == None:
                         free_blocks.append(block)
-                    elif block_type == SidewalkBlock :
+                    elif block_type == SidewalkBlock:
                         free_blocks.append(block)
         return free_blocks
 
@@ -139,10 +132,14 @@ class Environment:
     def _initialize(self):
         from sim.Car.Car import Car
         from sim.Walker.Walker import Walker
+
         for _ in range(20):
-            _ = Car(self)
-            _ = Walker(self)
-        
+            if len(self.free_blocks) > 0:
+                goal = random.choice(self.road_blocks).coordinates
+                _ = Car(goal, self)
+            if len(self.place_blocks) > 0:
+                places = random.choices(self.place_blocks, k=random.randint(1, len(self.place_blocks)))
+                _ = Walker(places, self)
 
     def increase_date(self, seconds: int = 1):
         previous_day = self.date.day
