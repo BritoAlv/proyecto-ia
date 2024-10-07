@@ -26,13 +26,12 @@ class Walker(MovingAgent):
 
         places = random.choices(self.environment.place_blocks, k=random.randint(1, len(self.environment.place_blocks)))
         places_g = random.choices(places, k=random.randint(1, len(places)))
-        beliefs = {}
-        place_desires = {}
+        beliefs : dict[str, PlaceBelief] = {}
+        place_desires : dict[str, int] = {}
         for place in places_g:
             place_desires[place.name] = 1
         for place in places:
             beliefs[place.name] = PlaceBelief(place.name, random.choice(self.environment.place_blocks).coordinates)
-
 
         self.place_beliefs = beliefs
         self.place_desires : dict[str, int] = place_desires
@@ -42,6 +41,20 @@ class Walker(MovingAgent):
         self.trust_ness = random.random()
         self.reactive_ness = random.random()
         self.reset_prob = 0.05
+
+        # time for stats
+        self.total_time_overall = 0
+        self.semaphor_time_over_all = 0
+        self.semaphor_stuck = 0
+        self.semaphor_pos = None
+
+
+    def remove_walker(self):
+        i, j = self.position
+        self.environment.matrix[i][j].walkers_id.remove(self.id)
+        self.environment.walkers.pop(self.id)
+        self.environment.stats.walkers_delay.append(self.total_time_overall)
+        self.environment.stats.walkers_semaphore_delay.append(self.semaphor_time_over_all)
 
     def set_walker_pos(self, new: tuple[int, int]):
         i, j = self.position
@@ -53,7 +66,12 @@ class Walker(MovingAgent):
         current_block.walkers_id.remove(self.id)
         next_block.walkers_id.append(self.id)
 
-    
+        if self.semaphor_pos != None:
+            self.environment.semaphores[self.semaphor_pos].walkers_times.append(self.semaphor_stuck)
+            self.semaphor_time_over_all += self.semaphor_stuck
+            self.semaphor_stuck = 0
+            self.semaphor_pos = None
+
     def try_move(self, next_pos : tuple[int, int]) -> bool:
         x, y = next_pos
         i, j = self.position
@@ -92,6 +110,7 @@ class Walker(MovingAgent):
                         works = False
                         break
                 if works:
+                    self.semaphor_pos = matrix[sem_x][sem_y].representative
                     self.set_walker_pos(next_pos)
                     return True
         return False
@@ -184,10 +203,23 @@ class Walker(MovingAgent):
             return WalkerDijkstra(self.environment) # replace with Dikstra
         return WalkerRandom(self.environment)
 
+    def check_done(self) -> bool:
+        for place in self.place_desires:
+            if self.place_beliefs[place].belief_state == 0:
+                return False
+        return True
 
     def act(self) -> None:
         # always update its beliefs
-        self.update_beliefs() 
+        self.update_beliefs()
+        # if done then retire. 
+        if self.check_done():
+            print(f"Walker done after {self.total_time_overall}")
+            self.remove_walker()
+            return
+
+        self.total_time_overall += 1
+
         i, j = self.position
         current_block = self.environment.matrix[i][j]
         # if there is no plan or wants to reconsider then:
@@ -199,6 +231,9 @@ class Walker(MovingAgent):
             # choose a plan to execute it, like Dikstra or random moving, etc.
             plan = self.choose_plan(place_intention)
             # the plan gives a path that the walker should follow.
+
+            # a new path should set this to 0.
+            self.semaphor_stuck = 0
 
             goal_place_pos = self.place_beliefs[place_intention].belief_pos
             for dx, dy in DIRECTION_OFFSETS.values():
@@ -213,3 +248,5 @@ class Walker(MovingAgent):
             next_pos = self.path[0]
             if self.try_move(next_pos):
                 self.path.pop(0)
+            else:
+                self.semaphor_stuck += 1

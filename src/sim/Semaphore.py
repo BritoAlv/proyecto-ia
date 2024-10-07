@@ -123,9 +123,10 @@ class Semaphore(Agent):
         self.walkers_times : list[int] = []
         self.useFuzzy = useFuzzy
         
-        self.fuzzy_system.add_rule(GREEN_TIME, LOW, lambda x: min(x[CAR_WAITING_TIME][NORMAL], x[WALKER_WAITING_TIME][NORMAL], 1 - x[WHEATHER][RAINING], x[TIME_CLASSIFICATION][DAWN], x[TIME_CLASSIFICATION][NOON]))
-        self.fuzzy_system.add_rule(GREEN_TIME, AVERAGE, lambda x: min(x[CAR_WAITING_TIME][CHARGED], x[WALKER_WAITING_TIME][CHARGED], 1 - x[WHEATHER][CLOUD], x[TIME_CLASSIFICATION][MORNING]))
-        self.fuzzy_system.add_rule(GREEN_TIME, HIGH, lambda x: max(x[CAR_WAITING_TIME][OVERCHARGED], x[WALKER_WAITING_TIME][OVERCHARGED], 1 - x[WHEATHER][SUNNY], x[TIME_CLASSIFICATION][AFTERNOON]))
+        self.fuzzy_system.add_rule(GREEN_TIME, LOW, lambda x: min(x[MONTH][LOW], x[CAR_WAITING_TIME][NORMAL], x[WALKER_WAITING_TIME][NORMAL], 1 - x[WHEATHER][RAINING], x[TIME_CLASSIFICATION][DAWN], x[TIME_CLASSIFICATION][NOON]))
+        self.fuzzy_system.add_rule(GREEN_TIME, AVERAGE, lambda x: min( x[MONTH][AVERAGE]  ,x[CAR_WAITING_TIME][CHARGED], x[WALKER_WAITING_TIME][CHARGED], 1 - x[WHEATHER][CLOUD], x[TIME_CLASSIFICATION][MORNING]))
+        self.fuzzy_system.add_rule(GREEN_TIME, HIGH, lambda x: max( x[MONTH][HIGH], x[CAR_WAITING_TIME][OVERCHARGED], x[WALKER_WAITING_TIME][OVERCHARGED], 1 - x[WHEATHER][SUNNY], x[TIME_CLASSIFICATION][AFTERNOON]))
+
         self.fuzzy_system.add_rule(OVERLOAD, LOW, lambda x: max(x[CAR_WAITING_TIME][NORMAL], x[WALKER_WAITING_TIME][NORMAL]))
         self.fuzzy_system.add_rule(OVERLOAD, AVERAGE, lambda x: max(x[CAR_WAITING_TIME][CHARGED], x[WALKER_WAITING_TIME][CHARGED]))
         self.fuzzy_system.add_rule(OVERLOAD, HIGH, lambda x: max(x[CAR_WAITING_TIME][OVERCHARGED], x[WALKER_WAITING_TIME][OVERCHARGED]))
@@ -150,6 +151,7 @@ class Semaphore(Agent):
         return self.green_time - self.iter - 1
 
     def act(self) -> None:
+
         """
         The semaphor has a green time for default, this is updated using the fuzzy logic, the fuzzy values are updated using the set_fuzzy_values method. the semaphor will keep on a state until the green time is over, then it will change to the next direction in the array, if the direction is empty it will be red on all the directions, else will be green on a specific direction.
         """

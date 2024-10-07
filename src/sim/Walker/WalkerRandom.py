@@ -26,9 +26,6 @@ class WalkerRandom(PathFinder):
                 continue
 
             next_block = matrix[x][y]
-            if isinstance(next_block, SidewalkBlock):
-                return [(x, y)]
-
             if isinstance(next_block, RoadBlock):
                 streets : list[tuple[int, int]] = []
                 while valid_coordinates(x, y, height, width) and isinstance(matrix[x][y], RoadBlock):
@@ -45,9 +42,14 @@ class WalkerRandom(PathFinder):
                         if not valid_coordinates(sem_x, sem_y, height, width) or not isinstance(matrix[sem_x][sem_y], SemaphoreBlock):
                             works = False
                             break
-                        semaphore = self.environment.semaphores[matrix[sem_x][sem_y].representative]
-                        if semaphore.current == current_block.direction or semaphore.time_till_change() < index + 1:
-                            works = False
-                            break
                     if works:
                         return streets + [(x,y)]
+
+        for walker_x, walker_y in offsets:
+            x = i + walker_x
+            y = j + walker_y
+            if not valid_coordinates(x, y, height, width):
+                continue
+            next_block = matrix[x][y]
+            if isinstance(next_block, SidewalkBlock):
+                return [(x, y)]
