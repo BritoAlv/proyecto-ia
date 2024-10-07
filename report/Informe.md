@@ -18,45 +18,6 @@ Dadas estas problemáticas son necesarios modelos fiables de la realidad, capace
 
 Gracias a los avances computacionales/tecnológicos de la actualidad ya es posible la construcción de estos modelos, donde la simulación constituye la pieza clave. Basadas en agentes inteligentes estas simulaciones han abierto la puerta a estudios que están revolucionando el diseño y manejo del tráfico con el mínimo gasto de recursos.
 
-### Implementación
-
-#### Fuzzy Logic 
-
-Fuzzy Logic es una forma en la que se representa de forma continúa la verdad, siendo $0$ totalmente falso, $1$ totalmente verdadero, de forma que existe un grado de verdad que sería un número en $[0, 1]$. Un sistema de inferencia usando lógica difusa, posee :
-
-##### Variables Fuzzy
-
-Una variable Fuzzy posee un dominio que puede ser por ejemplo los números reales entre $[0, 1]$, asociado a una variable fuzzy hay conjuntos de los cuales esta variable posee un grado de pertenencia ( un número entre $[0, 1]$), de ahí que sea es necesario tener para cada variable, para cada conjunto, una función cuyo dominio es el dominio de la variable y cuya salida es un número entre $[0, 1]$ indicando el grado de pertenencia de esta variable a el conjunto. Un sistema está compuesto por variables Fuzzy de entrada y variables Fuzzy de salida. Su entrada es valores de estas variables fuzzy en su dominio y su salida serían valores de las variables fuzzy de salida en su dominio. Por tanto su objetivo es dado el valor de las variables de entrada estimar el valor de las variables fuzzy de salida.
-
-![](./images/time_membership.png)
-
-##### Reglas
-
-Las operaciones lógicas pueden ser representadas de varias formas, usamos:
-    - $NOT(x) = 1 - x$
-    - $OR(x,y) = max(x, y)$
-    - $AND(x, y) = min(x, y)$
-
-Las reglas permiten hallar los grados de pertenencia de las variables de salida en función de las variables de entrada. Por ejemplo si la comida fue buena y el servicio rápido entonces la propina es alta, se interpreta como :
-
-el grado de pertenencia de la variable de salida "propina" en el conjunto "alta" es el resultado de el *and* entre los grados de pertenencia de buena respecto a calidad de la comida y de rápido respecto a tiempo del servicio.
-
-##### Proceso de inferencia
-
-Con lo explicado anteriormente el proceso sería, primero se usa los valores de dominio de las variables de entrada para hallar su grado de pertenencia en cada una de sus clasificaciones, con estos grados de pertenencia se deducen los grados de pertenencia de las variables de salida usando reglas, quedaría la siguiente pregunta: ¿Dados los grados de pertenencia de una variable en sus clasificaciones cómo encontrar un valor en su dominio cuya evaluación de estos grados? ( es como hallar el inverso de una función).
-
-Hay varias formas de responder esa pregunta, usamos el método del centroide que consiste en :
-    - tomar de cada función de grado de pertenencia la proporción correspondiente a este grado de pertenencia : Esto significa que si el grado de pertenencia es $0.5$, solamente considerar los valores de la función que están por debajo de $0.5$, como si se le hallara el área a la función $g(x) = min(f(x), 0.5)$.
-    - juntar todas las áreas y hallar el centroide esta nueva área. Notar que las áreas pueden sobreponerse.
-    - la coordenada de este centroide lo devolveremos como valor de el dominio de la variable. 
-
-![](./images/centroid.png)
-
-
-#### BDI
-
-
-
 ### Problema fundamental
 
 En este proyecto pretendemos dar respuesta a la siguiente interrogante:
@@ -89,6 +50,58 @@ La unión de dos carreteras constituye una intersección, y son estas las estruc
 Por último, los lugares de interés representan sitios que potencialmente pueden ser visitados por múltiples peatones y automóviles. Estos lugares de interés, poseen una descripción (en lenguaje natural) que afecta sin influencia en el entorno de la simulación como veremos más adelante.
 
 #### Semáforos
+
+Los semáforos controlan el tráfico en las intersecciones. Apuntando al fin del proyecto, diseñamos dos tipos de semáforos: semáforos inteligentes y semáforos estándar.
+
+Los semáforos inteligentes regulan su comportamiento a partir de las variables del entorno (clima, horario, etc) utilizando como motor la lógica difusa (como veremos más adelante). Los semáforos estándar, por su parte, poseen un tiempo predefinido en su ciclo que no varía durante la simulación.
+Decidimos también, con el fin de simplificar, que los semáforos solo tuvieran como luces: rojo y verde.
+
+#### Automóviles y peatones (casillas azul y cyan respectivamente en la imagen)
+
+Los automóviles, junto a los peatones, se desplazan por el mapa, siguiendo la ruta más eficiente teniendo en cuenta la distancia y considerando la carga de los semáforos. Estos en conjunto con los semáforos, representan los agentes inteligentes de la simulación.
+
+## Implementación
+
+### Fuzzy Logic 
+
+Fuzzy Logic es una forma en la que se representa de forma continúa la verdad, siendo $0$ totalmente falso, $1$ totalmente verdadero, de forma que existe un grado de verdad que sería un número en $[0, 1]$. Un sistema de inferencia usando lógica difusa, posee :
+
+#### Variables Fuzzy
+
+Una variable Fuzzy posee un dominio que puede ser por ejemplo los números reales entre $[0, 1]$, asociado a una variable fuzzy hay conjuntos de los cuales esta variable posee un grado de pertenencia ( un número entre $[0, 1]$), de ahí que sea es necesario tener para cada variable, para cada conjunto, una función cuyo dominio es el dominio de la variable y cuya salida es un número entre $[0, 1]$ indicando el grado de pertenencia de esta variable a el conjunto. Un sistema está compuesto por variables Fuzzy de entrada y variables Fuzzy de salida. Su entrada es valores de estas variables fuzzy en su dominio y su salida serían valores de las variables fuzzy de salida en su dominio. Por tanto su objetivo es dado el valor de las variables de entrada estimar el valor de las variables fuzzy de salida.
+
+![](./images/time_membership.png)
+
+#### Reglas
+
+Las operaciones lógicas pueden ser representadas de varias formas, usamos:
+    - $NOT(x) = 1 - x$
+    - $OR(x,y) = max(x, y)$
+    - $AND(x, y) = min(x, y)$
+
+Las reglas permiten hallar los grados de pertenencia de las variables de salida en función de las variables de entrada. Por ejemplo si la comida fue buena y el servicio rápido entonces la propina es alta, se interpreta como :
+
+el grado de pertenencia de la variable de salida "propina" en el conjunto "alta" es el resultado de el *and* entre los grados de pertenencia de buena respecto a calidad de la comida y de rápido respecto a tiempo del servicio.
+
+#### Proceso de inferencia
+
+Con lo explicado anteriormente el proceso sería, primero se usa los valores de dominio de las variables de entrada para hallar su grado de pertenencia en cada una de sus clasificaciones, con estos grados de pertenencia se deducen los grados de pertenencia de las variables de salida usando reglas, quedaría la siguiente pregunta: ¿Dados los grados de pertenencia de una variable en sus clasificaciones cómo encontrar un valor en su dominio cuya evaluación de estos grados? ( es como hallar el inverso de una función).
+
+Hay varias formas de responder esa pregunta, usamos el método del centroide que consiste en :
+    - tomar de cada función de grado de pertenencia la proporción correspondiente a este grado de pertenencia : Esto significa que si el grado de pertenencia es $0.5$, solamente considerar los valores de la función que están por debajo de $0.5$, como si se le hallara el área a la función $g(x) = min(f(x), 0.5)$.
+    - juntar todas las áreas y hallar el centroide esta nueva área. Notar que las áreas pueden sobreponerse.
+    - la coordenada de este centroide lo devolveremos como valor de el dominio de la variable. 
+
+![](./images/centroid.png)
+
+
+### BDI
+
+
+
+
+
+### Semáforos
 
 Los semáforos poseen un sistema de lógica difusa en su comportamiento, alternan entre *ROJO*, permitiendo el paso de los peatones, y *VERDE* permitiendo el paso de los carros, que tanto tiempo debe permanecer un semáforo en *VERDE* y que tan cargado se encuentra son las preguntas que debe responder el sistema de lógica difusa. Con el objetivo de que si el factor peatonal es alto estaría menos tiempo en *VERDE* y viceversa. Aunque influyen más factores.
 
@@ -172,10 +185,6 @@ En este mantenemos la idea de darle un peso a los semáforos determinado por su 
 Usamos un *DFS* de profundidad limitada, la idea es la siguiente, obtenemos un peso o distancia de que tan bueno es un camino de tamaño $k$ en términos de la sobre-carga de los semáforos, y después desde la posición en que acaba el camino hallamos la distancia de esta posición a el destino ($Dijkstra$), sumamos estos dos números y tenemos un peso a un camino, entre todos los pesos escogemos el menor. Notar que $k$ ha de ser pequeña, porque se consideran todos los caminos de tamaño $k$ que comienzan en la posición actual. Tiene como objetivo dividir el peso de un camino en dos partes : la cercanía al carro influenciado por los semáforos y la distancia a el objetivo.
 
 Es posible añadir más acciones y más estados en los que se puede encontrar el carro, y análogamente otras heurísticas respecto a que con cuales condiciones priorizar o no una acción en un estado. Los carros no poseen factor social incorporado, solamente pro-activo y reactivo. Los carros no pueden constantemente re-plantearse su estrategia porque sería costoso por lo que deben tener un balance de que tanto se mantienen con su plan o lo reconsideran.
-Los semáforos controlan el tráfico en las intersecciones. Apuntando al fin del proyecto, diseñamos dos tipos de semáforos: semáforos inteligentes y semáforos estándar.
-
-Los semáforos inteligentes regulan su comportamiento a partir de las variables del entorno (clima, horario, etc) utilizando como motor la lógica difusa (como veremos más adelante). Los semáforos estándar, por su parte, poseen un tiempo predefinido en su ciclo que no varía durante la simulación.
-Decidimos también, con el fin de simplificar, que los semáforos solo tuvieran como luces: rojo y verde.
 
 #### Peatones
 
@@ -194,13 +203,10 @@ Actualiza sus deseos de la siguiente forma: Sus deseos son representados a trav�
 Escoge un plan de la siguiente forma: Escoge como lugar o intención a ir el de más prioridad entre sus deseos, si el caminante está seguro de donde está el lugar y posee suficiente deseo de visitarlo usará Dijkstra para determinar el camino. En caso contrario se moverá aleatoriamente.
 
 4 - Finalmente escoge la siguiente posición en el camino determinado por su plan para moverse, si no le es posible moverse se mantiene en la posición actual.
-#### Automóviles y peatones (casillas azul y cyan respectivamente en la imagen)
 
 #### Eventos
-
 
 ## Referencias
 An Introduction to Multi Agent Systems, Michael Wooldridge
 Temas de Simulación, Luciano García Garrido
 Fuzzy Sets and Fuzzy Logic Theory and Applications, GEORGE J.KLIR AND BO YUAN
-Los automóviles, junto a los peatones, se desplazan por el mapa, siguiendo la ruta más eficiente teniendo en cuenta la distancia y considerando la carga de los semáforos. Estos en conjunto con los semáforos, representan los agentes inteligentes de la simulación.
