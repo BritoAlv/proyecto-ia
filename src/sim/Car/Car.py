@@ -8,11 +8,15 @@ from sim.MovingAgent import MovingAgent
 
 class Car(MovingAgent):
     def __init__(self, goal : tuple[int, int], environment: Environment):
-        position = random.choice(environment.free_blocks).coordinates
-        x, y  = position
-        environment.free_blocks.remove(environment.matrix[x][y])
+        # Validate there's at least one free block
+        free_blocks = environment.get_free_blocks(RoadBlock)
+        if len(free_blocks) == 0:
+            return
+        
+        position = random.choice(free_blocks).coordinates
         gui_label = len(environment.cars)
         super().__init__(position, environment, gui_label)
+
         self.environment.matrix[self.position[0]][self.position[1]].car_id = self.id
         self.environment.cars[self.id] = self
 

@@ -69,15 +69,9 @@ class EventHandler:
         next_date = event.date + timedelta(seconds=time_offset)
         next_car_event = Event(next_date, EventType.CAR_EVENT)
 
-        # Get non-occupied road-blocks
-        if len(self.environment.free_blocks) > 0:
-            goals, goals_probabilities = self._get_roads_probabilities()
-
-            goal_position = random.choices(goals, goals_probabilities)[0]
-
-            # Create and set up a new car
-            _ = Car(goal_position, self.environment)
-            
+        goals, goals_probabilities = self._get_roads_probabilities()
+        goal_position = random.choices(goals, goals_probabilities)[0]
+        Car(goal_position, self.environment)
 
         return next_car_event
 

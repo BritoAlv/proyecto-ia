@@ -65,12 +65,11 @@ class Environment:
         self.sidewalk_blocks = self._get_type_blocks(SidewalkBlock)
         self.place_blocks = self._get_type_blocks(PlaceBlock)
         self.road_blocks = self._get_type_blocks(RoadBlock)
-        self.free_blocks = self._get_free_blocks(RoadBlock)
 
         # Testing purpose call
         self._initialize()
 
-    def _get_free_blocks(self, block_type: type):
+    def get_free_blocks(self, block_type: type):
         matrix = self.matrix
         height = len(matrix)
         width = len(matrix[0])
@@ -134,7 +133,7 @@ class Environment:
         from sim.Walker.Walker import Walker
 
         for _ in range(20):
-            if len(self.free_blocks) > 0:
+            if len(self.get_free_blocks(RoadBlock)) > 0:
                 goal = random.choice(self.road_blocks).coordinates
                 _ = Car(goal, self)
             if len(self.place_blocks) > 0:
