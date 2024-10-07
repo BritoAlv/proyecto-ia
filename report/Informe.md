@@ -10,7 +10,7 @@
 - David Becerra Lezcano C-312
 - Javier Lima García C-312
 
-## Introducción
+## 1. Introducción
 
 Son numerosos los problemas derivados de un tráfico no controlado: contaminación (atmosférica, sonora), congestiones (que generan malestar en la población) e incluso retrasos en la economía. De ahí que resulte fundamental para un país el minimizar estas variables negativas. Sin embargo, el tráfico en una ciudad resulta un sistema muy complejo, un problema que va unido al aumento de autos y peatones en infraestructuras que apenas varían (carreteras, puentes, aceras, etc). 
 
@@ -18,7 +18,7 @@ Dadas estas problemáticas son necesarios modelos fiables de la realidad, capace
 
 Gracias a los avances computacionales/tecnológicos de la actualidad ya es posible la construcción de estos modelos, donde la simulación constituye la pieza clave. Basadas en agentes inteligentes estas simulaciones han abierto la puerta a estudios que están revolucionando el diseño y manejo del tráfico con el mínimo gasto de recursos.
 
-### Problema fundamental
+### 1.1 Problema fundamental
 
 En este proyecto pretendemos dar respuesta a la siguiente interrogante:
 
@@ -28,7 +28,7 @@ En este proyecto pretendemos dar respuesta a la siguiente interrogante:
 
 Para ello, utilizamos una simulación, basada en **Eventos Discretos** que contiene múltiples agentes inteligentes guiados por un modelo **BDI** (Belief, Desire, Intention).
 
-### Modelación
+### 1.2 Modelación
 
 Para llevar a cabo la simulación y abstraer las variables necesarias para nuestra investigación, decidimos modelar el problema de la siguiente forma:
 
@@ -60,9 +60,13 @@ Decidimos también, con el fin de simplificar, que los semáforos solo tuvieran 
 
 Los automóviles, junto a los peatones, se desplazan por el mapa, siguiendo la ruta más eficiente teniendo en cuenta la distancia y considerando la carga de los semáforos. Estos en conjunto con los semáforos, representan los agentes inteligentes de la simulación.
 
-## Implementación
+## 2. Implementación
 
-### Fuzzy Logic 
+### 2.1 Simulación de Eventos Discretos
+
+
+
+### 2.2 Fuzzy Logic 
 
 Fuzzy Logic es una forma en la que se representa de forma continúa la verdad, siendo $0$ totalmente falso, $1$ totalmente verdadero, de forma que existe un grado de verdad que sería un número en $[0, 1]$. Un sistema de inferencia usando lógica difusa, posee :
 
@@ -95,13 +99,13 @@ Hay varias formas de responder esa pregunta, usamos el método del centroide que
 ![](./images/centroid.png)
 
 
-### BDI
+### 2.3 BDI
 
 
 
 
 
-### Semáforos
+### 2.4 Semáforos
 
 Los semáforos poseen un sistema de lógica difusa en su comportamiento, alternan entre *ROJO*, permitiendo el paso de los peatones, y *VERDE* permitiendo el paso de los carros, que tanto tiempo debe permanecer un semáforo en *VERDE* y que tan cargado se encuentra son las preguntas que debe responder el sistema de lógica difusa. Con el objetivo de que si el factor peatonal es alto estaría menos tiempo en *VERDE* y viceversa. Aunque influyen más factores.
 
@@ -204,7 +208,7 @@ Escoge un plan de la siguiente forma: Escoge como lugar o intención a ir el de 
 
 4 - Finalmente escoge la siguiente posición en el camino determinado por su plan para moverse, si no le es posible moverse se mantiene en la posición actual.
 
-## Referencias
+## 3. Referencias
 An Introduction to Multi Agent Systems, Michael Wooldridge
 Temas de Simulación, Luciano García Garrido
 Fuzzy Sets and Fuzzy Logic Theory and Applications, GEORGE J.KLIR AND BO YUAN
