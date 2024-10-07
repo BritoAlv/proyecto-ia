@@ -1,8 +1,10 @@
 import heapq
+import random
 from environment import RoadBlock, SemaphoreBlock, SidewalkBlock
 from globals import DIRECTION_OFFSETS, valid_coordinates
 from sim.Car.CarCommon import check_valid, semaphor_options
 from sim.Walker.PathFinder import PathFinder, WalkerGraphNode
+from sim.Walker.WalkerCommon import get_associated_semaphores
 
 
 class WalkerDijkstra(PathFinder):
@@ -23,7 +25,9 @@ class WalkerDijkstra(PathFinder):
             return [ (WalkerGraphNode((x, y), current), 1) ] 
 
         if isinstance(matrix[i][j], SidewalkBlock):
-            for direction in DIRECTION_OFFSETS.values():
+            offsets = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+            random.shuffle(offsets) 
+            for direction in offsets:
                 x =  i + direction[0]
                 y = j + direction[1]
 
@@ -38,16 +42,13 @@ class WalkerDijkstra(PathFinder):
                         y += direction[1]
                     works = True
                     if valid_coordinates(x, y, height, width) and isinstance(matrix[x][y], SidewalkBlock):
-                        for index, st  in enumerate(streets):
-                            current_block = matrix[st[0]][st[1]]
-                            p, q = DIRECTION_OFFSETS[current_block.direction]
-                            sem_x = st[0] + p
-                            sem_y = st[1] + q
-                            if not valid_coordinates(sem_x, sem_y, height, width) or not isinstance(matrix[sem_x][sem_y], SemaphoreBlock):
-                                works = False
+                        for index, _  in enumerate(streets):
+                            semaphores = get_associated_semaphores(streets[index], self.environment)
+                            if len(semaphores) == 0:
+                                works =  False
                                 break
-                        if works:
-                            result.append((WalkerGraphNode((i + direction[0], j + direction[1]), current), 1))
+                    if works:
+                        result.append((WalkerGraphNode((i + direction[0], j + direction[1]), current), 1))
             
         return result
 

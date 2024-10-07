@@ -1,12 +1,13 @@
-from environment import Environment, PlaceBlock, RoadBlock, SemaphoreBlock, SidewalkBlock
+from environment import Block, Environment, PlaceBlock, RoadBlock, SemaphoreBlock, SidewalkBlock
 from globals import DIRECTION_OFFSETS, valid_coordinates
 
 from sim.MovingAgent import MovingAgent
+from sim.Walker.WalkerCommon import get_associated_semaphores
 from sim.Walker.WalkerDijkstra import WalkerDijkstra
 from sim.Walker.WalkerRandom import WalkerRandom
 from sim.Walker.PathFinder import PathFinder
 from sim.Walker.PlaceBelief import PlaceBelief
-
+from sim.Semaphore import Semaphore
 
 import random
 
@@ -94,24 +95,20 @@ class Walker(MovingAgent):
                 elif isinstance(matrix[x][y], SidewalkBlock):
                     break
 
-            works = True
             if isinstance(matrix[x][y], SidewalkBlock):
                 for index, st  in enumerate(streets):
                     current_block = matrix[st[0]][st[1]]
-                    p, q = DIRECTION_OFFSETS[current_block.direction]
-                    sem_x = st[0] + p
-                    sem_y = st[1] + q
-                    if not valid_coordinates(sem_x, sem_y, len(matrix), len(matrix[0])) or not isinstance(matrix[sem_x][sem_y], SemaphoreBlock):
-                        works = False
+                    semaphores = get_associated_semaphores(streets[index], self.environment)
+                    if len(semaphores) == 0:
+                        return False
                         break
-                    semaphore = self.environment.semaphores[matrix[sem_x][sem_y].representative]
-                    if semaphore.current == current_block.direction or semaphore.time_till_change() < index + 1:
-                        works = False
-                        break
-                if works:
-                    self.semaphor_pos = matrix[sem_x][sem_y].representative
-                    self.set_walker_pos(next_pos)
-                    return True
+                    for semaphore in semaphores:
+                        if semaphore.current == current_block.direction or semaphore.time_till_change() < index + 1:
+                            return False
+            
+                self.semaphor_pos = semaphore.id
+                self.set_walker_pos(next_pos)
+                return True
         return False
 
     def update_beliefs(self):
@@ -121,7 +118,9 @@ class Walker(MovingAgent):
             - if social allows add to my knowledge its knowledge,
         """
         i, j = self.position
-        for dx, dy in DIRECTION_OFFSETS.values():
+        offsets = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+        random.shuffle(offsets)
+        for dx, dy in offsets:
             x = i + dx
             y = j + dy
             if valid_coordinates(x, y, len(self.environment.matrix), len(self.environment.matrix[0])):
@@ -234,7 +233,9 @@ class Walker(MovingAgent):
             self.semaphor_stuck = 0
 
             goal_place_pos = self.place_beliefs[place_intention].belief_pos
-            for dx, dy in DIRECTION_OFFSETS.values():
+            offsets = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+            random.shuffle(offsets)
+            for dx, dy in offsets:
                 x = goal_place_pos[0] + dx
                 y = goal_place_pos[1] + dy
                 if valid_coordinates(x, y, len(self.environment.matrix), len(self.environment.matrix[0])):
