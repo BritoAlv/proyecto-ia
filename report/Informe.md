@@ -64,6 +64,41 @@ Los automóviles, junto a los peatones, se desplazan por el mapa, siguiendo la r
 
 ### 2.1 Simulación de Eventos Discretos
 
+#### 2.1.1 Marco teórico
+
+La **simulación de eventos discretos (SED)** es una técnica utilizada para modelar sistemas en los que el estado cambia en momentos específicos del tiempo debido a eventos que ocurren. En este contexto, un **evento discreto** es una ocurrencia puntual que altera el estado del sistema.
+
+Los elementos básicos de la SED:
+
+1. **Eventos**:
+   - Son las ocurrencias que generan cambios en el sistema. Estos eventos se producen en tiempos discretos y cada evento puede modificar variables del sistema, estados o desencadenar otros eventos futuros.
+   - Ejemplos de eventos: llegada de un cliente a una cola, inicio o finalización de un servicio, fallo de una máquina, etc.
+
+2. **Reloj de simulación**:
+   - La simulación utiliza un reloj para rastrear el tiempo simulado, avanzando de un evento al siguiente. No se avanza el tiempo continuamente, sino que solo se actualiza cuando ocurre un evento (esto es lo que significa que los eventos son "discretos").
+
+3. **Agenda de eventos futuros (AEL)**:
+   - Esta agenda es una lista que contiene los eventos programados para ocurrir en el futuro. La simulación avanza en el tiempo ejecutando el evento más cercano en la agenda, actualizando el estado del sistema y luego recalculando o añadiendo nuevos eventos.
+   
+4. **Variables de estado**:
+   - Estas son las variables que describen el sistema en cualquier punto del tiempo. Dependiendo de cómo cambian estas variables (debido a los eventos), se puede observar cómo evoluciona el sistema con el tiempo.
+   
+5. **Entidades**:
+   - Son los objetos que fluyen a través del sistema y que están sujetos a los eventos. Por ejemplo, en una simulación de una tienda, las entidades pueden ser los clientes que entran, hacen fila y son atendidos.
+
+6. **Atributos**:
+   - Son las características de las entidades. Cada entidad puede tener diferentes atributos que definen su comportamiento en la simulación. Por ejemplo, en un sistema de atención al cliente, un cliente podría tener un atributo que define su tiempo de servicio.
+
+7. **Recursos**:
+   - Son los componentes del sistema que las entidades utilizan. Por ejemplo, en un sistema de colas, los cajeros son un recurso limitado que los clientes usan para ser atendidos.
+
+8. **Colas**:
+   - Las colas son lugares donde las entidades esperan cuando los recursos no están disponibles. La lógica de la cola (FIFO, LIFO, etc.) es fundamental en muchas simulaciones.
+
+<!-- 
+#### 2.1.2 Detalles de implementación
+
+Dado que la simulación realizada, tiene en cuenta detalles particulares -->
 
 
 ### 2.2 Fuzzy Logic 
