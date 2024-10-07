@@ -198,7 +198,7 @@ class Walker(MovingAgent):
         a random to explore the environment.
         """
         if place_intented in self.place_desires and self.place_desires[place_intented] > 4 and self.place_beliefs[place_intented].belief_state == 1:
-            return WalkerDijkstra(self.environment) # replace with Dikstra
+            return WalkerDijkstra(self.environment) # replace with Dijkstra
         return WalkerRandom(self.environment)
 
     def check_done(self) -> bool:
@@ -225,7 +225,7 @@ class Walker(MovingAgent):
             self.update_desires()
             # choose the intention with more desire        
             place_intention = self.choose_intention()
-            # choose a plan to execute it, like Dikstra or random moving, etc.
+            # choose a plan to execute it, like Dijkstra or random moving, etc.
             plan = self.choose_plan(place_intention)
             # the plan gives a path that the walker should follow.
 
