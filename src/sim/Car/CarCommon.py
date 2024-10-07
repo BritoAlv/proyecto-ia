@@ -2,17 +2,16 @@ import random
 from environment import Environment, RoadBlock, SemaphoreBlock
 from globals import DIRECTION_OFFSETS, Directions, valid_coordinates
 
-def check_free(i : int, j : int, environment : Environment):
-        return (
-            isinstance(environment.matrix[i][j], RoadBlock)
-            and environment.matrix[i][j].car_id == None
-        )
 
-def check_valid(x : int, y : int, class_instance, environment : Environment):
-    return valid_coordinates(x, y, len(environment.matrix), len(environment.matrix[0])
-    ) and isinstance(environment.matrix[x][y], class_instance)
+def check_free(i: int, j: int, environment: Environment):
+    return isinstance(environment.matrix[i][j], RoadBlock) and environment.matrix[i][j].car_id == None
 
-def pos_cross_semaphor(i : int, j : int, direction : Directions,  environment : Environment) -> list[tuple[int, int]]:
+
+def check_valid(x: int, y: int, class_instance, environment: Environment):
+    return valid_coordinates(x, y, len(environment.matrix), len(environment.matrix[0])) and isinstance(environment.matrix[x][y], class_instance)
+
+
+def pos_cross_semaphor(i: int, j: int, direction: Directions, environment: Environment) -> list[tuple[int, int]]:
     r = i
     c = j
     options = semaphor_options(r, c, direction, environment)
@@ -23,7 +22,7 @@ def pos_cross_semaphor(i : int, j : int, direction : Directions,  environment : 
     return []
 
 
-def check_option(r, c, offset, environment : Environment) -> list[tuple[int, int]]:
+def check_option(r, c, offset, environment: Environment) -> list[tuple[int, int]]:
     options = []
     dx = offset[0]
     dy = offset[1]
@@ -39,7 +38,8 @@ def check_option(r, c, offset, environment : Environment) -> list[tuple[int, int
             options.append((rr, cc))
     return options
 
-def semaphor_options(r: int, c: int, direction: Directions, environment : Environment) -> list[tuple[int, int]]:
+
+def semaphor_options(r: int, c: int, direction: Directions, environment: Environment) -> list[tuple[int, int]]:
     options = []
     while check_valid(r, c, SemaphoreBlock, environment):
         if direction == Directions.NORTH or direction == Directions.SOUTH:

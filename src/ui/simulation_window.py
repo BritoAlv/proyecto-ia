@@ -1,10 +1,9 @@
 from datetime import datetime, timedelta
 from functools import partial
+import os
 import pickle
 from queue import PriorityQueue
 import sys
-from threading import Thread
-import time
 from uuid import UUID
 from PyQt5.QtWidgets import (
     QApplication,
@@ -32,7 +31,7 @@ from environment import (
 from globals import DIRECTION_OFFSETS, Directions, valid_coordinates
 from sim.MovingAgent import MovingAgent
 from sim.Event import Event, EventHandler, EventType
-from ui.start_window import StartWindow
+from ui.stats_window import StatsWindow
 
 
 class ZoomableGraphicsView(QGraphicsView):
@@ -59,28 +58,27 @@ class SimulationWindow(QWidget):
         # Load matrix data into main memory
         with open(matrix_path, "rb") as file:
             matrix = pickle.load(file)
-        environment = Environment(matrix)
+        environment = Environment(os.path.basename(matrix_path)[:-4], matrix)
 
         # Business (simulation) logic properties
         self._environment = environment  ## Core data structure
         self._event_handler = EventHandler(environment) 
 
         ## Simulation properties
-        self._date = datetime(2000, 1, 1)
         self._events_queue: PriorityQueue[Event] = PriorityQueue()
-        self._event: Event = Event(self._date + timedelta(seconds=1), EventType.CAR_EVENT)
+        self._event: Event = Event(self._environment.date + timedelta(seconds=1), EventType.CAR_EVENT)
         self._timer_period: int = 300
         self._simulation_on = False
 
-        # ### Push a car-event
-        # self._events_queue.put(Event(self._date + timedelta(seconds=1), EventType.CAR_EVENT))
+        ### Push a rain-event
+        self._events_queue.put(Event(self._environment.date + timedelta(seconds=2), EventType.RAIN_EVENT))
 
         ## Properties to display agents
         self._car_items: dict[UUID, QGraphicsItem] = {}
         self._walker_items: dict[UUID, QGraphicsItem] = {}
         self._semaphore_items: dict[tuple[int, int], SemaphoreItem] = {}
 
-        self._home_window: StartWindow = None  # Reference to window
+        self._stats_window: StatsWindow = None  # Reference to window
         self._scale_factor = 60  ## Scale factor to visualize items
 
         ## Properties to display labels
@@ -117,6 +115,7 @@ class SimulationWindow(QWidget):
         faster_button.setFixedSize(200, 30)
         slower_button = QPushButton("Slower")
         slower_button.setFixedSize(200, 30)
+        self._date_label = QLabel(text=self._environment.date.__str__())
 
         start_button.clicked.connect(self._handle_start)
         stop_button.clicked.connect(self._handle_stop)
@@ -129,6 +128,7 @@ class SimulationWindow(QWidget):
         top_layout.addWidget(end_button)
         top_layout.addWidget(faster_button)
         top_layout.addWidget(slower_button)
+        top_layout.addWidget(self._date_label)
 
         main_layout.addLayout(top_layout)
 
@@ -148,7 +148,7 @@ class SimulationWindow(QWidget):
 
         if not debug:
             # Handle events
-            while self._event.date == self._date:
+            while self._event.date == self._environment.date:
                 future_event = self._event_handler.handle(self._event)
                 self._events_queue.put(future_event)
                 self._event = self._events_queue.get()
@@ -166,7 +166,7 @@ class SimulationWindow(QWidget):
         self._update_scene()
 
         # Increase simulation date
-        self._date += timedelta(seconds=1)
+        self._environment.increase_date()
 
     def _handle_start(self):
         self._simulation_on = True
@@ -178,16 +178,22 @@ class SimulationWindow(QWidget):
 
     def _handle_end(self):
         self._timer.stop()
-        self._home_window = StartWindow()
-        self._home_window.showMaximized()
+        self._stats_window = StatsWindow(self._environment)
+        self._stats_window.showMaximized()
 
         self.close()
 
     def _handle_faster(self):
-        if not self._simulation_on or self._timer_period <= 50:
+        if not self._simulation_on or self._timer_period <= 1:
             return
 
-        self._timer_period -= 50
+        if self._timer_period <= 10:
+            self._timer_period -= 1
+        elif self._timer_period <= 50:
+            self._timer_period -= 10
+        else:
+            self._timer_period -= 50
+
         self._handle_stop()
         self._handle_start()
     
@@ -195,7 +201,11 @@ class SimulationWindow(QWidget):
         if not self._simulation_on or self._timer_period >= 1000:
             return
         
-        self._timer_period += 50
+        if self._timer_period < 50:
+            self._timer_period = 50
+        else:
+            self._timer_period += 50
+
         self._handle_stop()
         self._handle_start()
         
@@ -289,6 +299,7 @@ class SimulationWindow(QWidget):
         return self.__add_text__(text, j * self._scale_factor, i * self._scale_factor)
 
     def _update_scene(self):
+        self._date_label.setText(self._environment.date.__str__()) 
         self._change_lights()
         self._move_agent(self._environment.cars, self._car_items)
         self._move_agent(self._environment.walkers, self._walker_items, Qt.cyan, 15)
@@ -395,6 +406,6 @@ class SimulationWindow(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = SimulationWindow("./src/ui/matrices/ab.pkl")
+    window = SimulationWindow("./src/ui/matrices/f.pkl")
     window.showMaximized()
     app.exec_()

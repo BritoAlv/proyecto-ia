@@ -41,7 +41,7 @@ class BoundedFunction:
         plt.legend() # type: ignore
         plt.show() # type: ignore
 
-    def monte_carlo_area(self, iterations : int =10000):
+    def monte_carlo_area(self, iterations : int =100):
         goods = 0
         for _ in range(iterations):
             x = uniform(self.x_min, self.x_max)

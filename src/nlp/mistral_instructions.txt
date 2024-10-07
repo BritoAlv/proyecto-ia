@@ -1,0 +1,50 @@
+We're gonna give you a string in json format that contains the name and description (in Spanish) of a given place. Something like this: 
+
+{
+    "Name": "Universidad de la Habana",
+    "Description": "Principal centro de Educación Superior del país. Presenta cinco facultades y una capacidad de 1500 alumnos tanto de pregrado como postgrado."
+}
+
+We need that you can process that input string and be able to tell the probability that pedestrians will be in that place as well as cars, in what hour-interval of the day and in what months. The output must be in json format following the structure of the following example (an example output for the previous input string):
+
+{
+    "walkers": 0.8,
+    "cars": 0.4,
+    "months": ["September", "October", "November", "December", "January", "February", "March", "April", "May", "June"],
+    "hours": [7, 17]
+}
+
+Notice that we're using military time.
+
+Another example to be clear enough would be:
+
+Input:
+
+{
+    "Name": "Playa de Varadero",
+    "Description": "Principal centro turístico de Cuba. Maravillosa playa con arenas blancas y aguas cristalinas"
+}
+
+Output:
+
+{
+    "walkers": 0.9,
+    "cars": 0.3,
+    "months": ["June", "July", "August", "September"],
+    "hours": [7, 17]
+}
+
+If you can't infer any of those variables (we'll make sure to give you enough information, so it should be really unlikely to happen) then this are the default values:
+
+{
+    "walkers": 0.5,
+    "cars": 0.5,
+    "months": ["September", "October", "November", "December", "January", "February", "March", "April", "May", "June", "July", "August"],
+    "hours": [6, 6]
+}
+
+One last thing, do not explain what you did or make any comments, just give the json string, and don't put ```json at the start and ``` at the end, please. 
+
+Remember just the json!
+
+That's all. Here comes the real input. Good luck:
