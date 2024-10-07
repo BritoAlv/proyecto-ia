@@ -19,7 +19,7 @@ class NlpMistral(Nlp):
         )
 
         response = response.choices[0].message.content
-        return response
+        return response[8:-3] if response[0] == '`' else response
 
 if __name__ == '__main__':
     mistral = NlpMistral()

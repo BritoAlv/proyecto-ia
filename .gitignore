@@ -1,7 +1,8 @@
 # Customs
 ########################
 *.pkl
-*.vscode
+.vscode/
+simulation_results/
 ########################
 
 

@@ -19,11 +19,13 @@ class PlaceBlock(Block):
         name: str,
         description: str,
         representative: tuple[int, int],
+        meta_data: dict = None
     ) -> None:
         super().__init__(coordinates)
         self.name = name
         self.description = description
         self.representative = representative
+        self.meta_data: dict = meta_data
 
 
 class SemaphoreBlock(Block):
@@ -48,7 +50,7 @@ class SidewalkBlock(Block):
 
 
 class Environment:
-    def __init__(self, matrix: list[list[Block]], start_date: datetime = datetime(2000, 1, 1)) -> None:
+    def __init__(self, name, matrix: list[list[Block]], start_date: datetime = datetime(2000, 1, 1)) -> None:
         # Local imports
         from sim.Car.Car import Car
         from sim.Semaphore import Semaphore
@@ -56,9 +58,11 @@ class Environment:
 
         # Core logic properties
         self.matrix = matrix
+        self.name = name
         self.cars: dict[UUID, Car] = {}
         self.walkers: dict[UUID, Walker] = {}
         self.semaphores: dict[tuple[int, int], Semaphore] = {}
+        self.start_date: datetime = start_date
         self.date: datetime = start_date
         self.weather: float = 0
         self.places: dict[tuple[int, int], PlaceBlock] = {}
