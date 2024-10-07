@@ -53,9 +53,21 @@ Hay varias formas de responder esa pregunta, usamos el método del centroide que
 ![](./images/centroid.png)
 
 
-#### BDI
+#### BDI y Agentes Inteligentes
 
+Los agentes inteligentes deben tener en cuenta los siguientes tres características :
 
+*Reactividad* : Los agentes inteligentes son capaces de captar el contexto en el que se encuentran y responder rápidamente a los cambios que ocurren en este satisfaciendo las condiciones de el agente y del entorno o contexto.
+
+*Pro-actividad* : Deben ser capaces de planear estrategias para satisfacer sus objetivos y restringirse a estas.
+
+*Habilidad Social* : Los agentes inteligentes deben ser capaces de interactuar con otros agentes para satisfacer sus objetivos.
+
+Surge el problema de hallar un balance entre la reactividad y la pro-actividad. Una analogía a esto ocurre en con la arquitectura BDI.
+
+En la arquitectura BDI los agentes poseen creencias sobre su entorno que pueden ser correctas o no, posee objetivos que desea lograr e intenciones que conllevarán a acciones o planes para lograr sus objetivos. Constantemente estará siguiendo el siguiente bucle:
+
+Primero percibe el entorno actual, lo que actualiza sus creencias, en base a esto y sus deseos anteriores actualize sus deseos y sus intenciones, traza un plan y comienza a ejecutar este paso a paso. Pero en cada paso puede suceder que ya no sea factible continuar este plan ( debido a cambios en el entorno) por lo que debe *reaccionar* cambiando sus intenciones y por tanto un plan nuevo, puede finalizar su plan procediendo a escoger uno nuevo. También puede reconsiderar si continuar ejecutando el plan ( que tanto reconsidera es lo que influye en el balance entre la reactividad y la pro-actividad) y finalmente es posible que a consecuencia de la actualización de sus deseos no tenga sentido continuar con el plan por lo que parará y buscará uno nuevo.
 
 ### Problema fundamental
 
