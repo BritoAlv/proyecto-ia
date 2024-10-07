@@ -11,6 +11,8 @@
 - Discrete Event Simulation -> explanation/implementation
 - A* -> explanation/implementation
 - Fuzzy Logic -> explanation/implementation
+- BDI -> explanation/implementation
+- LLM usage
 - Semaphores/Cars/Walkers implementation
 
 ## Results

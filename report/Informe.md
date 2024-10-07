@@ -20,5 +20,39 @@ Gracias a los avances computacionales/tecnológicos de la actualidad ya es posib
 
 ### Problema fundamental
 
+En este proyecto pretendemos dar respuesta a la siguiente interrogante:
+
+**¿Es posible mejorar el tráfico de una ciudad mediante el uso de semáforos inteligentes?**
+
+(Donde "semáforos inteligentes" se entiende por aquellos semáforos capaces de ajustar su comportamiento de acuerdo a múltiples de variables del entorno con el fin de minimizar el tiempo de espera de tanto automóviles, como de peatones)
+
+Para ello, utilizamos una simulación, basada en **Eventos Discretos** que contiene múltiples agentes inteligentes guiados por un modelo **BDI** (Belief, Desire, Intention).
 
 ### Modelación
+
+Para llevar a cabo la simulación y abstraer las variables necesarias para nuestra investigación, decidimos modelar el problema de la siguiente forma:
+
+#### Mapa
+
+![](./images/map.png)
+
+El mapa de una ciudad está representado por una matriz que contiene como estructuras principales:
+
+- carreteras
+- aceras
+- intersecciones
+- lugares de interés
+
+Las carreteras y aceras constituyen los medios a través de los cuales se desplazan automóviles y peatones respectivamente. Con el fin de relajar la modelación decidimos que las carreteras tuvieran solo cuatro direcciones (norte, sur, este y oeste) y estuvieran rodeadas por aceras.
+
+La unión de dos carreteras constituye una intersección, y son estas las estructuras en las que están presentes lo semáforos. De nuevo, con el fin de abstraernos de detalles, decidimos que todas las intersecciones presentaran un semáforo.
+
+Por último, los lugares de interés representan sitios que potencialmente pueden ser visitados por múltiples peatones y automóviles. Estos lugares de interés, poseen una descripción (en lenguaje natural) que afecta sin influencia en el entorno de la simulación como veremos más adelante.
+
+#### Semáforos
+
+#### Automóviles
+
+#### Peatones
+
+#### Eventos
