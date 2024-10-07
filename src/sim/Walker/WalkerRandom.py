@@ -10,15 +10,13 @@ class WalkerRandom(PathFinder):
     def get_neighbours(self, current: WalkerGraphNode) -> list:
         return []
 
-    def path_finder(self, cur_pos: tuple[int, int], goal: tuple[int, int]):
+    def option_semaphor(self, cur_pos : tuple[int, int]):
         matrix = self.environment.matrix
         height = len(matrix)
         width = len(matrix[0])
-
         i, j = cur_pos
         offsets = [(1, 0), (0, 1), (-1, 0), (0, -1)]
         random.shuffle(offsets)
-        
         for walker_x, walker_y in offsets:
             x = i + walker_x
             y = j + walker_y
@@ -44,7 +42,14 @@ class WalkerRandom(PathFinder):
                             break
                     if works:
                         return streets + [(x,y)]
-
+        return []
+                    
+    def option_neighbour(self, cur_pos : tuple[int, int]): 
+        matrix = self.environment.matrix
+        height = len(matrix)
+        width = len(matrix[0])
+        i, j = cur_pos
+        offsets = [(1, 0), (0, 1), (-1, 0), (0, -1)] 
         for walker_x, walker_y in offsets:
             x = i + walker_x
             y = j + walker_y
@@ -53,3 +58,10 @@ class WalkerRandom(PathFinder):
             next_block = matrix[x][y]
             if isinstance(next_block, SidewalkBlock):
                 return [(x, y)]
+         
+    def path_finder(self, cur_pos: tuple[int, int], goal: tuple[int, int]):
+        option1 = self.option_semaphor(cur_pos)
+        option2 = self.option_neighbour(cur_pos)
+        if random.random() <= 0.5 and len(option1) > 0:
+            return option1
+        return option2

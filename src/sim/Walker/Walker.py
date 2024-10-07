@@ -214,7 +214,6 @@ class Walker(MovingAgent):
         self.update_beliefs()
         # if done then retire. 
         if self.check_done():
-            print(f"Walker done after {self.total_time_overall}")
             self.remove_walker()
             return
 
