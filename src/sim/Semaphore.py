@@ -124,9 +124,9 @@ class Semaphore(Agent):
         self.walkers_times : list[int] = []
         self.useFuzzy = useFuzzy
         
-        self.fuzzy_system.add_rule(GREEN_TIME, LOW, lambda x: min(x[MONTH][LOW], x[CAR_WAITING_TIME][NORMAL], x[WALKER_WAITING_TIME][NORMAL], 1 - x[WHEATHER][RAINING], x[TIME_CLASSIFICATION][DAWN], x[TIME_CLASSIFICATION][NOON]))
+        self.fuzzy_system.add_rule(GREEN_TIME, LOW, lambda x: min(x[MONTH][LOW], x[CAR_WAITING_TIME][NORMAL], x[WALKER_WAITING_TIME][OVERCHARGED], 1 - x[WHEATHER][RAINING], x[TIME_CLASSIFICATION][NOON]))
         self.fuzzy_system.add_rule(GREEN_TIME, AVERAGE, lambda x: min( x[MONTH][AVERAGE]  ,x[CAR_WAITING_TIME][CHARGED], x[WALKER_WAITING_TIME][CHARGED], 1 - x[WHEATHER][CLOUD], x[TIME_CLASSIFICATION][MORNING]))
-        self.fuzzy_system.add_rule(GREEN_TIME, HIGH, lambda x: max( x[MONTH][HIGH], x[CAR_WAITING_TIME][OVERCHARGED], x[WALKER_WAITING_TIME][OVERCHARGED], 1 - x[WHEATHER][SUNNY], x[TIME_CLASSIFICATION][AFTERNOON]))
+        self.fuzzy_system.add_rule(GREEN_TIME, HIGH, lambda x: max( x[MONTH][HIGH], x[CAR_WAITING_TIME][OVERCHARGED], x[WALKER_WAITING_TIME][NORMAL], 1 - x[WHEATHER][SUNNY], x[TIME_CLASSIFICATION][DAWN]))
 
         self.fuzzy_system.add_rule(OVERLOAD, LOW, lambda x: max(x[CAR_WAITING_TIME][NORMAL], x[WALKER_WAITING_TIME][NORMAL]))
         self.fuzzy_system.add_rule(OVERLOAD, AVERAGE, lambda x: max(x[CAR_WAITING_TIME][CHARGED], x[WALKER_WAITING_TIME][CHARGED]))
