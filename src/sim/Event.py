@@ -17,18 +17,18 @@ class EventType(Enum):
 
 
 MONTHS = {
-    1: 'January',
-    2: 'February',
-    3: 'March',
-    4: 'April',
-    5: 'May',
-    6: 'June',
-    7: 'July',
-    8: 'August',
-    9: 'September',
-    10: 'October',
-    11: 'November',
-    12: 'December'
+    1: "January",
+    2: "February",
+    3: "March",
+    4: "April",
+    5: "May",
+    6: "June",
+    7: "July",
+    8: "August",
+    9: "September",
+    10: "October",
+    11: "November",
+    12: "December",
 }
 
 
@@ -69,6 +69,7 @@ class EventHandler:
         next_date = event.date + timedelta(seconds=time_offset)
         next_car_event = Event(next_date, EventType.CAR_EVENT)
 
+        # Calculate the probability of each road-block based on their distance from interest places
         goals, goals_probabilities = self._get_roads_probabilities()
         goal_position = random.choices(goals, goals_probabilities)[0]
         Car(goal_position, self.environment)
@@ -76,16 +77,24 @@ class EventHandler:
         return next_car_event
 
     def _handle_walker_event(self, event: Event) -> Event:
-        time_offset = math.ceil(exponential(30))
+        time_offset = math.ceil(exponential(10))
         next_date = event.date + timedelta(seconds=time_offset)
         next_walker_event = Event(next_date, EventType.WALKER_EVENT)
 
-        # Get non-occupied road-blocks
-        if len(self.environment.place_blocks) > 0:
-            # select a non empty subset of the PlaceBlocks change this to use probs or etc.
-            places = random.choices(self.environment.place_blocks, k=random.randint(1, len(self.environment.place_blocks)))
-            _ = Walker(places, self.environment)
+        places_probability = self._get_places_probability()
 
+        places_coordinates = random.choices(
+            list(places_probability.keys()),
+            list(places_probability.values()),
+            k=random.randint(1, len(places_probability)),
+        )
+
+        places = []
+        for place in self.environment.places.values():
+            if place.representative in places_coordinates:
+                places.append(place)
+
+        Walker(places, self.environment)
         return next_walker_event
 
     def _handle_rain_event(self, event: Event) -> Event:
@@ -104,14 +113,12 @@ class EventHandler:
 
         return next_rain_event
 
-    def _get_roads_probabilities(
-        self, car_biased: bool = True
-    ) -> tuple[list[tuple[int, int]], list[float]]:
+    def _get_roads_probabilities(self) -> tuple[list[tuple[int, int]], list[float]]:
         matrix = self.environment.matrix
         height = len(matrix)
         width = len(matrix[0])
-        places_probability: dict[tuple[int, int], float] = self._get_places_probability(
-            car_biased
+        places_probability: dict[tuple[int, int], float] = (
+            self._get_places_probability()
         )
 
         roads: list[tuple[int, int]] = []
@@ -131,9 +138,7 @@ class EventHandler:
 
         return roads, probabilities
 
-    def _get_places_probability(
-        self, car_biased: bool = True
-    ) -> dict[tuple[int, int], float]:
+    def _get_places_probability(self) -> dict[tuple[int, int], float]:
         places_probabilities: dict[tuple[int, int], list[float]] = {}
         places_probability: dict[tuple[int, int], float] = {}
 
@@ -185,17 +190,19 @@ class EventHandler:
         )
 
         return closest_place_probability * factor
-    
-    def _get_place_probability(self, place_meta_data: dict, car_biased: bool = True):
+
+    def _get_place_probability(self, place_meta_data: dict):
         if place_meta_data == None:
             return 0.5
-        
+
         month = MONTHS[self.environment.date.month]
 
-        if month in place_meta_data['months'] and place_meta_data['hours'][0] <= self.environment.date.hour <= place_meta_data['hours'][1]:
-            if car_biased:
-                return place_meta_data['cars']
-            else:
-                return place_meta_data['walkers']
+        if (
+            month in place_meta_data["months"]
+            and place_meta_data["hours"][0]
+            <= self.environment.date.hour
+            <= place_meta_data["hours"][1]
+        ):
+            return place_meta_data["cars"]
         else:
             return 0.1
