@@ -63,6 +63,8 @@ def simulate(
             break
 
     return {
+        "start_date": [start_date.year, start_date.month, start_date.day,start_date.hour],
+        "end_date": [due_date.year, due_date.month, due_date.day, due_date.hour],
         "cars_delay": environment.stats.cars_delay,
         "cars_semaphore_delay": environment.stats.cars_semaphore_delay,
         "walkers_delay": environment.stats.walkers_delay,
@@ -77,7 +79,7 @@ if __name__ == '__main__':
     standard_semaphore_stats = []
 
     for i in range(1, 13):
-        dates= [datetime(2000, i, 1), datetime(2000, i, 15)]
+        dates= [datetime(2000, i, 1, 10), datetime(2000, i, 15, 22)]
 
         for date in dates:
             smart_semaphore_stats.append(
