@@ -60,8 +60,7 @@ class WalkerRandom(PathFinder):
          
     def path_finder(self, cur_pos: tuple[int, int], goal: tuple[int, int]):
         option1 = self.option_semaphor(cur_pos)
-        print(option1)
         option2 = self.option_neighbour(cur_pos)
-        if random.random() <= 0.99 and len(option1) > 0:
+        if random.random() <= 0.6 and len(option1) > 0:
             return option1
         return option2
