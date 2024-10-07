@@ -56,3 +56,9 @@ Por último, los lugares de interés representan sitios que potencialmente puede
 #### Peatones
 
 #### Eventos
+
+
+## Referencias
+An Introduction to Multi Agent Systems, Michael Wooldridge
+Temas de Simulación, Luciano García Garrido
+Fuzzy Sets and Fuzzy Logic Theory and Applications, GEORGE J.KLIR AND BO YUAN
