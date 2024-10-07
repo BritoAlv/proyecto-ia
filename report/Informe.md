@@ -47,7 +47,7 @@ Las carreteras y aceras constituyen los medios a través de los cuales se despla
 
 La unión de dos carreteras constituye una intersección, y son estas las estructuras en las que están presentes los semáforos. De nuevo, con el fin de abstraernos de detalles, decidimos que todas las intersecciones presentaran un semáforo.
 
-Por último, los lugares de interés representan sitios que potencialmente pueden ser visitados por múltiples peatones y automóviles. Estos lugares de interés, poseen una descripción (en lenguaje natural) que afecta sin influencia en el entorno de la simulación como veremos más adelante.
+Por último, los lugares de interés representan sitios que potencialmente pueden ser visitados por múltiples peatones y automóviles. Estos lugares de interés, poseen una descripción (en lenguaje natural) que afecta su influencia en el entorno de la simulación como veremos más adelante.
 
 #### Semáforos
 
@@ -203,8 +203,6 @@ Actualiza sus deseos de la siguiente forma: Sus deseos son representados a trav�
 Escoge un plan de la siguiente forma: Escoge como lugar o intención a ir el de más prioridad entre sus deseos, si el caminante está seguro de donde está el lugar y posee suficiente deseo de visitarlo usará Dijkstra para determinar el camino. En caso contrario se moverá aleatoriamente.
 
 4 - Finalmente escoge la siguiente posición en el camino determinado por su plan para moverse, si no le es posible moverse se mantiene en la posición actual.
-
-#### Eventos
 
 ## Referencias
 An Introduction to Multi Agent Systems, Michael Wooldridge
