@@ -171,6 +171,9 @@ class SimulationWindow(QWidget):
 
         # Increase simulation date
         self._environment.increase_date()
+        
+        if self._environment.date > datetime(2000, 1, 8, 0, 0):
+            self._handle_end()
 
     def _handle_start(self):
         self._simulation_on = True
