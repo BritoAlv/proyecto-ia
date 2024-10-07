@@ -38,21 +38,24 @@ Para llevar a cabo la simulación y abstraer las variables necesarias para nuest
 
 El mapa de una ciudad está representado por una matriz que contiene como estructuras principales:
 
-- carreteras
-- aceras
-- intersecciones
-- lugares de interés
+- carreteras (casillas gris claro en la image)
+- aceras (casillas amarillas en la imagen)
+- intersecciones (casillas gris oscuro en la imagen)
+- lugares de interés (casillas blancas en la imagen)
 
 Las carreteras y aceras constituyen los medios a través de los cuales se desplazan automóviles y peatones respectivamente. Con el fin de relajar la modelación decidimos que las carreteras tuvieran solo cuatro direcciones (norte, sur, este y oeste) y estuvieran rodeadas por aceras.
 
-La unión de dos carreteras constituye una intersección, y son estas las estructuras en las que están presentes lo semáforos. De nuevo, con el fin de abstraernos de detalles, decidimos que todas las intersecciones presentaran un semáforo.
+La unión de dos carreteras constituye una intersección, y son estas las estructuras en las que están presentes los semáforos. De nuevo, con el fin de abstraernos de detalles, decidimos que todas las intersecciones presentaran un semáforo.
 
 Por último, los lugares de interés representan sitios que potencialmente pueden ser visitados por múltiples peatones y automóviles. Estos lugares de interés, poseen una descripción (en lenguaje natural) que afecta sin influencia en el entorno de la simulación como veremos más adelante.
 
 #### Semáforos
 
-#### Automóviles
+Los semáforos controlan el tráfico en las intersecciones. Apuntando al fin del proyecto, diseñamos dos tipos de semáforos: semáforos inteligentes y semáforos estándar.
 
-#### Peatones
+Los semáforos inteligentes regulan su comportamiento a partir de las variables del entorno (clima, horario, etc) utilizando como motor la lógica difusa (como veremos más adelante). Los semáforos estándar, por su parte, poseen un tiempo predefinido en su ciclo que no varía durante la simulación.
+Decidimos también, con el fin de simplificar, que los semáforos solo tuvieran como luces: rojo y verde.
 
-#### Eventos
+#### Automóviles y peatones (casillas azul y cyan respectivamente en la imagen)
+
+Los automóviles, junto a los peatones, se desplazan por el mapa, siguiendo la ruta más eficiente teniendo en cuenta la distancia y considerando la carga de los semáforos. Estos en conjunto con los semáforos, representan los agentes inteligentes de la simulación.
