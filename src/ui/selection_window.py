@@ -2,7 +2,7 @@ import os
 import sys
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow, QHBoxLayout, QScrollArea, QGridLayout, QVBoxLayout, QPushButton, QLabel
+from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow, QHBoxLayout, QScrollArea, QGridLayout, QVBoxLayout, QPushButton, QLabel, QRadioButton
 import pickle
 from functools import partial
 
@@ -21,6 +21,7 @@ class SelectionWindow(QMainWindow):
         self.setMinimumHeight(700)
         self.simulation_window : SimulationWindow = None
         self.home_window : StartWindow = None
+        self.smart_semaphore = True
 
         main_layout = QVBoxLayout()
         main_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
@@ -29,6 +30,17 @@ class SelectionWindow(QMainWindow):
         home_button.setFixedSize(100, 30)
         home_button.clicked.connect(self._back_home)
         main_layout.addWidget(home_button)
+
+        self.smart_button = QRadioButton("Smart Semaphore")
+        self.smart_button.setFixedSize(300, 30)
+        self.standard_button = QRadioButton("Standard Semaphore")
+        self.standard_button.setFixedSize(300, 30)
+        main_layout.addWidget(self.smart_button)
+        main_layout.addWidget(self.standard_button)
+
+        self.smart_button.setChecked(True)
+        self.smart_button.toggled.connect(self._select_semaphore)
+        self.standard_button.toggled.connect(self._select_semaphore)
 
         title_label = QLabel("Select a map:")
         title_label.setFont(QFont("Arial", 60, 500, True))
@@ -51,9 +63,15 @@ class SelectionWindow(QMainWindow):
         self.setCentralWidget(widget)
 
     def _select_map(self, map_name : str):
-        self.simulation_window = SimulationWindow(f'./src/ui/matrices/{map_name}.pkl')
+        self.simulation_window = SimulationWindow(f'./src/ui/matrices/{map_name}.pkl', self.smart_semaphore)
         self.simulation_window.showMaximized()
         self.close()
+
+    def _select_semaphore(self):
+        if self.smart_button.isChecked():
+            self.smart_semaphore = True
+        elif self.standard_button.isChecked():
+            self.smart_semaphore = False
 
     def _back_home(self):
         self.home_window = StartWindow()
