@@ -2,7 +2,7 @@
 
 El entorno de este proyecto es un mapa compuesto por casillas, que pueden representar, calles, acera, intersección, lugar de interés o nada.
 
-Nuestros agentes son carros, semáforos y caminantes. Los caminantes y los carros desean trasladarse a lugarés de interés en la ciudad. 
+Nuestros agentes son carros, semáforos y caminantes. Los caminantes y los carros desean trasladarse a lugares de interés en la ciudad. 
 
 Los lugares de interés se representan como una posición en el mapa. Todos los lugares de interés poseen una probabilidad de que un carro tenga como destino este lugar, estas probabilidades suman $1$. A través de procesamiento de lenguaje natural modificamos estas probabilidades.
 
