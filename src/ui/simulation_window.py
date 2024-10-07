@@ -52,13 +52,13 @@ class SemaphoreItem:
 
 
 class SimulationWindow(QWidget):
-    def __init__(self, matrix_path: str):
+    def __init__(self, matrix_path: str, use_fuzzy: bool = True):
         super().__init__()
 
         # Load matrix data into main memory
         with open(matrix_path, "rb") as file:
             matrix = pickle.load(file)
-        environment = Environment(os.path.basename(matrix_path)[:-4], matrix)
+        environment = Environment(os.path.basename(matrix_path)[:-4], matrix, use_fuzzy=use_fuzzy)
 
         # Business (simulation) logic properties
         self._environment = environment  ## Core data structure

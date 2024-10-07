@@ -43,7 +43,7 @@ class SidewalkBlock(Block):
 
 
 class Environment:
-    def __init__(self, name, matrix: list[list[Block]], start_date: datetime = datetime(2000, 1, 1)) -> None:
+    def __init__(self, name, matrix: list[list[Block]], start_date: datetime = datetime(2000, 1, 1), use_fuzzy: bool = True) -> None:
         # Local imports
         from sim.Car.Car import Car
         from sim.Semaphore import Semaphore
@@ -60,7 +60,7 @@ class Environment:
         self.weather: float = 0
         self.places: dict[tuple[int, int], PlaceBlock] = {}
         self.stats: Stats = Stats()
-        self._extract_data()  # Extract
+        self._extract_data(use_fuzzy)  # Extract
 
         self.sidewalk_blocks = self._get_type_blocks(SidewalkBlock)
         self.place_blocks = self._get_type_blocks(PlaceBlock)
@@ -98,7 +98,7 @@ class Environment:
                     blocks.append(block)
         return blocks
 
-    def _extract_data(self) -> None:
+    def _extract_data(self, use_fuzzy: bool) -> None:
         height = len(self.matrix)
         width = len(self.matrix[0])
 
@@ -110,7 +110,7 @@ class Environment:
                 if isinstance(block, SemaphoreBlock) and block.representative not in self.semaphores:
                     from sim.Semaphore import Semaphore
 
-                    self.semaphores[block.representative] = Semaphore(block.representative, self, len(self.semaphores))
+                    self.semaphores[block.representative] = Semaphore(block.representative, self, len(self.semaphores), use_fuzzy)
 
                 # Extract interest places
                 if isinstance(block, PlaceBlock):
