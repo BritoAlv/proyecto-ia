@@ -7,10 +7,11 @@ from globals import Directions
 
 class WalkerGraphNode:
     def __init__(
-        self, pos: tuple[int, int], parent : 'WalkerGraphNode' ) -> None:
+        self, pos: tuple[int, int], parent : 'WalkerGraphNode', cross_direction = None ) -> None:
         self.pos = pos
         self.score = 0
         self.parent : None | 'WalkerGraphNode' = parent
+        self.cross_direction = cross_direction
 
     def __hash__(self) -> int:
         return self.pos.__hash__()

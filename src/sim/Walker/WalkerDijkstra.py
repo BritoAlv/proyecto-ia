@@ -1,6 +1,6 @@
 import heapq
 import random
-from environment import RoadBlock, SemaphoreBlock, SidewalkBlock
+from environment import Environment, RoadBlock, SemaphoreBlock, SidewalkBlock
 from globals import DIRECTION_OFFSETS, valid_coordinates
 from sim.Car.CarCommon import check_valid, semaphor_options
 from sim.Walker.PathFinder import PathFinder, WalkerGraphNode
@@ -8,6 +8,8 @@ from sim.Walker.WalkerCommon import get_associated_semaphores
 
 
 class WalkerDijkstra(PathFinder):
+    def __init__(self, environment: Environment) -> None:
+        super().__init__(environment)
     def path_finder(self, cur_pos: tuple[int, int], goal: tuple[int, int]) -> list[tuple[int, int]]:
         return self.dijkstra(cur_pos, goal)
 
@@ -19,10 +21,10 @@ class WalkerDijkstra(PathFinder):
         width = len(matrix[0])
 
         if isinstance(matrix[i][j], RoadBlock):
-            direction = DIRECTION_OFFSETS[matrix[i][j].direction]
+            direction = current.cross_direction
             x =  i + direction[0]
             y = j + direction[1]
-            return [ (WalkerGraphNode((x, y), current), 1) ] 
+            return [ (WalkerGraphNode((x, y), current, direction), 1) ] 
 
         if isinstance(matrix[i][j], SidewalkBlock):
             offsets = [(1, 0), (0, 1), (-1, 0), (0, -1)]
@@ -48,7 +50,7 @@ class WalkerDijkstra(PathFinder):
                                 works =  False
                                 break
                     if works:
-                        result.append((WalkerGraphNode((i + direction[0], j + direction[1]), current), 1))
+                        result.append((WalkerGraphNode((i + direction[0], j + direction[1]), current, direction), 1))
             
         return result
 

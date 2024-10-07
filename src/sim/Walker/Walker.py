@@ -39,7 +39,7 @@ class Walker(MovingAgent):
         # probs.
         self.social_prob = random.random()
         self.trust_ness = random.random()
-        self.reactive_ness = random.random()
+        self.reactive_ness = 0.05
         self.reset_prob = 0.05
 
         # time for stats
@@ -113,7 +113,7 @@ class Walker(MovingAgent):
 
     def update_beliefs(self):
         """
-        1 - check if in position there is a neighbouring Intersest Place, if so updated my current info,
+        1 - check if in position there is a neighboring Interest Place, if so updated my current info,
         2 - check if in position there is another walker and :
             - if social allows add to my knowledge its knowledge,
         """
@@ -137,6 +137,9 @@ class Walker(MovingAgent):
                         place_coord = self.place_beliefs[place_name].belief_pos
                         if place_coord == (x, y) and name != place_name:
                             self.place_beliefs[place_name].belief_pos = random.choice(self.environment.place_blocks).coordinates
+                    
+                    if name in self.place_desires:
+                        self.place_desires.pop(name)
 
         for walker_id in self.environment.matrix[i][j].walkers_id:
             if walker_id != self.id and random.random() >= self.social_prob:
@@ -194,18 +197,17 @@ class Walker(MovingAgent):
         This method should choose a method to compute the algorithm used to get to the path
         """
         """
-        Implementation is : If desire is big enough and know where it is use dikstra, else use 
+        Implementation is : If desire is big enough and know where it is use Dijkstra, else use 
         a random to explore the environment.
         """
-        if place_intented in self.place_desires and self.place_desires[place_intented] > 4 and self.place_beliefs[place_intented].belief_state == 1:
+        if self.place_beliefs[place_intented].belief_state == 1 or random.random() <= 0.6: # fix this
+            #print("Used Dijkstra")
             return WalkerDijkstra(self.environment) # replace with Dijkstra
+        #print("Used Random")
         return WalkerRandom(self.environment)
 
     def check_done(self) -> bool:
-        for place in self.place_desires:
-            if self.place_beliefs[place].belief_state == 0:
-                return False
-        return True
+        return len(self.place_desires) == 0
 
     def act(self) -> None:
         # always update its beliefs
@@ -240,8 +242,9 @@ class Walker(MovingAgent):
                 y = goal_place_pos[1] + dy
                 if valid_coordinates(x, y, len(self.environment.matrix), len(self.environment.matrix[0])):
                     if isinstance(self.environment.matrix[x][y], SidewalkBlock):
-                        self.path = plan.path_finder(self.position, goal_place_pos)
-                        assert(len(self.path) > 0)
+                        self.path = plan.path_finder(self.position, (x, y))
+                        #print(f"Path from {self.position} to  {(x, y)} is")
+                        #print(self.path)
                         break
         if len(self.path) > 0:
             next_pos = self.path[0]
