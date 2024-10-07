@@ -1,3 +1,4 @@
+import random
 from environment import Environment
 from fuzzy.bounded_function import BoundedFunction
 from fuzzy.fuzzy_system import FuzzySystem
@@ -141,6 +142,11 @@ class Semaphore(Agent):
             self.queue.append(result[GREEN_TIME])
             self.overload = result[OVERLOAD]
 
+    def update_from_environment(self):
+        self.update_fuzzy( MONTH , self.environment.date.month)
+        self.update_fuzzy( WHEATHER, self.environment.weather)
+        self.update_system(  TIME_CLASSIFICATION , self.environment.date.hour * 60 + self.environment.date.minute)
+
     def update_fuzzy(self, name : str, value : float):
         self.fuzzy_values[name] = value
 
@@ -151,10 +157,12 @@ class Semaphore(Agent):
         return self.green_time - self.iter - 1
 
     def act(self) -> None:
-
+        if random.random() <= 0.10:
+            self.update_system()
         """
         The semaphor has a green time for default, this is updated using the fuzzy logic, the fuzzy values are updated using the set_fuzzy_values method. the semaphor will keep on a state until the green time is over, then it will change to the next direction in the array, if the direction is empty it will be red on all the directions, else will be green on a specific direction.
         """
+        self.update_from_environment()
         if len(self.car_times) >= 5:
             sum = 0
             for x in self.car_times:
