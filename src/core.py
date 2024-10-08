@@ -19,7 +19,7 @@ def simulate(
         matrix_path: str, 
         smart_semaphore: bool = True, 
         start_date: datetime = datetime(2000, 1, 1), 
-        duration: timedelta = timedelta(days=0, hours=2),
+        duration: timedelta = timedelta(days=0, hours=1),
         seed = seed_events
     ) -> dict[str, list[int]]:
 
@@ -58,7 +58,7 @@ def simulate(
         # Increase simulation date
         environment.increase_date()
  
-        print(environment.date)
+        #print(environment.date)
         if environment.date >= due_date:
             break
 
@@ -78,9 +78,9 @@ if __name__ == '__main__':
     smart_semaphore_stats = []
     standard_semaphore_stats = []
 
+    print(f"Start at {datetime.now()}")
     for i in range(1, 13):
         dates= [datetime(2000, i, 1, 10), datetime(2000, i, 15, 22)]
-
         for date in dates:
             smart_semaphore_stats.append(
                 simulate(
@@ -96,6 +96,7 @@ if __name__ == '__main__':
                 start_date=date
                 )
             )
+        print(f"Right now it's at {i / 12} percent", datetime.now())
 
     if "simulation_results" not in os.listdir("./"):
             os.mkdir("./simulation_results")
@@ -105,4 +106,3 @@ if __name__ == '__main__':
 
     with open(f'./simulation_results/standard_{NAME}.json', 'w') as file:
         file.write(json.dumps(standard_semaphore_stats))
-
