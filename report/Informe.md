@@ -114,9 +114,12 @@ Una variable Fuzzy posee un dominio que puede ser por ejemplo los números reale
 #### Reglas
 
 Las operaciones lógicas pueden ser representadas de varias formas, usamos:
-    - $NOT(x) = 1 - x$
-    - $OR(x,y) = max(x, y)$
-    - $AND(x, y) = min(x, y)$
+
+$NOT(x) = 1 - x$
+
+$OR(x,y) = max(x, y)$
+
+$AND(x, y) = min(x, y)$
 
 Las reglas permiten hallar los grados de pertenencia de las variables de salida en función de las variables de entrada. Por ejemplo si la comida fue buena y el servicio rápido entonces la propina es alta, se interpreta como :
 
@@ -144,11 +147,24 @@ Los agentes inteligentes deben tener en cuenta los siguientes tres característi
 
 *Habilidad Social* : Los agentes inteligentes deben ser capaces de interactuar con otros agentes para satisfacer sus objetivos.
 
-Surge el problema de hallar un balance entre la reactividad y la pro-actividad. Una analogía a esto ocurre en con la arquitectura BDI.
+Surge el problema de hallar un balance entre la reactividad y la pro-actividad. 
+Una analogía a esto ocurre en con la arquitectura BDI.
 
-En la arquitectura BDI los agentes poseen creencias sobre su entorno que pueden ser correctas o no, posee objetivos que desea lograr e intenciones que conllevarán a acciones o planes para lograr sus objetivos. Constantemente estará siguiendo el siguiente bucle:
+En la arquitectura BDI los agentes poseen creencias sobre su entorno que pueden ser correctas o no, poseen objetivos que desean lograr e intenciones que conllevarán a acciones o planes para lograr sus objetivos. 
 
-Primero percibe el entorno actual, lo que actualiza sus creencias, en base a esto y sus deseos anteriores actualize sus deseos y sus intenciones, traza un plan y comienza a ejecutar este paso a paso. Pero en cada paso puede suceder que ya no sea factible continuar este plan ( debido a cambios en el entorno) por lo que debe *reaccionar* cambiando sus intenciones y por tanto un plan nuevo, puede finalizar su plan procediendo a escoger uno nuevo. También puede reconsiderar si continuar ejecutando el plan ( que tanto reconsidera es lo que influye en el balance entre la reactividad y la pro-actividad) y finalmente es posible que a consecuencia de la actualización de sus deseos no tenga sentido continuar con el plan por lo que parará y buscará uno nuevo.
+Constantemente estará siguiendo el siguiente bucle para determinar su comportamiento:
+
+Primero percibe el entorno actual, lo que actualiza sus creencias, en base a esto y sus deseos anteriores actualize sus deseos y sus intenciones, traza un plan y comienza a ejecutar este paso a paso. Pero en cada paso puede suceder:
+
+- que ya no sea factible continuar este plan ( debido a cambios en el entorno) por lo que debe *reaccionar* cambiando sus intenciones y por tanto un plan nuevo.
+
+- puede finalizar su plan procediendo a escoger uno nuevo. 
+
+- también puede reconsiderar si continuar ejecutando el plan ( que tanto reconsidera es lo que influye en el balance entre la reactividad y la pro-actividad) 
+
+- finalmente es posible que a consecuencia de la actualización de sus deseos no tenga sentido continuar con el plan por lo que parará y buscará uno nuevo (reactividad).
+
+
 
 
 
@@ -243,20 +259,24 @@ Los agentes caminantes están basados en la arquitectura $BDI$, estos se mueven 
 
 Paso a paso su funcionamiento:
 
-1 - Actualizan sus creencias: Si en su posición actual hay un lugar de interés añaden esta información a sus creencias (sabe donde está, por tanto es conocimiento). Si en su posición hay otro caminante se escoge un número aleatorio y si es menor que su factor social, este caminante actualiza sus beliefs además usando los beliefs del caminante con el que se encontró. O sea cada caminante tiene un factor social como un número entre $[0, 1]$, para decidir cuando ser social con otros caminantes. Además un caminante posee otro factor de confianza, si esta es baja es menos probable que escoja creencias de otro caminante que no sean certeras. Siempre escoge las que representen conocimiento. De esta forma un caminante actualiza sus creencias.
+1 - Actualizan sus creencias: Si en su posición actual hay un lugar de interés añaden esta información a sus creencias (sabe donde está, por tanto es conocimiento). Si en su posición hay otro caminante se escoge un número aleatorio y si es menor que su factor social, este caminante actualiza sus creencias además usando los creencias del caminante con el que se encontró. O sea cada caminante tiene un factor social como un número entre $[0, 1]$, para decidir cuando ser social con otros caminantes. Además un caminante posee otro factor de confianza, si esta es baja es menos probable que escoja creencias de otro caminante que no sean certeras. Siempre escoge las que representen conocimiento. De esta forma un caminante actualiza sus creencias.
 
 2 - Si ya visitó todos los lugares que deseaba entonces es removido de la simulación.
 
-3 - Cada caminante posee un factor de reactivad, entonces si su plan se acabó ( el camino que estaba siguiendo ya lo culminó) o un número aleatorio es menor que este factor, el caminante actualiza sus deseos y ha de escoger un plan nuevo.
+3 - Cada caminante posee un factor de reactivad, entonces si su plan se acabó ( el camino que estaba siguiendo ya lo culminó) o un número aleatorio entre $[0,1]$ es menor que este factor, el caminante actualiza sus deseos y ha de escoger un plan nuevo.
 
-Actualiza sus deseos de la siguiente forma: Sus deseos son representados a través de un diccionario donde a cada lugar que desea visitar le es asignado una prioridad. Si hay un caminante en mi posición que también desea ir a un lugar en específico le es aumentada la prioridad, aquí nuevamente se tiene en cuenta el factor social. Si hay algún lugar entre mis deseos que se donde se encuentra le aumento la prioridad. Aleatoriamente escojo un lugar y le aumento la prioridad. Finalmente si un caminante lleva mucho tiempo en una posición en específico se igual todas las prioridades.
+Actualiza sus deseos de la siguiente forma: Sus deseos son representados a través de un diccionario donde a cada lugar que desea visitar le es asignado una prioridad. Si hay un caminante en mi posición que también desea ir a un lugar en específico le es aumentada la prioridad, aquí nuevamente se tiene en cuenta el factor social. Si hay algún lugar entre mis deseos que se donde se encuentra le aumento la prioridad. Aleatoriamente escojo un lugar y le aumento la prioridad. Finalmente si un caminante lleva mucho tiempo en una posición en específico se igualan todas las prioridades.
 
-Escoge un plan de la siguiente forma: Escoge como lugar o intención a ir el de más prioridad entre sus deseos, si el caminante está seguro de donde está el lugar y posee suficiente deseo de visitarlo usará Dijkstra para determinar el camino. En caso contrario se moverá aleatoriamente.
+Escoge un plan de la siguiente forma: Escoge como lugar o intención a ir el de más prioridad entre sus deseos, si el caminante está seguro de donde está el lugar y posee suficiente deseo de visitarlo usará Dijkstra para determinar el camino. En caso contrario con cierta probabilidad se moverá aleatoriamente o usará Dijkstra para moverse hacia la posición del lugar ( pudiendo en este caso no ser la correcta). En el caso de los caminantes a diferencia de los carros la única forma de que no se pueda mover es que estén esperando por un semáforo.
 
 4 - Finalmente escoge la siguiente posición en el camino determinado por su plan para moverse, si no le es posible moverse se mantiene en la posición actual.
+
+Nota : Todas las constantes que son probabilidades entre $[0,1]$ es una idea de métodos de optimización como Particle Swarm Optimization.
 
 ## 3. Referencias
 
 An Introduction to Multi Agent Systems, Michael Wooldridge
+
 Temas de Simulación, Luciano García Garrido
+
 Fuzzy Sets and Fuzzy Logic Theory and Applications, GEORGE J.KLIR AND BO YUAN
