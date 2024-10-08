@@ -123,6 +123,7 @@ Durante el tiempo transcurrido entre eventos, los automóviles, peatones y semá
 
 La condición de parada utilizada fue una duración específica.
 
+**Pseudocódigo**
 ```pseudo-code
 while True:
    while evento_más_inminente.fecha == fecha
@@ -307,6 +308,12 @@ Escoge un plan de la siguiente forma: Escoge como lugar o intención a ir el de 
 4 - Finalmente escoge la siguiente posición en el camino determinado por su plan para moverse, si no le es posible moverse se mantiene en la posición actual.
 
 Nota : Todas las constantes que son probabilidades entre $[0,1]$ es una idea de métodos de optimización como Particle Swarm Optimization.
+
+### 2.4 Uso de Large Language Models (LLM)
+
+Apoyándonos en un LLM, específicamente Mistral AI, construimos para cada lugar de interés, a partir de su nombre y descripción, una estructura de datos que presenta la probabilidad que un peatón/automóvil lo visite, así como el horario y fecha en la que pueden hacerlo.
+
+A partir de esta meta-información somos capaces de asignar una probabilidad a cada uno de los posibles destinos de los automóviles, con el fin de seleccionarlos para cada evento de llegada de automóvil procesado.
 
 ## 3. Referencias
 
