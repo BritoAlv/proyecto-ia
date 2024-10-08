@@ -66,40 +66,75 @@ Los automóviles, junto a los peatones, se desplazan por el mapa, siguiendo la r
 
 #### 2.1.1 Marco teórico
 
-La **simulación de eventos discretos (SED)** es una técnica utilizada para modelar sistemas en los que el estado cambia en momentos específicos del tiempo debido a eventos que ocurren. En este contexto, un **evento discreto** es una ocurrencia puntual que altera el estado del sistema.
+La **Simulación de Eventos Discretos (SED)** es una técnica usada para modelar sistemas en los que los cambios en el estado ocurren en puntos específicos en el tiempo. El modelo simula eventos que alteran el estado del sistema en momentos discretos, como la llegada de una tarea a una cola o la finalización de un proceso.
 
-Los elementos básicos de la SED:
+**Elementos clave en la Simulación de Eventos Discretos:**
 
-1. **Eventos**:
-   - Son las ocurrencias que generan cambios en el sistema. Estos eventos se producen en tiempos discretos y cada evento puede modificar variables del sistema, estados o desencadenar otros eventos futuros.
-   - Ejemplos de eventos: llegada de un cliente a una cola, inicio o finalización de un servicio, fallo de una máquina, etc.
+1. **Sistema:** 
+   Es el proceso o conjunto de procesos que se quiere simular. Ejemplos incluyen sistemas de colas, producción industrial, redes de comunicación, etc.
 
-2. **Reloj de simulación**:
-   - La simulación utiliza un reloj para rastrear el tiempo simulado, avanzando de un evento al siguiente. No se avanza el tiempo continuamente, sino que solo se actualiza cuando ocurre un evento (esto es lo que significa que los eventos son "discretos").
+2. **Evento:**
+   Un **evento** es una ocurrencia que provoca un cambio en el estado del sistema. Los eventos se programan en tiempos específicos y pueden incluir llegadas, salidas, fallos de máquinas, etc.
 
-3. **Agenda de eventos futuros (AEL)**:
-   - Esta agenda es una lista que contiene los eventos programados para ocurrir en el futuro. La simulación avanza en el tiempo ejecutando el evento más cercano en la agenda, actualizando el estado del sistema y luego recalculando o añadiendo nuevos eventos.
-   
-4. **Variables de estado**:
-   - Estas son las variables que describen el sistema en cualquier punto del tiempo. Dependiendo de cómo cambian estas variables (debido a los eventos), se puede observar cómo evoluciona el sistema con el tiempo.
-   
-5. **Entidades**:
-   - Son los objetos que fluyen a través del sistema y que están sujetos a los eventos. Por ejemplo, en una simulación de una tienda, las entidades pueden ser los clientes que entran, hacen fila y son atendidos.
+3. **Reloj de Simulación:**
+   Es una variable que mantiene la cuenta del tiempo dentro de la simulación. En SED, el tiempo avanza en saltos de evento a evento (no continuamente).
 
-6. **Atributos**:
-   - Son las características de las entidades. Cada entidad puede tener diferentes atributos que definen su comportamiento en la simulación. Por ejemplo, en un sistema de atención al cliente, un cliente podría tener un atributo que define su tiempo de servicio.
+4. **Lista de eventos futuros (Future Event List - FEL):**
+   Es una lista ordenada cronológicamente de los eventos que ocurrirán en el futuro. A medida que ocurre un evento, se extrae el primer evento de la lista, se procesa y se actualiza el estado del sistema.
 
-7. **Recursos**:
-   - Son los componentes del sistema que las entidades utilizan. Por ejemplo, en un sistema de colas, los cajeros son un recurso limitado que los clientes usan para ser atendidos.
+5. **Estado del Sistema:**
+   Define las variables que describen el sistema en cualquier punto dado. Ejemplo: el número de clientes en cola, el estado de las máquinas (ocupado o libre).
 
-8. **Colas**:
-   - Las colas son lugares donde las entidades esperan cuando los recursos no están disponibles. La lógica de la cola (FIFO, LIFO, etc.) es fundamental en muchas simulaciones.
+6. **Estadísticas:**
+   Durante la simulación, se recopilan datos sobre el sistema. Estos datos permiten realizar análisis para obtener métricas como el tiempo medio en el sistema o el porcentaje de utilización de recursos.
 
-<!-- 
-#### 2.1.2 Detalles de implementación
+7. **Reloj de Simulación:**
+   Es una variable que mantiene la cuenta del tiempo dentro de la simulación. En SED, el tiempo avanza en saltos de evento a evento (no continuamente).
 
-Dado que la simulación realizada, tiene en cuenta detalles particulares -->
+8. **Políticas de decisión:**
+   Son las reglas o estrategias que determinan cómo se manejan ciertas decisiones durante la simulación. Por ejemplo, ¿qué cliente debe ser atendido primero en una cola? Las políticas comunes incluyen FIFO (primero en entrar, primero en salir), LIFO (último en entrar, primero en salir) y prioridades.
 
+**Proceso básico de una SED**
+
+1. **Inicialización:**
+   Se inicializa el reloj de simulación, el estado del sistema y la lista de eventos futuros.
+
+2. **Ejecutar eventos:**
+   Se toma el siguiente evento de la lista de eventos futuros y se avanza el reloj de simulación al tiempo de ese evento. Se ejecuta la lógica del evento y se actualiza el estado del sistema.
+
+3. **Actualizar la lista de eventos futuros:**
+   Tras la ejecución de un evento, pueden surgir nuevos eventos. Estos se agregan a la lista de eventos futuros en el tiempo correcto.
+
+4. **Condición de parada:**
+   La simulación puede detenerse después de un tiempo definido o cuando no quedan más eventos por ejecutar.
+
+#### 2.1.2 Detalles de Implementación
+
+La simulación llevada a cabo en el proyecto está basada en Eventos Discretos. En esta el *Sistema* está constituido por variables como:
+ 
+- la posición de automóviles y peatones, 
+- las condiciones climáticas, 
+- el estado de los semáforos, 
+- los lugares de interés
+
+Por su parte los Eventos comprenden la llegada de un nuevo automóvil/peatón y la ocurrencia de una precipitación; mientras que la Lista de Futuros Eventos es una cola de prioridad ajustada con respecto a la inminencia de los eventos que contiene.
+
+Durante el tiempo transcurrido entre eventos, los automóviles, peatones y semáforos actúan, logrando fluidez y fidelidad a su comportamiento en un entorno real.
+
+La condición de parada utilizada fue una duración específica.
+
+```pseudo-code
+while True:
+   while evento_más_inminente.fecha == fecha
+      procesar_evento_más_inminente()
+
+   actualizar_agentes()
+
+   incrementar(fecha)
+
+   if fecha == fecha_final
+      break
+```
 
 ### 2.2 Fuzzy Logic 
 
@@ -137,7 +172,7 @@ Hay varias formas de responder esa pregunta, usamos el método del centroide que
 ![](./images/centroid.png)
 
 
-#### 2.3 BDI y Agentes Inteligentes
+### 2.3 BDI y Agentes Inteligentes
 
 Los agentes inteligentes deben tener en cuenta los siguientes tres características :
 
@@ -168,7 +203,7 @@ Primero percibe el entorno actual, lo que actualiza sus creencias, en base a est
 
 
 
-### 2.4 Semáforos
+#### Semáforos
 
 Los semáforos poseen un sistema de lógica difusa en su comportamiento, alternan entre *ROJO*, permitiendo el paso de los peatones, y *VERDE* permitiendo el paso de los carros, que tanto tiempo debe permanecer un semáforo en *VERDE* y que tan cargado se encuentra son las preguntas que debe responder el sistema de lógica difusa. Con el objetivo de que si el factor peatonal es alto estaría menos tiempo en *VERDE* y viceversa. Aunque influyen más factores.
 
