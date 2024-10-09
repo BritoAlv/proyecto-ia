@@ -46,7 +46,7 @@ class Environment:
     def __init__(self, name, matrix: list[list[Block]], start_date: datetime = datetime(2000, 1, 1), use_fuzzy: bool = True) -> None:
         # Local imports
         from sim.Car.Car import Car
-        from sim.Semaphore import Semaphore
+        from sim.Semaphor.Semaphore import Semaphore
         from sim.Walker.Walker import Walker
 
         # Core logic properties
@@ -108,7 +108,7 @@ class Environment:
 
                 # Extract semaphores representatives
                 if isinstance(block, SemaphoreBlock) and block.representative not in self.semaphores:
-                    from sim.Semaphore import Semaphore
+                    from sim.Semaphor.Semaphore import Semaphore
 
                     self.semaphores[block.representative] = Semaphore(block.representative, self, len(self.semaphores), use_fuzzy)
 
