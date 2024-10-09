@@ -10,6 +10,9 @@ from sim.Car.Car import Car
 from sim.Walker.Walker import Walker
 
 
+BASE_CAR_EXPONENTIAL_SCALE = 30
+BASE_WALKER_EXPONENTIAL_SCALE = 20
+
 class EventType(Enum):
     CAR_EVENT = 0
     WALKER_EVENT = 1
@@ -30,6 +33,8 @@ MONTHS = {
     11: "November",
     12: "December",
 }
+
+COLD_MONTHS = [1, 2, 3, 12]
 
 
 class Event:
@@ -63,9 +68,9 @@ class EventHandler:
             return self._handle_rain_event(event)
 
     def _handle_car_event(self, event: Event) -> Event:
-        # TODO: The exponential average time should vary depending on the time of the day (check on non-stationary Poisson Process to achieve accuracy)
-        # Create a new Car-Event, using a Poisson distribution for car-event dates
-        time_offset = math.ceil(exponential(30))
+        scale = self._get_scale(BASE_CAR_EXPONENTIAL_SCALE, self.environment.date, self.environment.weather)
+
+        time_offset = math.ceil(exponential(scale))
         next_date = event.date + timedelta(seconds=time_offset)
         next_car_event = Event(next_date, EventType.CAR_EVENT)
 
@@ -77,7 +82,9 @@ class EventHandler:
         return next_car_event
 
     def _handle_walker_event(self, event: Event) -> Event:
-        time_offset = math.ceil(exponential(10))
+        scale = self._get_scale(BASE_WALKER_EXPONENTIAL_SCALE, self.environment.date, self.environment.weather, False)
+        
+        time_offset = math.ceil(exponential(scale))
         next_date = event.date + timedelta(seconds=time_offset)
         next_walker_event = Event(next_date, EventType.WALKER_EVENT)
 
@@ -206,3 +213,23 @@ class EventHandler:
             return place_meta_data["cars"]
         else:
             return 0.1
+
+    def _get_scale(self, base_scale: int, date: datetime, weather: float, car_biased: bool = True):
+        scale = base_scale
+
+        # After 8pm the exponential mean will be of 5min for walkers and 1min for cars 
+        if date.hour > 20:
+            if car_biased:
+                scale = 60
+            else:
+                scale = 300
+        
+        # If it's winter the walker's exponential mean should increase
+        if not car_biased and date.month in COLD_MONTHS:
+            scale *= 1.5
+        
+        # If it's raining the walker's exponential mean should increase
+        if not car_biased and weather > 0.4:
+            scale *= (1 + weather)
+
+        return scale

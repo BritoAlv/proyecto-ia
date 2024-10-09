@@ -72,7 +72,7 @@ def simulate(
     }
 
 if __name__ == '__main__':
-    MATRIX_PATH = './ui/matrices/matrix.pkl'
+    MATRIX_PATH = './src/ui/matrices/matrix.pkl'
     NAME = os.path.basename(MATRIX_PATH)[:-4]
 
     smart_semaphore_stats = []
