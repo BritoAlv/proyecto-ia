@@ -1,10 +1,12 @@
 # Estadisticas
 
 ### General
-Simulamos 24 veces con semáforos inteligentes y con semáforos normales con ello construimos un csv por cada simulacion. El objetivo principal es ver si con un semáforos inteligente los carros llegan mas rapido a su destino y si se demoran menos en los semáforos igualmente para los peatones.
+Para analizar el problema planteado en este trabajo se realizo un analisis comparativo en cuanto las operaciones de ambos tipos de semaforos (ya fueran inteligentes o regulares) llegando a ejecutar un promedio de 24 simulaciones en cada caso y permitiendonos esta informacion construir un data frame de la biblioteca de Python Pandas para cada uno de los casos simulados, separando la informacion de cada simulacion en los aspectos a analizar:peatones y vehiculos. Con este trabajo nos planteamos como objetivo principal poder llegar a conocer la efectividad de los semaforos inteligentes en la actualidad, si con la implementacion de estos los automoviles tienen realmente un recorrido mas rapido hacia su destino y si disminuye el tiempo de los peatones en cada paso peatonal donde estos estan.
 
 #### Distribuciones
-Vamos a graficar cada simulacion para ver que distribucion siguen. Para ello usamos histogramas y lo que haremos sera cojer una simulacion de los semáforos inteligente y compararlas con los semáforos normales todo en un mismo grafico.
+Implementando el uso de histogramas graficamos cada una de las simulaciones realizadas para poder analizar la distribucion de cada una de ellas.En el mismo grafico estaran representadas ambas simulaciones simultaneamente (de semaforos tanto inteligentes como regulares).
+
+A continuacion los histogramas que representan el tiempo ocupado por los carros en semaforos inteligentes y regulares:
 
 [![Image alt text](images/hist_cars_0.png)](https://example.com/link)
 [![Image alt text](images/hist_cars_1.png)](https://example.com/link)
@@ -31,7 +33,8 @@ Vamos a graficar cada simulacion para ver que distribucion siguen. Para ello usa
 [![Image alt text](images/hist_cars_22.png)](https://example.com/link)
 [![Image alt text](images/hist_cars_23.png)](https://example.com/link)
 
-Y la referente a los datos de los peatones
+En este segundo grupo de graficos los histogramas representan el tiempo que ocupan los peatones en semaforos inteligentes y regulares:
+
 [![Image alt text](images/hist_walkers_0.png)](https://example.com/link)
 [![Image alt text](images/hist_walkers_1.png)](https://example.com/link)
 [![Image alt text](images/hist_walkers_2.png)](https://example.com/link)
@@ -57,11 +60,28 @@ Y la referente a los datos de los peatones
 [![Image alt text](images/hist_walkers_22.png)](https://example.com/link)
 [![Image alt text](images/hist_walkers_23.png)](https://example.com/link)
 
-Obtuvimos que no siguen distribuciones normales ni ninguna otra conocida tambien pareciera que los semáforos inteligentes en general dan mejores resultados, pero esto proximamente lo comprobaremos mejor.
+Los resultados obtenidos arrojaron que los histogramas no siguen distribuciones normales ni ninguna otra conocida.Con esto pudieramos suponer que los semaforos en general brindan mejores resultados,pero esto podrá ser analizado a profundidad y comprabar a continuación.
+
+### ScatterPlot
+A continuacion realizaremos una representacion usando el grafico scatterplot de la biblioteca seaborn donde analizaremos valores que representan el tiempo total de tanto autos como peatones en un trayecto completo y que tiempo de este es utilizado en la espera de los semaforos analizando como se comportan estas variables una con respecto a la otra.Viendose representadas en cada caso :
+
+En semaforos inteligentes;
+[![Image alt text](images/scatter1.png)](https://example.com/link)
+
+[![Image alt text](images/scatter2.png)](https://example.com/link)
+
+En semaforos regulares;
+
+[![Image alt text](images/scatter3.png)](https://example.com/link)
+
+[![Image alt text](images/scatter4.png)](https://example.com/link)
+
+Al observar los datos se puede inferir que existe una importante relacion entre los datos,lo que nos indica que entre ellos cabe la existencia de una fuerte correlacion ;para lo cual estaremos realizando mas pruebas.
+
 
 ### Matriz de correlacion
-Analizemos para una misma simulacion las matrices de correlacion entre los datos de cada csv que formamos.
-Obtenemos que su correlacion es de 1 y tambien los graficamos usando un scatter plot y vemos que siguen una dependencia lineal.
+Analizemos para una misma simulacion las matrices de correlacion entre los datos de cada csv que formamos,toda esta informacion es analizada en los graficos de scatterplot anteriores.
+Como resultado se obtuvo que su correlacion es de 1 lo que nos indica que dichos datos siguen una dependencia lineal.
 [![Image alt text](images/coor1.png)](https://example.com/link)
 
 [![Image alt text](images/coor2.png)](https://example.com/link)
@@ -71,8 +91,8 @@ Obtenemos que su correlacion es de 1 y tambien los graficamos usando un scatter 
 [![Image alt text](images/coor4.png)](https://example.com/link)
 
 ### Test wilcoxon
-Vamos a realizar un test wilcoxon para comprobar si hay diferencia significativa entre los datos de las simulaciones de semáforos inteligentes y normales.
-Como podemos ver en la grafica los p_value son mayores que 0.05 entonces no podemos llegar a ninguna conclusion
+Para comprobar la existencia o no de una diferencia significativa entre los datos analizados en las simulaciones de semaforos inteligentes y regulares fue utilizado el Test Wilcoxon.
+Como podemos observar en la grafica; los p_value son mayores que 0.05 por lo que no nos es posible llegar a ninguna conclusion.
 [![Image alt text](images/test.png)](https://example.com/link)
 
 
@@ -81,6 +101,6 @@ Por ultimo compararemos las medias de cada conjunto de simulaciones de semáforo
 
 [![Image alt text](images/heap.png)](https://example.com/link)
 
-Parece indicar que los semáforos no inteligentes minimizan mejor el tiempo de espera de los carros y peatones.
+Todo esto parece indicar que los semáforos regulares optimizan el tiempo de espera de los carros y peatones.
 
 ### Conclusiones
