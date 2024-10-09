@@ -7,7 +7,13 @@ class NlpMistral(Nlp):
         with open("./src/nlp/mistral_instructions.txt") as file:
             self._instructions = file.read()
 
-        self._api_key = "api_key"
+        self._api_key = ""
+        try:
+            with open("./src/nlp/key.txt") as file:
+                self._api_key = file.read()
+        except:
+            self._api_key = "api_key"
+            
         self._llm = Mistral(api_key=self._api_key)
             
     def process_place_description(self, text: str) -> str:

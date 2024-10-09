@@ -32,6 +32,7 @@ class StatsWindow(QMainWindow):
             Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter
         )
 
+        SIGNIFICANT_DIGITS = 3
         main_font = QFont("Arial", 30, 50, False)
         duration_label = QLabel(
             f"Duration: {environment.date - environment.start_date}"
@@ -43,18 +44,17 @@ class StatsWindow(QMainWindow):
             f"Total walkers: {len(environment.stats.walkers_delay)}"
         )
         average_car_semaphore_delay_label = QLabel(
-            f"Average car semaphore delay: {np.average(environment.stats.cars_semaphore_delay)}"
+            f"Average car semaphore delay: {round(np.average(environment.stats.cars_semaphore_delay), SIGNIFICANT_DIGITS)}"
         )
         average_walker_semaphore_delay_label = QLabel(
-            f"Average walker semaphore delay: {np.average(environment.stats.walkers_semaphore_delay)}"
+            f"Average walker semaphore delay: {round(np.average(environment.stats.walkers_semaphore_delay), SIGNIFICANT_DIGITS)}"
         )
         average_car_delay_label = QLabel(
-            f"Average car delay: {np.average(environment.stats.cars_delay)}"
+            f"Average car delay: {round(np.average(environment.stats.cars_delay), SIGNIFICANT_DIGITS)}"
         )
         average_walker_delay_label = QLabel(
-            f"Average walker delay: {np.average(environment.stats.walkers_delay)}"
+            f"Average walker delay: {round(np.average(environment.stats.walkers_delay), SIGNIFICANT_DIGITS)}"
         )
-        # average_semaphore_delay = QLabel("Average semaphore delay: ")
 
         duration_label.setFont(main_font)
         total_cars_label.setFont(main_font)

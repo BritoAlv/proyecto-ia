@@ -1,12 +1,13 @@
-from environment import Environment, PlaceBlock, RoadBlock, SemaphoreBlock, SidewalkBlock
-from globals import DIRECTION_OFFSETS, valid_coordinates
+from environment import Block, Environment, PlaceBlock, RoadBlock, SidewalkBlock
+from globals import DIRECTION_OFFSETS, Directions, valid_coordinates
 
 from sim.MovingAgent import MovingAgent
+from sim.Walker.WalkerDesires import WalkerDesires
+from sim.Walker.WalkerCommon import get_associated_semaphores
 from sim.Walker.WalkerDijkstra import WalkerDijkstra
 from sim.Walker.WalkerRandom import WalkerRandom
 from sim.Walker.PathFinder import PathFinder
 from sim.Walker.PlaceBelief import PlaceBelief
-
 
 import random
 
@@ -21,6 +22,7 @@ class Walker(MovingAgent):
         i, j = self.position
         self.environment.matrix[i][j].walkers_id.append(self.id)
         self.environment.walkers[self.id] = self
+        self.walker_desires = WalkerDesires()
 
         self.path = []
 
@@ -38,8 +40,9 @@ class Walker(MovingAgent):
         # probs.
         self.social_prob = random.random()
         self.trust_ness = random.random()
-        self.reactive_ness = random.random()
+        self.reactive_ness = 0.05
         self.reset_prob = 0.05
+        self.reconsider_factor = 0.20
 
         # time for stats
         self.total_time_overall = 0
@@ -94,34 +97,30 @@ class Walker(MovingAgent):
                 elif isinstance(matrix[x][y], SidewalkBlock):
                     break
 
-            works = True
             if isinstance(matrix[x][y], SidewalkBlock):
                 for index, st  in enumerate(streets):
-                    current_block = matrix[st[0]][st[1]]
-                    p, q = DIRECTION_OFFSETS[current_block.direction]
-                    sem_x = st[0] + p
-                    sem_y = st[1] + q
-                    if not valid_coordinates(sem_x, sem_y, len(matrix), len(matrix[0])) or not isinstance(matrix[sem_x][sem_y], SemaphoreBlock):
-                        works = False
-                        break
-                    semaphore = self.environment.semaphores[matrix[sem_x][sem_y].representative]
-                    if semaphore.current == current_block.direction or semaphore.time_till_change() < index + 1:
-                        works = False
-                        break
-                if works:
-                    self.semaphor_pos = matrix[sem_x][sem_y].representative
-                    self.set_walker_pos(next_pos)
-                    return True
+                    semaphores = get_associated_semaphores(streets[index], self.environment)
+                    if len(semaphores) == 0:
+                        return False
+                    for semaphore in semaphores:
+                        if semaphore.get_current() != Directions.EMPTY or semaphore.row_rem() < index + 1:
+                            return False
+            
+                self.semaphor_pos = semaphore.id
+                self.set_walker_pos(next_pos)
+                return True
         return False
 
     def update_beliefs(self):
         """
-        1 - check if in position there is a neighbouring Intersest Place, if so updated my current info,
+        1 - check if in position there is a neighboring Interest Place, if so update my current info,
         2 - check if in position there is another walker and :
             - if social allows add to my knowledge its knowledge,
         """
         i, j = self.position
-        for dx, dy in DIRECTION_OFFSETS.values():
+        offsets = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+        random.shuffle(offsets)
+        for dx, dy in offsets:
             x = i + dx
             y = j + dy
             if valid_coordinates(x, y, len(self.environment.matrix), len(self.environment.matrix[0])):
@@ -138,6 +137,9 @@ class Walker(MovingAgent):
                         place_coord = self.place_beliefs[place_name].belief_pos
                         if place_coord == (x, y) and name != place_name:
                             self.place_beliefs[place_name].belief_pos = random.choice(self.environment.place_blocks).coordinates
+                    
+                    if name in self.place_desires:
+                        self.place_desires.pop(name)
 
         for walker_id in self.environment.matrix[i][j].walkers_id:
             if walker_id != self.id and random.random() >= self.social_prob:
@@ -151,40 +153,6 @@ class Walker(MovingAgent):
             if other_place_belief.belief_state == 1 or self.trust_ness <= 0.3:
                 self.place_beliefs[place_name] = other_place_belief
 
-    def update_desires(self):
-        """
-        Desires is a dict which contain a list of places and the desire to go to that place.
-        The desire is a int >= 1.
-        
-        Option 1: there is a walker in my position that also wants to go to that place.
-        Option 2: I know the location of the place.
-        Option 3: Randomly I want to go to that place.
-        Option 4: If I'm in a Place after some time I should not want to go to this place, so I decrease the desire.
-        """
-
-        self.update_desires_neigbours()
-        self.update_desires_known_places()
-        self.update_desires_reset()
-
-    def update_desires_neigbours(self):
-        i, j = self.position
-        for walker_id in self.environment.matrix[i][j].walkers_id:
-            if walker_id != self.id and random.random() >= self.social_prob:
-                other_walker = self.environment.walkers[walker_id]
-                for place_name in other_walker.place_desires:
-                    if place_name in self.place_desires and self.place_beliefs[place_name].belief_state == 1:
-                        self.place_desires[place_name] += 2
-
-    def update_desires_known_places(self):
-        for place_name in self.place_desires:
-            if self.place_beliefs[place_name].belief_state == 1:
-                self.place_desires[place_name] += 2
-
-    def update_desires_reset(self):
-        if random.random() <= self.reset_prob:
-            for place_name in self.place_desires:
-                self.place_desires[place_name] = 1
-
     def choose_intention(self):
         max_desire = max(self.place_desires.values())
         candidates = [place for place, desire in self.place_desires.items() if desire == max_desire]
@@ -195,18 +163,34 @@ class Walker(MovingAgent):
         This method should choose a method to compute the algorithm used to get to the path
         """
         """
-        Implementation is : If desire is big enough and know where it is use dikstra, else use 
+        Implementation is : If desire is big enough and know where it is use Dijkstra, else use 
         a random to explore the environment.
         """
-        if place_intented in self.place_desires and self.place_desires[place_intented] > 4 and self.place_beliefs[place_intented].belief_state == 1:
-            return WalkerDijkstra(self.environment) # replace with Dikstra
+        if self.place_beliefs[place_intented].belief_state == 1 or random.random() <= 0.6:
+            return WalkerDijkstra(self.environment)
         return WalkerRandom(self.environment)
 
     def check_done(self) -> bool:
-        for place in self.place_desires:
-            if self.place_beliefs[place].belief_state == 0:
-                return False
-        return True
+        return len(self.place_desires) == 0
+
+    def reconsider(self) -> bool:
+        if random.random() <= self.reactive_ness:
+            return True
+        
+        """
+        If goal direction is in desires but not with max priority then reconsider.
+        """
+        if len(self.path) > 0:
+            goal = self.path[-1]
+            for place in self.place_beliefs:
+                if self.place_beliefs[place].belief_pos == goal:
+                    if place in self.place_desires:
+                        desire = self.place_desires[place]
+                        if desire not in max(self.place_desires.values()):
+                            if random.random() <= self.reconsider_factor:
+                                return True
+        
+        return False
 
     def act(self) -> None:
         # always update its beliefs
@@ -216,17 +200,17 @@ class Walker(MovingAgent):
             self.remove_walker()
             return
 
+        # update desires always
+        self.walker_desires.update_desires(self)
         self.total_time_overall += 1
 
         i, j = self.position
         current_block = self.environment.matrix[i][j]
         # if there is no plan or wants to reconsider then:
-        if not isinstance(current_block, RoadBlock) and (len(self.path) == 0 or random.random() <= self.reactive_ness):
-            # update desires
-            self.update_desires()
+        if not isinstance(current_block, RoadBlock) and (len(self.path) == 0 or self.reconsider()):
             # choose the intention with more desire        
             place_intention = self.choose_intention()
-            # choose a plan to execute it, like Dikstra or random moving, etc.
+            # choose a plan to execute it, like Dijkstra or random moving, etc.
             plan = self.choose_plan(place_intention)
             # the plan gives a path that the walker should follow.
 
@@ -234,13 +218,14 @@ class Walker(MovingAgent):
             self.semaphor_stuck = 0
 
             goal_place_pos = self.place_beliefs[place_intention].belief_pos
-            for dx, dy in DIRECTION_OFFSETS.values():
+            offsets = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+            random.shuffle(offsets)
+            for dx, dy in offsets:
                 x = goal_place_pos[0] + dx
                 y = goal_place_pos[1] + dy
                 if valid_coordinates(x, y, len(self.environment.matrix), len(self.environment.matrix[0])):
                     if isinstance(self.environment.matrix[x][y], SidewalkBlock):
-                        self.path = plan.path_finder(self.position, goal_place_pos)
-                        assert(len(self.path) > 0)
+                        self.path = plan.path_finder(self.position, (x, y))
                         break
         if len(self.path) > 0:
             next_pos = self.path[0]

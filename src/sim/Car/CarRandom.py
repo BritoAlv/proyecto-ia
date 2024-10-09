@@ -18,7 +18,7 @@ class CarRandom(PathFinder):
             return [(x, y)]
         elif check_valid(x, y, SemaphoreBlock, self.environment):
             representative = self.environment.matrix[x][y].representative
-            if direction == self.environment.semaphores[representative].current:
+            if direction == self.environment.semaphores[representative].get_current():
                 return pos_cross_semaphor(x, y, direction, self.environment)
         return []
                 

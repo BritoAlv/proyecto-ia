@@ -8,11 +8,15 @@ from sim.MovingAgent import MovingAgent
 
 class Car(MovingAgent):
     def __init__(self, goal : tuple[int, int], environment: Environment):
-        position = random.choice(environment.free_blocks).coordinates
-        x, y  = position
-        environment.free_blocks.remove(environment.matrix[x][y])
+        # Validate there's at least one free block
+        free_blocks = environment.get_free_blocks(RoadBlock)
+        if len(free_blocks) == 0:
+            return
+        
+        position = random.choice(free_blocks).coordinates
         gui_label = len(environment.cars)
         super().__init__(position, environment, gui_label)
+
         self.environment.matrix[self.position[0]][self.position[1]].car_id = self.id
         self.environment.cars[self.id] = self
 
@@ -66,7 +70,7 @@ class Car(MovingAgent):
             sem_y = j + offset[1]
             if check_valid(sem_x, sem_y, SemaphoreBlock, self.environment):
                 representative = self.environment.matrix[sem_x][sem_y].representative
-                if direction == self.environment.semaphores[representative].current:
+                if direction == self.environment.semaphores[representative].get_current():
                     if next_pos in semaphor_options(sem_x, sem_y, direction, self.environment):
                         self.semaphor_pos = representative
                         self.set_car_pos(next_pos)
@@ -86,13 +90,13 @@ class Car(MovingAgent):
         n = offset[1]
         x = i + m
         y = j + n
-        if check_valid(x, y, RoadBlock, self.environment):
+        if check_valid(x, y, RoadBlock, self.environment) and check_free(x, y, self.environment):
             self.set_car_pos((x, y))
             self.strategy.path = []
             return
         elif check_valid(x, y, SemaphoreBlock, self.environment):
             representative = self.environment.matrix[x][y].representative
-            if direction == self.environment.semaphores[representative].current:
+            if direction == self.environment.semaphores[representative].get_current():
                 options = pos_cross_semaphor(x, y, direction, self.environment)
                 if len(options) > 0:
                     self.semaphor_pos = representative

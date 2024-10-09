@@ -52,13 +52,13 @@ class SemaphoreItem:
 
 
 class SimulationWindow(QWidget):
-    def __init__(self, matrix_path: str):
+    def __init__(self, matrix_path: str, use_fuzzy: bool = True):
         super().__init__()
 
         # Load matrix data into main memory
         with open(matrix_path, "rb") as file:
             matrix = pickle.load(file)
-        environment = Environment(os.path.basename(matrix_path)[:-4], matrix)
+        environment = Environment(os.path.basename(matrix_path)[:-4], matrix, use_fuzzy=use_fuzzy)
 
         # Business (simulation) logic properties
         self._environment = environment  ## Core data structure
@@ -69,9 +69,7 @@ class SimulationWindow(QWidget):
         self._event: Event = Event(self._environment.date + timedelta(seconds=1), EventType.CAR_EVENT)
         self._timer_period: int = 300
         self._simulation_on = False
-
-        ### Push a rain-event
-        self._events_queue.put(Event(self._environment.date + timedelta(seconds=2), EventType.RAIN_EVENT))
+        self._seed_events()
 
         ## Properties to display agents
         self._car_items: dict[UUID, QGraphicsItem] = {}
@@ -141,6 +139,12 @@ class SimulationWindow(QWidget):
         main_layout.addWidget(self.view)
         self.setLayout(main_layout)
 
+    def _seed_events(self):
+        ### Seed a rain-event
+        self._events_queue.put(Event(self._environment.date + timedelta(seconds=2), EventType.RAIN_EVENT))
+        # Seed a walker-event
+        self._events_queue.put(Event(self._environment.date + timedelta(seconds=2), EventType.WALKER_EVENT))
+
     def _simulate(self, debug: bool = True):
         """
         Core simulation method, it holds an iteration over the simulation loop
@@ -167,6 +171,9 @@ class SimulationWindow(QWidget):
 
         # Increase simulation date
         self._environment.increase_date()
+        
+        # if self._environment.date > datetime(2000, 1, 8, 0, 0):
+        #     self._handle_end()
 
     def _handle_start(self):
         self._simulation_on = True
@@ -306,7 +313,7 @@ class SimulationWindow(QWidget):
 
     def _change_lights(self):
         for semaphore_id in self._environment.semaphores:
-            light_direction = self._environment.semaphores[semaphore_id].current
+            light_direction = self._environment.semaphores[semaphore_id].get_current()
 
             semaphore_item = self._semaphore_items[semaphore_id]
             for direction in semaphore_item.light_directions:

@@ -14,6 +14,7 @@ class FuzzySystem:
             if var.name not in crisp_values:
                 raise ValueError(f"crisp_values must have a value for {var.name}")
             if crisp_values[var.name] < var.x_min or crisp_values[var.name] > var.x_max:
+                print(crisp_values[var.name])
                 raise ValueError(f"crisp_values[{var.name}] must be between {var.x_min} and {var.x_max}")
             result[var.name] = var.get_membership(crisp_values[var.name])
         return result

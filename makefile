@@ -3,3 +3,6 @@ run:
 
 build:
 	python3 ./src/ui/start_window.py
+
+simulate:
+	python3 ./src/core.py

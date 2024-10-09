@@ -43,10 +43,10 @@ class SidewalkBlock(Block):
 
 
 class Environment:
-    def __init__(self, name, matrix: list[list[Block]], start_date: datetime = datetime(2000, 1, 1)) -> None:
+    def __init__(self, name, matrix: list[list[Block]], start_date: datetime = datetime(2000, 1, 1), use_fuzzy: bool = True) -> None:
         # Local imports
         from sim.Car.Car import Car
-        from sim.Semaphore import Semaphore
+        from sim.Semaphor.Semaphore import Semaphore
         from sim.Walker.Walker import Walker
 
         # Core logic properties
@@ -60,17 +60,16 @@ class Environment:
         self.weather: float = 0
         self.places: dict[tuple[int, int], PlaceBlock] = {}
         self.stats: Stats = Stats()
-        self._extract_data()  # Extract
+        self._extract_data(use_fuzzy)  # Extract
 
         self.sidewalk_blocks = self._get_type_blocks(SidewalkBlock)
         self.place_blocks = self._get_type_blocks(PlaceBlock)
         self.road_blocks = self._get_type_blocks(RoadBlock)
-        self.free_blocks = self._get_free_blocks(RoadBlock)
 
         # Testing purpose call
         self._initialize()
 
-    def _get_free_blocks(self, block_type: type):
+    def get_free_blocks(self, block_type: type):
         matrix = self.matrix
         height = len(matrix)
         width = len(matrix[0])
@@ -99,7 +98,7 @@ class Environment:
                     blocks.append(block)
         return blocks
 
-    def _extract_data(self) -> None:
+    def _extract_data(self, use_fuzzy: bool) -> None:
         height = len(self.matrix)
         width = len(self.matrix[0])
 
@@ -109,9 +108,9 @@ class Environment:
 
                 # Extract semaphores representatives
                 if isinstance(block, SemaphoreBlock) and block.representative not in self.semaphores:
-                    from sim.Semaphore import Semaphore
+                    from sim.Semaphor.Semaphore import Semaphore
 
-                    self.semaphores[block.representative] = Semaphore(block.representative, self, len(self.semaphores))
+                    self.semaphores[block.representative] = Semaphore(block.representative, self, len(self.semaphores), use_fuzzy)
 
                 # Extract interest places
                 if isinstance(block, PlaceBlock):
@@ -134,7 +133,7 @@ class Environment:
         from sim.Walker.Walker import Walker
 
         for _ in range(20):
-            if len(self.free_blocks) > 0:
+            if len(self.get_free_blocks(RoadBlock)) > 0:
                 goal = random.choice(self.road_blocks).coordinates
                 _ = Car(goal, self)
             if len(self.place_blocks) > 0:

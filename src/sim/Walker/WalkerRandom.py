@@ -2,6 +2,7 @@ import random
 from environment import Environment, RoadBlock, SemaphoreBlock, SidewalkBlock
 from globals import DIRECTION_OFFSETS, valid_coordinates
 from sim.Walker.PathFinder import PathFinder, WalkerGraphNode
+from sim.Walker.WalkerCommon import get_associated_semaphores
 
 class WalkerRandom(PathFinder):
     def __init__(self, environment: Environment) -> None:
@@ -32,12 +33,9 @@ class WalkerRandom(PathFinder):
                     y += walker_y
                 works = True
                 if valid_coordinates(x, y, height, width) and isinstance(matrix[x][y], SidewalkBlock):
-                    for index, st  in enumerate(streets):
-                        current_block = matrix[st[0]][st[1]]
-                        p, q = DIRECTION_OFFSETS[current_block.direction]
-                        sem_x = st[0] + p
-                        sem_y = st[1] + q
-                        if not valid_coordinates(sem_x, sem_y, height, width) or not isinstance(matrix[sem_x][sem_y], SemaphoreBlock):
+                    for index, _  in enumerate(streets):
+                        semaphores = get_associated_semaphores(streets[index], self.environment)
+                        if len(semaphores) == 0:
                             works = False
                             break
                     if works:
@@ -49,7 +47,8 @@ class WalkerRandom(PathFinder):
         height = len(matrix)
         width = len(matrix[0])
         i, j = cur_pos
-        offsets = [(1, 0), (0, 1), (-1, 0), (0, -1)] 
+        offsets = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+        random.shuffle(offsets) 
         for walker_x, walker_y in offsets:
             x = i + walker_x
             y = j + walker_y
@@ -62,6 +61,6 @@ class WalkerRandom(PathFinder):
     def path_finder(self, cur_pos: tuple[int, int], goal: tuple[int, int]):
         option1 = self.option_semaphor(cur_pos)
         option2 = self.option_neighbour(cur_pos)
-        if random.random() <= 0.5 and len(option1) > 0:
+        if random.random() <= 0.6 and len(option1) > 0:
             return option1
         return option2
