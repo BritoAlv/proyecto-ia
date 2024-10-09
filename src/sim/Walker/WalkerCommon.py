@@ -1,7 +1,7 @@
 import random
 from environment import Environment, SemaphoreBlock
 from globals import DIRECTION_OFFSETS, valid_coordinates
-from sim.Semaphore import Semaphore
+from sim.Semaphor.Semaphore import Semaphore
 
 
 def get_associated_semaphores(position : tuple[int, int], environment : Environment) -> list[Semaphore]:
