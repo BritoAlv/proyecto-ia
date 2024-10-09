@@ -90,7 +90,7 @@ class Car(MovingAgent):
         n = offset[1]
         x = i + m
         y = j + n
-        if check_valid(x, y, RoadBlock, self.environment):
+        if check_valid(x, y, RoadBlock, self.environment) and check_free(x, y, self.environment):
             self.set_car_pos((x, y))
             self.strategy.path = []
             return
