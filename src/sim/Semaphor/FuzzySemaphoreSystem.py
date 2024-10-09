@@ -76,9 +76,6 @@ time_classification = {
 TIME_CLASSIFICATION = "Time Classification" # ranges from 0 to 1440, the simulation should hold this as time.
 time_var = FuzzyVariable( TIME_CLASSIFICATION, 0, 1440, time_classification)
 
-"""
-Fix all this part
-"""
 MONTH = "Month"
 month_var = FuzzyVariable(MONTH, 1, 12, {
     LOW : BoundedFunction.gaussian_function(1, 1, 2, 1, 12),
@@ -91,10 +88,10 @@ CAR_PROB = "Car Prob"
 
 wheather = FuzzyVariable(WHEATHER, 0, 1, {
     RAINING: BoundedFunction.gaussian_function(1, 0, 0.2, 0, 1), 
-    CLOUD: BoundedFunction.gaussian_function(1, 0.5, 0.1, 0, 1), 
-    SUNNY: BoundedFunction.gaussian_function(1, 1, 0.2, 0, 1)})
+    CLOUD: BoundedFunction.gaussian_function(1, 0.5, 0.05, 0, 1), 
+    SUNNY: BoundedFunction.gaussian_function(1, 1, 0.2, 0, 1)}
+    )
 
-# car prob is output
 car_prob = FuzzyVariable(CAR_PROB, 0, 1, {
     LOW : BoundedFunction.gaussian_function(1, 0, 0.3, 0, 1),
     AVERAGE : BoundedFunction.gaussian_function(1, 0.5, 0.01, 0, 1),

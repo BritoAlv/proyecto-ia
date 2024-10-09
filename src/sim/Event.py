@@ -13,6 +13,7 @@ from sim.Walker.Walker import Walker
 BASE_CAR_EXPONENTIAL_SCALE = 30
 BASE_WALKER_EXPONENTIAL_SCALE = 20
 
+
 class EventType(Enum):
     CAR_EVENT = 0
     WALKER_EVENT = 1
@@ -44,9 +45,7 @@ class Event:
 
     def __lt__(self, other) -> bool:
         if not isinstance(other, Event):
-            raise Exception(
-                f"Cannot apply < between an {type(self)} instance and a {type(other)} instance"
-            )
+            raise Exception(f"Cannot apply < between an {type(self)} instance and a {type(other)} instance")
         return self.date < other.date
 
     def __eq__(self, value: object) -> bool:
@@ -83,7 +82,7 @@ class EventHandler:
 
     def _handle_walker_event(self, event: Event) -> Event:
         scale = self._get_scale(BASE_WALKER_EXPONENTIAL_SCALE, self.environment.date, self.environment.weather, False)
-        
+
         time_offset = math.ceil(exponential(scale))
         next_date = event.date + timedelta(seconds=time_offset)
         next_walker_event = Event(next_date, EventType.WALKER_EVENT)
@@ -116,7 +115,7 @@ class EventHandler:
         beta = mean / math.pow(standard_deviation, 2)
         alpha = mean * beta
         rain_intensity = random.gammavariate(alpha, 1 / beta)
-        self.environment.weather = rain_intensity
+        self.environment.weather = min(1, rain_intensity)
 
         return next_rain_event
 
@@ -124,9 +123,7 @@ class EventHandler:
         matrix = self.environment.matrix
         height = len(matrix)
         width = len(matrix[0])
-        places_probability: dict[tuple[int, int], float] = (
-            self._get_places_probability()
-        )
+        places_probability: dict[tuple[int, int], float] = self._get_places_probability()
 
         roads: list[tuple[int, int]] = []
         probabilities: list[float] = []
@@ -139,9 +136,7 @@ class EventHandler:
                     if (i, j) in places_probability:
                         probabilities.append(places_probability[(i, j)])
                     else:
-                        probabilities.append(
-                            self._get_road_probability((i, j), places_probability)
-                        )
+                        probabilities.append(self._get_road_probability((i, j), places_probability))
 
         return roads, probabilities
 
@@ -159,9 +154,7 @@ class EventHandler:
                 places_probabilities[place.representative].append(probability)
 
         for place_representative in places_probabilities:
-            places_probability[place_representative] = np.average(
-                places_probabilities[place_representative]
-            )
+            places_probability[place_representative] = np.average(places_probabilities[place_representative])
 
         return places_probability
 
@@ -190,11 +183,7 @@ class EventHandler:
 
         # factor is used to scale a road probability according to its distance from the closest interest place
         MAX_DISTANCE = 20
-        factor = (
-            1 - (1 / MAX_DISTANCE) * smallest_distance
-            if smallest_distance < MAX_DISTANCE
-            else 1 - 0.05 * (MAX_DISTANCE - 1)
-        )
+        factor = 1 - (1 / MAX_DISTANCE) * smallest_distance if smallest_distance < MAX_DISTANCE else 1 - 0.05 * (MAX_DISTANCE - 1)
 
         return closest_place_probability * factor
 
@@ -204,12 +193,7 @@ class EventHandler:
 
         month = MONTHS[self.environment.date.month]
 
-        if (
-            month in place_meta_data["months"]
-            and place_meta_data["hours"][0]
-            <= self.environment.date.hour
-            <= place_meta_data["hours"][1]
-        ):
+        if month in place_meta_data["months"] and place_meta_data["hours"][0] <= self.environment.date.hour <= place_meta_data["hours"][1]:
             return place_meta_data["cars"]
         else:
             return 0.1
@@ -217,19 +201,19 @@ class EventHandler:
     def _get_scale(self, base_scale: int, date: datetime, weather: float, car_biased: bool = True):
         scale = base_scale
 
-        # After 8pm the exponential mean will be of 5min for walkers and 1min for cars 
+        # After 8pm the exponential mean will be of 5min for walkers and 1min for cars
         if date.hour > 20:
             if car_biased:
                 scale = 60
             else:
                 scale = 300
-        
+
         # If it's winter the walker's exponential mean should increase
         if not car_biased and date.month in COLD_MONTHS:
             scale *= 1.5
-        
+
         # If it's raining the walker's exponential mean should increase
         if not car_biased and weather > 0.4:
-            scale *= (1 + weather)
+            scale *= 1 + weather
 
         return scale

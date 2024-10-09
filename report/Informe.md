@@ -334,7 +334,39 @@ Apoyándonos en un LLM, específicamente Mistral AI, construimos para cada lugar
 
 A partir de esta meta-información somos capaces de asignar una probabilidad a cada uno de los posibles destinos de los automóviles, con el fin de seleccionarlos para cada evento de llegada de automóvil procesado.
 
-## 3. Referencias
+## 3. Simulación y Estadísticas :
+
+Una simulación consiste en ejecutar el proceso durante dos horas, escogiendo que tipo de semáforo usar, ejecutamos $24$ simulaciones consecutivas ( las fechas de empezar y acabar son contiguas), como variables a considerar :
+
+   - El tiempo de un carro en la simulación.
+   - El tiempo determinado por la suma de todos los tiempos en cada semáforo que el carro visitó.
+   - El tiempo de un caminante en la simulación.
+   - El tiempo determinado por la suma de todos los tiempos en cada semáforo que el caminante visitó.
+
+Tenemos $24$ simulaciones con los semáforos estándares y $24$ con los semáforos inteligentes. Obtenemos estos resultados en un *json* a partir de simular sin el *GUI*. Mostramos algunas estadísticas obtenidas.
+
+Una comparación entre un par de simulaciones de semáforos distintos en las cuatro variables a considerar: 
+
+![](./images/StandardvsSmart.png)
+
+Estos histogramas no poseen distribución normal por lo que no aplicamos test de análisis de varianza como *Anova*.
+
+Podemos ver la dependencia practicamente linear entre los delay de los carros y los peatones respectivamente comparado con el tiempo ocupado solamente en semáforos.
+
+![](./images/linear_correlation_car.png)
+![](./images/linear_correlation_walker.png)
+
+Un Plot donde se añaden como círculos los tiempos de cada aspecto en cada simulación usando un color para distinguir entre tipo de semáforo.
+
+![](./images/time_difference_smart_standard.png)
+
+El mismo plot pero con menos datos sería :
+
+![](./images/Times%20Smart%20StandardSubset.png)
+
+Como se puede apreciar no hay una diferencia estadísticamente significante entre uno y otro.
+
+## 4. Referencias
 
 ## References
 
