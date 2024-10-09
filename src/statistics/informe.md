@@ -1,12 +1,12 @@
-# Estadisticas
+# Estadísticas
 
 ### General
-Para analizar el problema planteado en este trabajo se realizo un analisis comparativo en cuanto las operaciones de ambos tipos de semaforos (ya fueran inteligentes o estandar) llegando a ejecutar un promedio de 24 simulaciones en cada caso y permitiendonos esta informacion construir un data frame de la biblioteca de Python Pandas para cada uno de los casos simulados, separando la informacion de cada simulacion en los aspectos a analizar:peatones y vehiculos. Con este trabajo nos planteamos como objetivo principal poder llegar a conocer la efectividad de los semaforos inteligentes en la actualidad, si con la implementacion de estos los automoviles tienen realmente un recorrido mas rapido hacia su destino y si disminuye el tiempo de los peatones en cada paso peatonal donde estos estan.
+Para analizar el problema planteado en este trabajo se realizó un análisis comparativo en cuanto a las operaciones de ambos tipos de semáforos (ya fueren inteligentes o estandar). Se llegó a ejecutar un promedio de 24 simulaciones en cada caso, permitiendo construir un dataframe de la biblioteca de Python Pandas para cada uno de los casos simulados, separando la información de cada simulación en los aspectos a analizar: peatones y vehículos. Con este trabajo nos plantearon como objetivo principal poder llegar a conocer la efectividad de los semáforos inteligentes en la actualidad, si con la implementación de estos los automóviles tienen realmente un recorrido más rápido hacia su destino y si disminuye el tiempo de los peatones en cada paso peatonal donde estos están.
 
 #### Distribuciones
-Implementando el uso de histogramas graficamos cada una de las simulaciones realizadas para poder analizar la distribucion de cada una de ellas.En el mismo grafico estaran representadas ambas simulaciones simultaneamente (de semaforos tanto inteligentes como estandar).
+Implementando el uso de histogramas se graficaron cada una de las simulaciones realizadas para poder analizar la distribución de cada una de ellas. En el mismo gráfico estarán representadas ambas simulaciones simultáneamente (de semáforos tanto inteligentes como estandar).
 
-A continuacion los histogramas que representan el tiempo ocupado por los carros en semaforos inteligentes y estandar:
+A continuación los histogramas que representan el tiempo ocupado por los vehículos en semáforos inteligentes y estandar:
 
 [![Image alt text](images/hist_cars_0.png)]()
 [![Image alt text](images/hist_cars_1.png)]()
@@ -33,7 +33,7 @@ A continuacion los histogramas que representan el tiempo ocupado por los carros 
 [![Image alt text](images/hist_cars_22.png)]()
 [![Image alt text](images/hist_cars_23.png)]()
 
-En este segundo grupo de graficos los histogramas representan el tiempo que ocupan los peatones en semaforos inteligentes y estandar:
+En este segundo grupo de gráficos los histogramas representan el tiempo que ocupan los peatones en semáforos inteligentes y estandar:
 
 [![Image alt text](images/hist_walkers_0.png)]()
 [![Image alt text](images/hist_walkers_1.png)]()
@@ -58,30 +58,29 @@ En este segundo grupo de graficos los histogramas representan el tiempo que ocup
 [![Image alt text](images/hist_walkers_20.png)]()
 [![Image alt text](images/hist_walkers_21.png)]()
 [![Image alt text](images/hist_walkers_22.png)]()
-[![Image alt text](images/hist_walkers_23.png)]()
 
-Los resultados obtenidos arrojaron que los histogramas no siguen distribuciones normales ni ninguna otra conocida.Con esto pudieramos suponer que los semaforos en general brindan mejores resultados,pero esto podrá ser analizado a profundidad y comprabar a continuación.
+Los resultados obtenidos arrojaron que los histogramas no siguen distribuciones normales ni ninguna otra conocida. Con esto podríamos suponer que los semáforos en general brindan mejores resultados, pero esto podrá ser analizado a profundidad y comprobado a continuación.
 
 ### ScatterPlot
-A continuacion realizaremos una representacion usando el grafico scatterplot de la biblioteca seaborn donde analizaremos valores que representan el tiempo total de tanto autos como peatones en un trayecto completo y que tiempo de este es utilizado en la espera de los semaforos analizando como se comportan estas variables una con respecto a la otra.Viendose representadas en cada caso :
+A continuación se realizará una representación usando el gráfico scatterplot de la biblioteca seaborn donde se analizarán valores que representan el tiempo total de tanto autos como peatones en un trayecto completo y qué tiempo de este es utilizado en la espera de los semáforos analizando cómo se comportan estas variables una con respecto a la otra. Verificándose representadas en cada caso:
 
-En semaforos inteligentes;
+En semáforos inteligentes;
 [![Image alt text](images/scatter1.png)]()
 
 [![Image alt text](images/scatter2.png)]()
 
-En semaforos estandar;
+En semáforos estandar;
 
 [![Image alt text](images/scatter3.png)]()
 
 [![Image alt text](images/scatter4.png)]()
 
-Al observar los datos se puede inferir que existe una importante relacion entre los datos,lo que nos indica que entre ellos cabe la existencia de una fuerte correlacion ;para lo cual estaremos realizando mas pruebas.
+Al observar los datos se puede inferir que existe una importante relación entre los datos, lo que nos indica que entre ellos cabe la existencia de una fuerte correlación; para lo cual se estarán realizando más pruebas.
 
 
-### Matriz de correlacion
-Analizemos para una misma simulacion las matrices de correlacion entre los datos de cada csv que formamos,toda esta informacion es analizada en los graficos de scatterplot anteriores.
-Como resultado se obtuvo que su correlacion es de 1 lo que nos indica que dichos datos siguen una dependencia lineal.
+### Matriz de correlación
+Analizaremos para una misma simulación las matrices de correlación entre los datos de cada csv que formamos, toda esta información es analizada en los gráficos de scatterplot anteriores.
+Como resultado se obtuvo que su correlación es de 1 lo que nos indica que dichos datos siguen una dependencia lineal.
 [![Image alt text](images/coor1.png)]()
 
 [![Image alt text](images/coor2.png)]()
@@ -91,13 +90,13 @@ Como resultado se obtuvo que su correlacion es de 1 lo que nos indica que dichos
 [![Image alt text](images/coor4.png)]()
 
 ### Test Wilcoxon signed-rank
-Para comprobar la existencia o no de una diferencia significativa entre los datos analizados en las simulaciones de semaforos inteligentes y estandar fue utilizado el Test Wilcoxon signed-rank.
-Como podemos observar en la grafica; los p_value son mayores que 0.05 por lo que no nos es posible llegar a ninguna conclusion.
+Para comprobar la existencia o no de una diferencia significativa entre los datos analizados en las simulaciones de semáforos inteligentes y estandar se utilizó el Test Wilcoxon signed-rank.
+Como podemos observar en la gráfica; los p_value son mayores que 0.05 por lo que no es posible llegar a ninguna conclusión.
 [![Image alt text](images/test.png)]()
 
 
-### Comparar Medias
-Por ultimo compararemos las medias de cada conjunto de simulaciones de semáforos inteligentes y no inteligentes.
+### Comparar medias
+Por último se compararán las medias de cada conjunto de simulaciones de semáforos inteligentes y no inteligentes.
 
 [![Image alt text](images/heap.png)]()
 
