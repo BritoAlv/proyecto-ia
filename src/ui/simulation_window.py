@@ -313,7 +313,7 @@ class SimulationWindow(QWidget):
 
     def _change_lights(self):
         for semaphore_id in self._environment.semaphores:
-            light_direction = self._environment.semaphores[semaphore_id].current
+            light_direction = self._environment.semaphores[semaphore_id].get_current()
 
             semaphore_item = self._semaphore_items[semaphore_id]
             for direction in semaphore_item.light_directions:

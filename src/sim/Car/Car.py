@@ -70,7 +70,7 @@ class Car(MovingAgent):
             sem_y = j + offset[1]
             if check_valid(sem_x, sem_y, SemaphoreBlock, self.environment):
                 representative = self.environment.matrix[sem_x][sem_y].representative
-                if direction == self.environment.semaphores[representative].current:
+                if direction == self.environment.semaphores[representative].get_current():
                     if next_pos in semaphor_options(sem_x, sem_y, direction, self.environment):
                         self.semaphor_pos = representative
                         self.set_car_pos(next_pos)
@@ -96,7 +96,7 @@ class Car(MovingAgent):
             return
         elif check_valid(x, y, SemaphoreBlock, self.environment):
             representative = self.environment.matrix[x][y].representative
-            if direction == self.environment.semaphores[representative].current:
+            if direction == self.environment.semaphores[representative].get_current():
                 options = pos_cross_semaphor(x, y, direction, self.environment)
                 if len(options) > 0:
                     self.semaphor_pos = representative
