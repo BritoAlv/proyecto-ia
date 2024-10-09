@@ -112,12 +112,14 @@ overload = FuzzyVariable(
     },
 )
 
-fuzzySys = FuzzySystem(input_f=[time_var, wheather, car_wait_time, walker_wait_time, month_var], output_f=[car_prob, overload])
+def build_fuzzySys():
+    fuzzySys = FuzzySystem(input_f=[time_var, wheather, car_wait_time, walker_wait_time, month_var], output_f=[car_prob, overload])
 
-fuzzySys.add_rule(CAR_PROB, LOW, lambda x: max( min(x[TIME_CLASSIFICATION][AFTERNOON], x[TIME_CLASSIFICATION][MORNING], 1 - x[MONTH][HIGH]), max(x[CAR_WAITING_TIME][NORMAL], x[WALKER_WAITING_TIME][OVERCHARGED])))
-fuzzySys.add_rule(CAR_PROB, AVERAGE, lambda x: min( x[MONTH][AVERAGE] , x[CAR_WAITING_TIME][CHARGED], x[WALKER_WAITING_TIME][CHARGED], 1 - x[WHEATHER][CLOUD], x[TIME_CLASSIFICATION][MORNING]))
-fuzzySys.add_rule(CAR_PROB, HIGH, lambda x: max( x[MONTH][LOW], x[MONTH][HIGH], x[CAR_WAITING_TIME][OVERCHARGED], x[WALKER_WAITING_TIME][NORMAL], x[WHEATHER][RAINING], x[TIME_CLASSIFICATION][NOON], x[TIME_CLASSIFICATION][DAWN]))
+    fuzzySys.add_rule(CAR_PROB, LOW, lambda x: max( min(x[TIME_CLASSIFICATION][AFTERNOON], x[TIME_CLASSIFICATION][MORNING], 1 - x[MONTH][HIGH]), max(x[CAR_WAITING_TIME][NORMAL], x[WALKER_WAITING_TIME][OVERCHARGED])))
+    fuzzySys.add_rule(CAR_PROB, AVERAGE, lambda x: min( x[MONTH][AVERAGE] , x[CAR_WAITING_TIME][CHARGED], x[WALKER_WAITING_TIME][CHARGED], 1 - x[WHEATHER][CLOUD], x[TIME_CLASSIFICATION][MORNING]))
+    fuzzySys.add_rule(CAR_PROB, HIGH, lambda x: max( x[MONTH][LOW], x[MONTH][HIGH], x[CAR_WAITING_TIME][OVERCHARGED], x[WALKER_WAITING_TIME][NORMAL], x[WHEATHER][RAINING], x[TIME_CLASSIFICATION][NOON], x[TIME_CLASSIFICATION][DAWN]))
 
-fuzzySys.add_rule(OVERLOAD, LOW, lambda x: max(x[CAR_WAITING_TIME][NORMAL], x[WALKER_WAITING_TIME][NORMAL]))
-fuzzySys.add_rule(OVERLOAD, AVERAGE, lambda x: max(x[CAR_WAITING_TIME][CHARGED], x[WALKER_WAITING_TIME][CHARGED]))
-fuzzySys.add_rule(OVERLOAD, HIGH, lambda x: max(x[CAR_WAITING_TIME][OVERCHARGED], x[WALKER_WAITING_TIME][OVERCHARGED]))
+    fuzzySys.add_rule(OVERLOAD, LOW, lambda x: max(x[CAR_WAITING_TIME][NORMAL], x[WALKER_WAITING_TIME][NORMAL]))
+    fuzzySys.add_rule(OVERLOAD, AVERAGE, lambda x: max(x[CAR_WAITING_TIME][CHARGED], x[WALKER_WAITING_TIME][CHARGED]))
+    fuzzySys.add_rule(OVERLOAD, HIGH, lambda x: max(x[CAR_WAITING_TIME][OVERCHARGED], x[WALKER_WAITING_TIME][OVERCHARGED]))
+    return fuzzySys

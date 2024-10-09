@@ -10,6 +10,7 @@ class SemaphorLogic:
         self.cycle_time = 7*(len(self.directions) +  (4 - len(self.directions) % 4))
         self.iter = 0
         self.queue : list[float] = []
+        self.total_iter  = 0
 
     def add_direction(self, direction: Directions):
         if direction not in self.directions:
@@ -29,6 +30,8 @@ class SemaphorLogic:
 
     def behaviour(self):
         self.iter += 1
+        self.total_iter += 1
+        self.total_iter %= 1001
 
         if len(self.directions) == 0:
             self.green_state = False
