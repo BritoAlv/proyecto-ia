@@ -3,6 +3,7 @@
 *.pkl
 .vscode/
 simulation_results/
+statistics/images/
 ########################
 
 
