@@ -8,7 +8,6 @@ from sim.Walker.WalkerDijkstra import WalkerDijkstra
 from sim.Walker.WalkerRandom import WalkerRandom
 from sim.Walker.PathFinder import PathFinder
 from sim.Walker.PlaceBelief import PlaceBelief
-from sim.Semaphor.Semaphore import Semaphore
 
 import random
 

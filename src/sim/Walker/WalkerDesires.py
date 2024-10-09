@@ -1,8 +1,7 @@
 import random
 
 class WalkerDesires:
-    from sim.Walker.Walker import Walker
-    def update_desires(self, walker : Walker):
+    def update_desires(self, walker):
         """
         Desires is a dict which contain a list of places and the desire to go to that place.
         The desire is a int >= 1.
@@ -24,16 +23,16 @@ class WalkerDesires:
         for rule in options:
             rule(walker)
     
-    def update_desires_max(self, walker : Walker):
-        max_desire = max(self.place_desires.values())
-        if len(max_desire) >= 2:
-            candidates = [place for place, desire in self.place_desires.items() if desire == max_desire]
+    def update_desires_max(self, walker):
+        max_desire = max(walker.place_desires.values())
+        candidates = [place for place, desire in walker.place_desires.items() if desire == max_desire]
+        if len(candidates) >= 2:
             choice = random.randint(0, len(candidates)-1)
             for i, place in enumerate(candidates):
                 if i != choice:
                     walker.place_desires[place] = 1
 
-    def update_desires_neigbours(self, walker : Walker):
+    def update_desires_neigbours(self, walker):
         i, j = walker.position
         for walker_id in walker.environment.matrix[i][j].walkers_id:
             if walker_id != walker.id and random.random() <= walker.social_prob:
@@ -42,16 +41,16 @@ class WalkerDesires:
                     if place_name in walker.place_desires and walker.place_beliefs[place_name].belief_state == 1:
                         walker.place_desires[place_name] += 2
 
-    def update_desires_known_places(self, walker : Walker):
+    def update_desires_known_places(self, walker):
         for place_name in walker.place_desires:
             if walker.place_beliefs[place_name].belief_state == 1:
                 walker.place_desires[place_name] += 2
 
-    def update_desires_reset(self, walker : Walker):
+    def update_desires_reset(self, walker):
         if random.random() <= walker.reset_prob:
             for place_name in walker.place_desires:
                 walker.place_desires[place_name] = 1
 
-    def update_desires_random(self, walker : Walker):
-        choice = random.choice(walker.place_desires.keys())
+    def update_desires_random(self, walker):
+        choice = random.choice(list(walker.place_desires.keys()))
         walker.place_desires[choice] += 2

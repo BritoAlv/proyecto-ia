@@ -35,7 +35,7 @@ class SemaphorLogic:
             self.iter = 0
 
         if self.green_state:
-            if self.iter >= self.car_time:
+            if self.iter >= self.car_time():
                 self.iter = 0
                 self.green_state = not self.green_state
                 self.current = Directions.EMPTY
@@ -47,7 +47,7 @@ class SemaphorLogic:
                     self.current = self.directions[i-1]
                     return
         else:
-            if self.iter >= self.car_time:
+            if self.iter >= self.car_time():
                 self.iter = 0
                 self.green_state = not self.green_state
                 self.current = self.directions[0]

@@ -15,8 +15,8 @@ class Semaphore(Agent):
             MONTH : 10, 
             TIME_CLASSIFICATION  : 450 , 
             WHEATHER: 0.5, 
-            CAR_WAITING_TIME: 50, 
-            WALKER_WAITING_TIME: 50
+            CAR_WAITING_TIME: 10, 
+            WALKER_WAITING_TIME: 20
         }
         self.fuzzy_system = fuzzySys
         
@@ -67,7 +67,7 @@ class Semaphore(Agent):
         return self.logic.red_rem()
 
     def act(self) -> None:
-        if random.random() <= 0.6:
+        if random.random() <= 0.:
             self.update_system()
         self.update_input_vars()
         self.logic.behaviour()

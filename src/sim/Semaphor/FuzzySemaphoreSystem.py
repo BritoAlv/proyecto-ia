@@ -22,9 +22,16 @@ AVERAGE = "average"
 HIGH = "High"
 
 
-car_wait_time = FuzzyVariable(CAR_WAITING_TIME, 0, 100, {NORMAL: BoundedFunction.gaussian_function(1, 0, 10, 0, 100), CHARGED: BoundedFunction.gaussian_function(1, 40, 10, 0, 100), OVERCHARGED: BoundedFunction.gaussian_function(1, 100, 20, 0, 100)})
+car_wait_time = FuzzyVariable(CAR_WAITING_TIME, 0, 50, {
+    NORMAL: BoundedFunction.gaussian_function(1, 0, 5, 0, 50), 
+    CHARGED: BoundedFunction.gaussian_function(1, 20, 5, 0, 50), 
+    OVERCHARGED: BoundedFunction.gaussian_function(1, 50, 5, 0, 50)})
 
-walker_wait_time = FuzzyVariable(WALKER_WAITING_TIME, 0, 100, {NORMAL: BoundedFunction.gaussian_function(1, 0, 10, 0, 100), CHARGED: BoundedFunction.gaussian_function(1, 40, 10, 0, 100), OVERCHARGED: BoundedFunction.gaussian_function(1, 100, 20, 0, 100)})
+walker_wait_time = FuzzyVariable(WALKER_WAITING_TIME, 0, 40, {
+    NORMAL: BoundedFunction.gaussian_function(1, 0, 4, 0, 40), 
+    CHARGED: BoundedFunction.gaussian_function(1, 15, 5, 0, 40), 
+    OVERCHARGED: BoundedFunction.gaussian_function(1, 40, 4, 0, 40)}
+)
 
 DAWN = "dawn"
 MORNING = "morning"
@@ -79,7 +86,6 @@ month_var = FuzzyVariable(MONTH, 1, 12, {
     HIGH : BoundedFunction.gaussian_function(1, 12, 2, 1, 12),      
 })
 
-month_var.plot_membership()
 
 CAR_PROB = "Car Prob"
 
