@@ -223,7 +223,7 @@ Las variables de salida serían:
     - La sobrecarga del semáforo, con conjuntos bajo, medio, alto.
 
 ![](./images/car_waiting_time.png)
-![](./images/car_prob.png.png)
+![](./images/car_prob.png)
 
 Para cada variable de salida, para conjunto que de esta es necesario añadir una regla para determinar su valor : 
 
