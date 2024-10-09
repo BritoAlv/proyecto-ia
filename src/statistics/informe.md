@@ -1,12 +1,12 @@
 # Estadisticas
 
 ### General
-Para analizar el problema planteado en este trabajo se realizo un analisis comparativo en cuanto las operaciones de ambos tipos de semaforos (ya fueran inteligentes o regulares) llegando a ejecutar un promedio de 24 simulaciones en cada caso y permitiendonos esta informacion construir un data frame de la biblioteca de Python Pandas para cada uno de los casos simulados, separando la informacion de cada simulacion en los aspectos a analizar:peatones y vehiculos. Con este trabajo nos planteamos como objetivo principal poder llegar a conocer la efectividad de los semaforos inteligentes en la actualidad, si con la implementacion de estos los automoviles tienen realmente un recorrido mas rapido hacia su destino y si disminuye el tiempo de los peatones en cada paso peatonal donde estos estan.
+Para analizar el problema planteado en este trabajo se realizo un analisis comparativo en cuanto las operaciones de ambos tipos de semaforos (ya fueran inteligentes o estandar) llegando a ejecutar un promedio de 24 simulaciones en cada caso y permitiendonos esta informacion construir un data frame de la biblioteca de Python Pandas para cada uno de los casos simulados, separando la informacion de cada simulacion en los aspectos a analizar:peatones y vehiculos. Con este trabajo nos planteamos como objetivo principal poder llegar a conocer la efectividad de los semaforos inteligentes en la actualidad, si con la implementacion de estos los automoviles tienen realmente un recorrido mas rapido hacia su destino y si disminuye el tiempo de los peatones en cada paso peatonal donde estos estan.
 
 #### Distribuciones
-Implementando el uso de histogramas graficamos cada una de las simulaciones realizadas para poder analizar la distribucion de cada una de ellas.En el mismo grafico estaran representadas ambas simulaciones simultaneamente (de semaforos tanto inteligentes como regulares).
+Implementando el uso de histogramas graficamos cada una de las simulaciones realizadas para poder analizar la distribucion de cada una de ellas.En el mismo grafico estaran representadas ambas simulaciones simultaneamente (de semaforos tanto inteligentes como estandar).
 
-A continuacion los histogramas que representan el tiempo ocupado por los carros en semaforos inteligentes y regulares:
+A continuacion los histogramas que representan el tiempo ocupado por los carros en semaforos inteligentes y estandar:
 
 [![Image alt text](images/hist_cars_0.png)]()
 [![Image alt text](images/hist_cars_1.png)]()
@@ -33,7 +33,7 @@ A continuacion los histogramas que representan el tiempo ocupado por los carros 
 [![Image alt text](images/hist_cars_22.png)]()
 [![Image alt text](images/hist_cars_23.png)]()
 
-En este segundo grupo de graficos los histogramas representan el tiempo que ocupan los peatones en semaforos inteligentes y regulares:
+En este segundo grupo de graficos los histogramas representan el tiempo que ocupan los peatones en semaforos inteligentes y estandar:
 
 [![Image alt text](images/hist_walkers_0.png)]()
 [![Image alt text](images/hist_walkers_1.png)]()
@@ -70,7 +70,7 @@ En semaforos inteligentes;
 
 [![Image alt text](images/scatter2.png)]()
 
-En semaforos regulares;
+En semaforos estandar;
 
 [![Image alt text](images/scatter3.png)]()
 
@@ -90,8 +90,8 @@ Como resultado se obtuvo que su correlacion es de 1 lo que nos indica que dichos
 
 [![Image alt text](images/coor4.png)]()
 
-### Test wilcoxon
-Para comprobar la existencia o no de una diferencia significativa entre los datos analizados en las simulaciones de semaforos inteligentes y regulares fue utilizado el Test Wilcoxon.
+### Test Wilcoxon signed-rank
+Para comprobar la existencia o no de una diferencia significativa entre los datos analizados en las simulaciones de semaforos inteligentes y estandar fue utilizado el Test Wilcoxon signed-rank.
 Como podemos observar en la grafica; los p_value son mayores que 0.05 por lo que no nos es posible llegar a ninguna conclusion.
 [![Image alt text](images/test.png)]()
 
@@ -101,6 +101,6 @@ Por ultimo compararemos las medias de cada conjunto de simulaciones de semáforo
 
 [![Image alt text](images/heap.png)]()
 
-Todo esto parece indicar que los semáforos regulares optimizan el tiempo de espera de los carros y peatones.
+Todo esto parece indicar que los semáforos estandar optimizan el tiempo de espera de los carros y peatones.
 
 ### Conclusiones
