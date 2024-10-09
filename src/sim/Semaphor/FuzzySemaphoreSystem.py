@@ -22,15 +22,16 @@ AVERAGE = "average"
 HIGH = "High"
 
 
-car_wait_time = FuzzyVariable(CAR_WAITING_TIME, 0, 50, {
-    NORMAL: BoundedFunction.gaussian_function(1, 0, 5, 0, 50), 
-    CHARGED: BoundedFunction.gaussian_function(1, 20, 5, 0, 50), 
-    OVERCHARGED: BoundedFunction.gaussian_function(1, 50, 5, 0, 50)})
+car_wait_time = FuzzyVariable(CAR_WAITING_TIME, 0, 75, {
+    NORMAL: BoundedFunction.gaussian_function(1, 0, 10, 0, 75), 
+    CHARGED: BoundedFunction.gaussian_function(1, 37, 10, 0, 75), 
+    OVERCHARGED: BoundedFunction.gaussian_function(1, 75, 30, 0, 75)})
 
-walker_wait_time = FuzzyVariable(WALKER_WAITING_TIME, 0, 40, {
-    NORMAL: BoundedFunction.gaussian_function(1, 0, 4, 0, 40), 
-    CHARGED: BoundedFunction.gaussian_function(1, 15, 5, 0, 40), 
-    OVERCHARGED: BoundedFunction.gaussian_function(1, 40, 4, 0, 40)}
+
+walker_wait_time = FuzzyVariable(WALKER_WAITING_TIME, 0, 25, {
+    NORMAL: BoundedFunction.gaussian_function(1, 0, 2, 0, 25), 
+    CHARGED: BoundedFunction.gaussian_function(1, 10, 3, 0, 25), 
+    OVERCHARGED: BoundedFunction.gaussian_function(1, 25, 2, 0, 25)}
 )
 
 DAWN = "dawn"

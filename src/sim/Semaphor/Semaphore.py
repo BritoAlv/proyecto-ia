@@ -42,7 +42,7 @@ class Semaphore(Agent):
             for x in self.car_times:
                 sum += x
             avg_time = sum / len(self.car_times)
-            self.update_fuzzy(CAR_WAITING_TIME, avg_time)
+            self.update_fuzzy(CAR_WAITING_TIME, min(avg_time, 75))
             self.car_times = []
 
         if len(self.walkers_times) >= 3:
@@ -50,7 +50,7 @@ class Semaphore(Agent):
             for x in self.walkers_times:
                 sum += x
             avg_time = sum / len(self.walkers_times)
-            self.update_fuzzy(WALKER_WAITING_TIME, avg_time)
+            self.update_fuzzy(WALKER_WAITING_TIME, min(avg_time, 25))
             self.walkers_times = []
 
     def get_current(self):
