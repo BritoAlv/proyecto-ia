@@ -226,8 +226,6 @@ class Walker(MovingAgent):
                 if valid_coordinates(x, y, len(self.environment.matrix), len(self.environment.matrix[0])):
                     if isinstance(self.environment.matrix[x][y], SidewalkBlock):
                         self.path = plan.path_finder(self.position, (x, y))
-                        #print(f"Path from {self.position} to  {(x, y)} is")
-                        #print(self.path)
                         break
         if len(self.path) > 0:
             next_pos = self.path[0]

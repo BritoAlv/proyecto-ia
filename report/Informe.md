@@ -184,6 +184,7 @@ Los agentes inteligentes deben tener en cuenta los siguientes tres característi
 *Habilidad Social* : Los agentes inteligentes deben ser capaces de interactuar con otros agentes para satisfacer sus objetivos.
 
 Surge el problema de hallar un balance entre la reactividad y la pro-actividad. 
+
 Una analogía a esto ocurre en con la arquitectura BDI.
 
 En la arquitectura BDI los agentes poseen creencias sobre su entorno que pueden ser correctas o no, poseen objetivos que desean lograr e intenciones que conllevarán a acciones o planes para lograr sus objetivos. 
@@ -206,39 +207,45 @@ Primero percibe el entorno actual, lo que actualiza sus creencias, en base a est
 
 #### Semáforos
 
-Los semáforos poseen un sistema de lógica difusa en su comportamiento, alternan entre *ROJO*, permitiendo el paso de los peatones, y *VERDE* permitiendo el paso de los carros, que tanto tiempo debe permanecer un semáforo en *VERDE* y que tan cargado se encuentra son las preguntas que debe responder el sistema de lógica difusa. Con el objetivo de que si el factor peatonal es alto estaría menos tiempo en *VERDE* y viceversa. Aunque influyen más factores.
+Los semáforos poseen un sistema de lógica difusa en su comportamiento, alternan entre *ROJO*, permitiendo el paso de los peatones, y *VERDE* permitiendo el paso de los carros, que tanto tiempo debe permanecer un semáforo en *VERDE* y que tan cargado se encuentra son las preguntas que debe responder el sistema de lógica difusa. 
+
+Con el objetivo de que si el factor peatonal es alto estaría menos tiempo en *VERDE* y viceversa. Aunque influyen más factores.
 
 Las variables de entrada serían:
-    - El clima, con conjuntos *lloviendo*, *nubloso*, *soleado*
-    - El tiempo de espera de los carros (una vez se plantea cruzar un semáforo)
-    - El tiempo de espera de los peatones (una vez se plantea cruzar un semáforo)
-    - El mes del año.
+    - El clima, con conjuntos *lloviendo*, *nubloso*, *soleado*.
+    - El tiempo de espera de los carros (una vez se plantea cruzar un semáforo) con conjuntos normal, cargado, sobrecargado
+    - El tiempo de espera de los peatones (una vez se plantea cruzar un semáforo) con conjuntos normal, cargado, sobrecargado
+    - El mes del año, con conjuntos bajo, promedio, alto ( fue tenido en cuenta para representar que en temporadas específicas del año hay menos tráfico peatonal)
+    - El momento del día, con conjuntos madrugada, mañana, tarde y noche: 
 
 Las variables de salida serían:
-    - La sobre-carga del semáforo, usada por los carros.
-    - El tiempo que ha de permanecer en verde.
+    - La probabilidad de carros, con conjuntos bajo, medio, alto.
+    - La sobrecarga del semáforo, con conjuntos bajo, medio, alto.
 
-![](./images/greentime.png)
 ![](./images/car_waiting_time.png)
+![](./images/car_prob.png.png)
 
 Para cada variable de salida, para conjunto que de esta es necesario añadir una regla para determinar su valor : 
 
 Algunas reglas que añadimos son:
-    - el *GREEN_TIME* es alto si el mes es de alta o el tiempo de espera de los carros es alto o el tiempo de espera de los peatones es normal o el clima no es soleado o es de madrugada.
-    - el *GREEN_TIME* es bajo si se cumple que el tiempo de espera de los carros es bajo y el tiempo de espera de los peatones es bajo y el tiempo no es lluvioso y además es de noche
-    - el *OVERLOAD* es alto si el tiempo de espera de los peatones y los carros es alto.
+   - el *CAR_PROB* es alto si al menos una de las siguientes : el mes es de baja o de alta ( los meses de invierno), el tiempo de espera de los peatones es normal, el tiempo de espera de los carros es bastante, está lloviendo y es de noche o madrugada.
+   - el *OVERLOAD* es alto si el tiempo de espera de los peatones y los carros es alto.
+
+Nota : En las variables de entrada que son los tiempos de espera de los carros y los caminantes estimamos su dominio ( entre que valores oscilan estos tiempos) con los resultados de la simulación
 
 ##### Comportamiento
 
-Siempre actualiza los valores de las variables de entrada.
+Siempre actualiza los valores de las variables de entrada tomándolos del *environment*.
 
-Los tiempos de espera de los carros y los peatones son dados por estos cuando pasan el semáforo en cuestión.
+Los tiempos de espera de los carros y los peatones son proporcionados por estos cuando pasan el semáforo en cuestión.
 
-Con alguna probabilidad (para evitar que esté constantemente ejecutando el proceso de inferencia) actualiza sus variables de salida ( ejecuta el proceso de inferencia).
+Cada $30$ iteraciones actualizan sus variables de salida ( ejecuta el proceso de inferencia ). El $30$ es para balancear la rapidez de la simulación contra cuantas veces se actualizan los semáforos. 
 
-Cada vez que cambia el *GREEN_TIME*, a consecuencia de cambios en las variables de entrada, espera a estar en estado *ROJO* y cambia el tiempo a verde.
+Cada vez que cambia el *CAR_PROB*, a consecuencia de cambios en las variables de entrada, espera a ser posible y actualiza los tiempos ( no puede de repente disminuir el tiempo que durará en rojo pués puede causar accidentes).
 
 Provee de un método público a los demás agentes para que estos sepan cuanto tiempo le queda a el semáforo en el estado en que se encuentra.
+
+El semáforo posee un tiempo de ciclo fijo, que depende de cuantas direcciones este posea. Este ciclo se debe dividir en tiempo rojo ( peatones) y tiempo verde ( carros), el tiempo verde es dividido entre las direcciones posibles. La proporción de como dividir el tiempo entre rojo y verde es lo determinado por *CAR_PROB*. En un semáforo estándar asumimos que se mantiene constante.
 
 #### Automóviles
 
@@ -246,20 +253,20 @@ El carro se encuentra desplazándose por las carreteras sin poder haber dos carr
 
 El carro necesita una forma de encontrar un camino hacia su lugar de destino, ha de saber actuar cuando no puede seguir con su plan y desea evitar estancarse en un semáforo.
 
-El carro posee una estrategia que seguirá para llegar a su destino ( carácter pro-activo) pero ya sea, porque no le es posible continuar o porque no le dio resultado la actualizará ( reconsiderar su estrategia), además de que debe moverse siempre si le es posible (carácter reactivo), o sea, porque no pueda seguir su plan no debe dejar de moverse porque si no obstruiría el tráfico.
+El carro posee una estrategia que seguirá para llegar a su destino ( carácter pro-activo) pero ya sea, porque no le es posible continuar o porque no le dio resultado, la actualizará ( reconsiderar su estrategia), además de que debe moverse siempre si le es posible (carácter reactivo), o sea, porque no pueda seguir su plan no debe dejar de moverse porque si no obstruiría el tráfico.
 
-Posee un método *emergency_act* que como el nombre indica, lo utiliza cuando su plan no es viable, por las condiciones del ambiente. 
+Posee un método *emergency_act* que como el nombre indica, lo utiliza cuando su plan no es viable, por las condiciones de la carretera donde se encuentra. 
 
 En circunstancias normales empleará su estrategia para decidir que camino tomar.
 
 ##### Estrategia:
 
-El carro puede estar en dos estados : *Obstruido* y *Libre*, puede tomar cuatro acciones : *Random*, *Depth-DFS*, *Dijkstra*, *Dijkstra-Modified*, esto es representado a través de una matriz de probabilidades de $2*4$, en cada fila, está las probabilidades de que tome la acción de esa columna, las probabilidades de una fila han de sumar $1$. La idea es que a medida que el carro usa las acciones actualize estas probabilidades en función de si le fue útil o no utilizar esta acción.
+El carro puede estar en dos estados : *Obstruido* y *Libre*, puede tomar cuatro acciones : *Random*, *Depth-DFS*, *Dijkstra*, *Dijkstra-Modified*, esto es representado a través de una matriz de probabilidades de $2*4$, en cada fila, están las probabilidades de que tome la acción de esa columna, las probabilidades de una fila han de sumar $1$. La idea es que a medida que el carro usa las acciones actualize estas probabilidades en función de si le fue útil o no utilizar esta acción.
 
-El carro se encuentra en el estado *Obstruido* si sus últimas tres posiciones son las mismas.
-El carro se encuentra en el estado *Libre* si sus últimas tres posiciones son diferentes.
+El carro se encontrará en el estado *Obstruido* si sus últimas tres posiciones son las mismas.
+El carro se encontrará en el estado *Libre* si sus últimas tres posiciones son diferentes.
 
-En un estado, decide que acción tomar, escogiendo un número aleatorio entre $[0, 1]$ y en dependencia de que intervalo se encuentre escoge la acción.
+En un estado, decide que acción tomar, escogiendo un número aleatorio entre $[0, 1]$ y en dependencia de en que intervalo se encuentre escoge la acción.
 
 Una acción en un estado es priorizada ( aumenta su probabilidad ) si permitió que el carro se moviera en las últimas dos iteraciones, en caso contrario su probabilidad  en ese estado es disminuida. Esto es una forma de implementar el método *reward*, puede ser escogida otra forma de *reward* una acción.
 
@@ -291,34 +298,47 @@ Es posible añadir más acciones y más estados en los que se puede encontrar el
 
 #### Peatones
 
-Los agentes caminantes están basados en la arquitectura $BDI$, estos se mueven a través de las aceras y pueden cruzar una calle siempre que el semáforo esté en rojo, ellos poseen varios lugares de interés a los que desean ir, (tienen una prioridad sobre cuales desean visitar primero), pero no saben inicialmente donde se encuentran estos, poseen una creencia de donde puedan estar. A medida que se mueven y visitan lugares de interés en el mapa guardan actualizan sus creencias sobre los lugares de interés en el mapa. A su vez actualizan las prioridades sobre los lugares que desean visitar, escogiendo para visitar ( intención) el de mayor prioridad, incorporan un factor social además.
+Los agentes caminantes están basados en la arquitectura $BDI$, Una explicación resumida  es la siguiente: 
+
+Estos se mueven a través de las aceras y pueden cruzar una calle siempre que el semáforo esté en rojo, ellos poseen varios lugares de interés a los que desean ir, (tienen una prioridad sobre cuales desean visitar primero), pero no saben inicialmente donde se encuentran estos, poseen una creencia de donde puedan estar. A medida que se mueven y visitan lugares de interés en el mapa guardan y actualizan sus creencias sobre los lugares de interés en el mapa. A su vez actualizan las prioridades sobre los lugares que desean visitar, escogiendo para visitar (intención) el de mayor prioridad, incorporan un factor social además.
+
+Nota : Cuando decimos que se escoge un número aleatorio nos referimos a un número entre $[0, 1]$.
 
 Paso a paso su funcionamiento:
 
-1 - Actualizan sus creencias: Si en su posición actual hay un lugar de interés añaden esta información a sus creencias (sabe donde está, por tanto es conocimiento). Si en su posición hay otro caminante se escoge un número aleatorio y si es menor que su factor social, este caminante actualiza sus creencias además usando los creencias del caminante con el que se encontró. O sea cada caminante tiene un factor social como un número entre $[0, 1]$, para decidir cuando ser social con otros caminantes. Además un caminante posee otro factor de confianza, si esta es baja es menos probable que escoja creencias de otro caminante que no sean certeras. Siempre escoge las que representen conocimiento. De esta forma un caminante actualiza sus creencias.
+1 - Actualizan sus creencias: Si en su posición actual hay un lugar de interés añaden esta información a sus creencias (sabe donde está, por tanto es conocimiento). Si en su posición hay otro caminante se halla un número aleatoio y si es menor que su factor social, este caminante actualiza sus creencias, además usando los creencias del caminante con el que se encontró. O sea cada caminante tiene un factor social como un número entre $[0, 1]$, para decidir cuando ser social con otros caminantes. Además un caminante posee otro factor de confianza, si esta es baja es menos probable que escoja creencias de otro caminante que no sean certeras. Siempre escoge las que representen conocimiento. De esta forma un caminante actualiza sus creencias.
 
 2 - Si ya visitó todos los lugares que deseaba entonces es removido de la simulación.
 
-3 - Cada caminante posee un factor de reactivad, entonces si su plan se acabó ( el camino que estaba siguiendo ya lo culminó) o un número aleatorio entre $[0,1]$ es menor que este factor, el caminante actualiza sus deseos y ha de escoger un plan nuevo.
+3 - Actualiza sus deseos de la siguiente forma: Sus deseos son representados a través de un diccionario donde a cada lugar que desea visitar le es asignado una prioridad. Existen diferentes variantes que modifican los deseos, son ejecutadas todas pero en orden aleatorio, el resultado de una puede afectar a la otra ya que estas usan modifican los deseos con su ejecución, y estas a su vez, en dependencia de los deseos se ejecutan. Entre estas variantes se encuentran:  
 
-Actualiza sus deseos de la siguiente forma: Sus deseos son representados a través de un diccionario donde a cada lugar que desea visitar le es asignado una prioridad. Si hay un caminante en mi posición que también desea ir a un lugar en específico le es aumentada la prioridad, aquí nuevamente se tiene en cuenta el factor social. Si hay algún lugar entre mis deseos que se donde se encuentra le aumento la prioridad. Aleatoriamente escojo un lugar y le aumento la prioridad. Finalmente si un caminante lleva mucho tiempo en una posición en específico se igualan todas las prioridades.
+   - Si hay varios lugares con la máxima prioridad escoger uno al azar y a el resto hacerles su prioridad mínima.
+   - Si hay un caminante en mi posición que también desea ir a un lugar en específico le es aumentada la prioridad a este lugar, aquí nuevamente se tiene en cuenta el factor social. 
+   - Si hay algún lugar entre mis deseos que sé donde se encuentra le aumento la prioridad. (a consecuencia de que mis creencias se actualizaron)
+   - Aleatoriamente escojo un lugar y le aumento la prioridad.  
+   - Si un número aleatorio es menor que una constate reseteo todas las prioridades a el mínimo.
+
+4 - Cada caminante posee un factor de reactivad, entonces si su plan se acabó ( el camino que estaba siguiendo ya lo culminó) o reconsidera que continuar con este plan no es su intención o un número aleatorio es menor que este factor, el caminante ha de escoger un plan nuevo.
 
 Escoge un plan de la siguiente forma: Escoge como lugar o intención a ir el de más prioridad entre sus deseos, si el caminante está seguro de donde está el lugar y posee suficiente deseo de visitarlo usará Dijkstra para determinar el camino. En caso contrario con cierta probabilidad se moverá aleatoriamente o usará Dijkstra para moverse hacia la posición del lugar ( pudiendo en este caso no ser la correcta). En el caso de los caminantes a diferencia de los carros la única forma de que no se pueda mover es que estén esperando por un semáforo.
 
 4 - Finalmente escoge la siguiente posición en el camino determinado por su plan para moverse, si no le es posible moverse se mantiene en la posición actual.
 
-Nota : Todas las constantes que son probabilidades entre $[0,1]$ es una idea de métodos de optimización como Particle Swarm Optimization.
+En cierto punto de la ejecución de su plan existe la opción de que reconsidera si le es factible continuar con este plan o reconsiderarlo, esto es determinado análogamente por una probabilidad y además que la prioridad de este lugar no sea máxima
+
+Nota : Todas las constantes son probabilidades entre $[0,1]$, siguiendo la ideas de Particle Swarm Optimization. Donde el conjunto de estas probabilidades determina el comportamiento de la párticula.
 
 ### 2.4 Uso de Large Language Models (LLM)
 
-Apoyándonos en un LLM, específicamente Mistral AI, construimos para cada lugar de interés, a partir de su nombre y descripción, una estructura de datos que presenta la probabilidad que un peatón/automóvil lo visite, así como el horario y fecha en la que pueden hacerlo.
+Apoyándonos en un LLM, específicamente Mistral AI, construimos para cada lugar de interés, a partir de su nombre y descripción, una estructura de datos que representa la probabilidad que un peatón/automóvil lo visite, así como el horario y fecha en la que pueden hacerlo.
 
 A partir de esta meta-información somos capaces de asignar una probabilidad a cada uno de los posibles destinos de los automóviles, con el fin de seleccionarlos para cada evento de llegada de automóvil procesado.
 
 ## 3. Referencias
 
-An Introduction to Multi Agent Systems, Michael Wooldridge
+## References
 
-Temas de Simulación, Luciano García Garrido
-
-Fuzzy Sets and Fuzzy Logic Theory and Applications, GEORGE J.KLIR AND BO YUAN
+1. Wooldridge, Michael. *An Introduction to Multi Agent Systems*. 
+2. Garrido, Luciano García. *Temas de Simulación*.
+3. Klir, George J., and Bo Yuan. *Fuzzy Sets and Fuzzy Logic: Theory and Applications*.
+4. Banks, Jerrey. *Discrete Event System Simulation*.
